@@ -1,0 +1,518 @@
+/* ═══════════════════════════════════════════════════════════════════
+   document.css — Inside the Paged.js print iframe
+   Full Politost-branded printed document layout.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import './tokens.css';
+
+/* ── Base reset ──────────────────────────────────────────────────── */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--print-surface);
+  color: var(--print-ink);
+}
+
+/* ── Paged.js root ───────────────────────────────────────────────── */
+
+.paged-render-root {
+  position: relative;
+}
+
+/* ── Content flow ────────────────────────────────────────────────── */
+
+.print-flow {
+  font-family: var(--print-font-serif);
+  font-size: var(--print-size-body);
+  line-height: var(--print-leading-body);
+  color: var(--print-ink);
+}
+
+/* ── Brand opener (document header block) ────────────────────────── */
+/*    Replaces the old plain .print-opener eyebrow + h1             */
+
+.print-brand-block {
+  margin: 0 0 var(--print-space-2xl);
+  padding-bottom: var(--print-space-xl);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* Top: Politost wordmark bar */
+.print-brand-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: var(--print-space-md);
+}
+
+.print-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--print-primary);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.print-brand-name {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-brand);
+  font-weight: 800;
+  color: var(--print-primary);
+  letter-spacing: -0.02em;
+}
+
+.print-brand-sub {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-eyebrow);
+  font-weight: 600;
+  color: var(--print-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-left: 0.25em;
+}
+
+/* Separator accent line */
+.print-brand-rule {
+  border: none;
+  margin: 0 0 var(--print-space-xl);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--print-primary)       0%,
+    var(--print-primary-mid)  60%,
+    var(--print-border)       100%
+  );
+  border-radius: 2px;
+}
+
+/* Book title (small, above the doc title) */
+.print-brand-book {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--print-ink-muted);
+  margin: 0 0 var(--print-space-sm);
+}
+
+/* Main document title */
+.print-brand-title {
+  font-family: var(--print-font-serif);
+  font-size: var(--print-size-title);
+  font-weight: 700;
+  line-height: var(--print-leading-tight);
+  color: var(--print-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* ── Paged.js split fixes ────────────────────────────────────────── */
+
+[data-split-from] {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+[data-split-to] {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── Print chunks (Paged.js break boundaries) ───────────────────── */
+
+.print-flow .print-chunk {
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+.print-flow .print-chunk:has(.numbered-formula),
+.print-flow .print-chunk:has(.smartbook-figure) {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ── Chapter paragraphs ──────────────────────────────────────────── */
+
+.print-flow .paragraph-section {
+  break-inside: auto;
+  page-break-inside: auto;
+  margin-bottom: var(--print-space-xl);
+}
+
+.print-flow .paragraph-section + .paragraph-section {
+  padding-top: var(--print-space-md);
+  border-top: 1px solid var(--print-border);
+}
+
+.print-flow .paragraph-title {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-heading);
+  font-weight: 600;
+  line-height: var(--print-leading-tight);
+  color: var(--print-ink);
+  margin: 0 0 var(--print-space-md);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.print-flow .para-num {
+  color: var(--print-primary);
+  font-weight: 700;
+  margin-right: 0.35em;
+}
+
+/* ── Content flow ────────────────────────────────────────────────── */
+
+.print-flow .content-flow {
+  font-size: var(--print-size-body);
+  line-height: var(--print-leading-body);
+}
+
+.print-flow .content-paragraph {
+  display: block;
+  margin: 0 0 0.85em;
+}
+
+.print-flow .content-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.print-flow .content-subheading {
+  font-family: var(--print-font-sans);
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 1.1em 0 0.45em;
+  color: var(--print-ink);
+  break-after: avoid;
+  page-break-after: avoid;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.print-flow .content-list {
+  margin: 0.5em 0 1em 1.25em;
+  padding: 0;
+}
+
+.print-flow .content-list li {
+  margin-bottom: 0.45em;
+}
+
+/* ── Formula references ──────────────────────────────────────────── */
+
+.print-flow .formula-ref {
+  color: var(--print-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.print-flow .formula-missing {
+  color: var(--print-ink-faint);
+  font-style: italic;
+}
+
+/* ── Numbered formulas ───────────────────────────────────────────── */
+
+.print-flow .numbered-formula {
+  margin: 1.1rem 0;
+  padding: 0.85rem 1rem;
+  background: var(--print-primary-light);
+  border-left: 3px solid var(--print-primary);
+  border-radius: 0 var(--print-radius) var(--print-radius) 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.print-flow .formula-header {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-small);
+  color: var(--print-ink-muted);
+  margin-bottom: 0.45rem;
+}
+
+.print-flow .formula-num {
+  font-weight: 700;
+  color: var(--print-primary);
+}
+
+.print-flow .formula-body {
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* ── KaTeX ───────────────────────────────────────────────────────── */
+
+.print-flow .katex,
+.print-flow .katex-block,
+.pagedjs_page .katex,
+.pagedjs_page .katex-block {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  overflow: visible;
+  color: var(--print-ink);
+}
+
+.print-flow .katex *,
+.pagedjs_page .katex * {
+  color: inherit;
+}
+
+/* Paged.js can drop KaTeX clip rules — hide MathML so only HTML render shows */
+.print-flow .katex-mathml,
+.pagedjs_page .katex-mathml {
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  clip-path: inset(50%) !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  position: absolute !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+}
+
+/* ── Figures ─────────────────────────────────────────────────────── */
+
+.print-flow .smartbook-figure {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 1.25rem auto;
+  max-width: 100%;
+  text-align: center;
+}
+
+.print-flow .smartbook-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--print-border);
+  border-radius: var(--print-radius);
+  background: var(--print-surface);
+}
+
+.print-flow .smartbook-figure figcaption {
+  font-size: var(--print-size-caption);
+  color: var(--print-ink-muted);
+  margin-top: 0.45rem;
+  line-height: 1.4;
+}
+
+.print-flow .smartbook-figure-missing .smartbook-figure-placeholder {
+  padding: var(--print-space-lg);
+  border: 1px dashed var(--print-border);
+  border-radius: var(--print-radius);
+  color: var(--print-ink-muted);
+  font-size: var(--print-size-small);
+}
+
+/* ── Internal cross-refs ─────────────────────────────────────────── */
+
+.print-flow .smartbook-ref {
+  color: var(--print-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.print-flow .smartbook-ref::after {
+  content: ' (' attr(data-ref) ')';
+  font-size: 0.85em;
+  font-weight: 400;
+  color: var(--print-ink-muted);
+}
+
+/* ── Formulario ──────────────────────────────────────────────────── */
+
+.print-flow .formulario-chapter {
+  break-inside: auto;
+  page-break-inside: auto;
+  margin-bottom: var(--print-space-xl);
+}
+
+.print-flow .formulario-chapter h3 {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-heading);
+  font-weight: 600;
+  color: var(--print-primary);
+  margin: 0 0 var(--print-space-md);
+  padding-bottom: var(--print-space-sm);
+  border-bottom: 2px solid var(--print-primary-light);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.print-flow .formula-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--print-space-md);
+}
+
+.print-flow .formulario-card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: var(--print-surface-dim);
+  border: 1px solid var(--print-border);
+  border-radius: var(--print-radius);
+  padding: var(--print-space-md);
+}
+
+.print-flow .formulario-card-header {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-small);
+  color: var(--print-ink-muted);
+  margin-bottom: var(--print-space-xs);
+}
+
+.print-flow .formulario-card-body {
+  text-align: center;
+  overflow-x: auto;
+}
+
+.print-flow .formula-label {
+  margin-left: 0.35em;
+}
+
+/* ── Exercises ───────────────────────────────────────────────────── */
+
+.print-flow .exercise-list {
+  margin: 0;
+}
+
+.print-flow .exercise-card {
+  break-inside: auto;
+  page-break-inside: auto;
+  background: var(--print-surface);
+  border: 1px solid var(--print-border);
+  border-radius: var(--print-radius);
+  margin-bottom: var(--print-space-lg);
+  padding: var(--print-space-md);
+}
+
+.print-flow .exercise-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5em 0.75em;
+  margin-bottom: var(--print-space-md);
+  padding-bottom: var(--print-space-sm);
+  border-bottom: 1px solid var(--print-primary-light);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.print-flow .exercise-id {
+  font-family: var(--print-font-sans);
+  font-weight: 700;
+  color: var(--print-primary);
+}
+
+.print-flow .exercise-ch {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-small);
+  color: var(--print-ink-muted);
+}
+
+.print-flow .difficulty {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-small);
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--print-border-strong);
+  border-radius: 4px;
+  background: var(--print-surface);
+}
+
+.print-flow .exercise-question {
+  margin-bottom: var(--print-space-md);
+}
+
+.print-flow .print-reveal-block {
+  margin-top: var(--print-space-md);
+  padding: var(--print-space-md);
+  border-radius: var(--print-radius);
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+.print-flow .print-reveal-block--hint {
+  background: var(--print-hint-bg);
+  border: 1px solid var(--print-hint-border);
+}
+
+.print-flow .print-reveal-block--solution {
+  background: var(--print-solution-bg);
+  border: 1px solid var(--print-solution-border);
+}
+
+.print-flow .print-reveal-header {
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-small);
+  font-weight: 700;
+  margin-bottom: var(--print-space-sm);
+}
+
+.print-flow .print-reveal-block--hint .print-reveal-header {
+  color: var(--print-hint-ink);
+}
+
+.print-flow .print-reveal-block--solution .print-reveal-header {
+  color: var(--print-solution-ink);
+}
+
+.print-flow .empty-note {
+  font-style: italic;
+  color: var(--print-ink-muted);
+  margin: var(--print-space-lg) 0;
+}
+
+/* ── Watermark (injected per page by printHandler) ───────────────── */
+
+.pagedjs_page .print-watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.pagedjs_page .print-watermark-grid {
+  position: absolute;
+  inset: -50%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem;
+  transform: rotate(-35deg);
+  opacity: 0.07;
+  color: var(--print-ink-muted);
+  font-family: var(--print-font-sans);
+  font-size: 8pt;
+  white-space: nowrap;
+}
+
+.pagedjs_page .pagedjs_pagebox {
+  position: relative;
+}
+
+.pagedjs_page .pagedjs_area {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hide leftover pre-pagination source once pages exist (JS removal is primary) */
+.paged-render-root:has(.pagedjs_pages) .print-root,
+.paged-render-root:has(.pagedjs_pages) .print-flow {
+  display: none !important;
+}
+
+@media print {
+  .paged-render-root .print-root,
+  .paged-render-root .print-flow {
+    display: none !important;
+  }
+}

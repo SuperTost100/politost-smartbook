@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════════
+   paged.css — Paged.js @page margin boxes
+   Running heads and footer carry Politost branding.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Default page margin ─────────────────────────────────────────── */
+
+@page {
+  size: A4;
+  margin: 2.2cm 1.8cm 2.4cm 1.8cm;
+
+  /* ── Top-left: book title ─────────────────────────────────────── */
+  @top-left {
+    content: string(book-title);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 8.5pt;
+    font-weight: 500;
+    color: #636b7f;
+    vertical-align: bottom;
+    padding-bottom: 0.3cm;
+    border-bottom: 1.5pt solid #2563eb;
+  }
+
+  /* ── Top-right: section title ─────────────────────────────────── */
+  @top-right {
+    content: string(section-title);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 8.5pt;
+    color: #636b7f;
+    text-align: right;
+    vertical-align: bottom;
+    padding-bottom: 0.3cm;
+    border-bottom: 0.5pt solid #e2e6ef;
+  }
+
+  /* ── Bottom-center: page number + brand ───────────────────────── */
+  @bottom-center {
+    content: 'Pagina ' counter(page) ' di ' counter(pages) ' · Politost Smartbook';
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 8pt;
+    color: #a0a8bb;
+    vertical-align: top;
+    padding-top: 0.3cm;
+    border-top: 0.5pt solid #e2e6ef;
+  }
+}
+
+/* ── First page: no running heads ───────────────────────────────── */
+
+@page :first {
+  margin-top: 2.8cm;
+
+  @top-left {
+    content: none;
+    border-bottom: none;
+  }
+
+  @top-right {
+    content: none;
+    border-bottom: none;
+  }
+}
+
+/* ── String-set sources for running heads ─────────────────────── */
+/*  These elements ARE inside .print-flow (the paginated content),   */
+/*  so Paged.js captures them during pagination. The old .print-meta  */
+/*  approach fails because it sits outside the paginated flowEl.       */
+
+.print-brand-book {
+  string-set: book-title content(text);
+}
+
+.print-brand-title {
+  string-set: section-title content(text);
+}
