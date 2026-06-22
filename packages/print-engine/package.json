@@ -12,7 +12,7 @@
   "dependencies": {
     "@politost/content-core": "file:../content-core",
     "katex": "^0.17.0",
-    "pagedjs": "^0.4.3"
+    "pagedjs": "file:../pagedjs-politost"
   },
   "peerDependencies": {
     "react": "^19.0.0",

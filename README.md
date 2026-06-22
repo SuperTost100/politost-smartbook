@@ -6,12 +6,10 @@ Open-source web reader for **Smartbooks** — interactive digital textbooks with
 
 ## Features
 
-- Builtin demo book (`src/content/esempio/`) + plain `.ptsb` file import (browser-local, IndexedDB)
+- Builtin books from `src/content/` + `.ptsb` file import (browser-local)
 - Sections: chapters, formulario, exercises, exams, lab (Python/MATLAB), graphs
 - Print preview (`/libro/:id/stampa/*`) with Paged.js
 - Dark mode, accessibility landmarks, cookie consent
-
-Platform features (auth, DRM, cloud catalog, audit, watermark) are **off by default** via `ReaderConfig` in `src/config/readerConfig.ts`. Encrypted `.ptsb` files show a message that the Politost platform is required.
 
 ## Quick start
 
@@ -21,8 +19,6 @@ npm run dev   # → http://localhost:5173
 ```
 
 Open `/libro/esempio` for the demo book.
-
-Optional: set `VITE_ENABLE_PLATFORM_PROXY=true` when running `npm run dev` to proxy `/api` to a local platform server (development only).
 
 ## Documentation
 
@@ -36,28 +32,11 @@ Optional: set `VITE_ENABLE_PLATFORM_PROXY=true` when running `npm run dev` to pr
 | Architecture | [docs/Architecture.md](docs/Architecture.md) |
 | Roadmap | [docs/Roadmap.md](docs/Roadmap.md) |
 
-**[GitHub Wiki](https://github.com/SuperTost100/politost-smartbook/wiki)**
+**[GitHub Wiki](https://github.com/SuperTost100/politost-smartbook/wiki)** — enable via *Wiki → Create the first page*, then sync from `docs/`.
 
-## Development
+## Development monorepo
 
-Active platform work lives in [politost-smartbook-monorepo](https://github.com/SuperTost100/politost-smartbook-monorepo). This repo is the AGPL reader distribution.
-
-## Tests
-
-```bash
-npm run test:content
-npm run test:print
-npm run test:e2e
-```
-
-## Structure
-
-```
-packages/content-core/   # Parser, renderer, validator
-packages/print-engine/   # Paged.js print iframe
-src/                     # Viewer app
-src/content/esempio/     # Demo smartbook
-```
+Active development lives in [politost-smartbook-monorepo](https://github.com/SuperTost100/politost-smartbook-monorepo).
 
 ## Related
 

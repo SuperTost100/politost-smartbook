@@ -16,6 +16,8 @@ npm run dev
 
 Open http://localhost:5173 and click **Guida di esempio** (`/libro/esempio`).
 
+First `npm install` copies Pyodide into `public/` — wait until you see `Copied pyodide assets`. That is normal; the app does not need anything else to start.
+
 ## Useful commands
 
 | Command | Purpose |
@@ -25,9 +27,6 @@ Open http://localhost:5173 and click **Guida di esempio** (`/libro/esempio`).
 | `npm run preview` | Preview production build |
 | `npm run validate:chapter` | Validate one chapter markdown file |
 | `npm run pack:ptsb` | Pack a content folder to plain `.ptsb` |
-| `npm run test:content` | Parser/math unit tests |
-| `npm run test:print` | Print e2e (Playwright) |
-| `npm run test:e2e` | Full e2e suite |
 
 ### Validate a chapter
 
@@ -54,3 +53,7 @@ npm run pack:ptsb -- --dir src/content/esempio --out esempio.ptsb
 - Write content → [Content Format](Content-Format.md)
 - Distribute files → [PTSB Import](PTSB-Import.md)
 - Deploy → [Self-Hosting](Self-Hosting.md)
+
+## Contributors
+
+Automated browser tests (`npm run test:e2e`) are for maintainers only. They download Chromium on first run via `npm run prepare:e2e` — not part of normal install.

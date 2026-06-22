@@ -5,6 +5,9 @@ import 'vanilla-cookieconsent/dist/cookieconsent.css';
 export function initCookieConsent(): void {
   CookieConsent.run({
     hideFromBots: false,
+    cookie: {
+      useLocalStorage: true,
+    },
     categories: {
       necessary: { enabled: true, readOnly: true },
       functional: { enabled: false },
