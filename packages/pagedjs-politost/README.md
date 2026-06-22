@@ -1,7 +1,8 @@
 # pagedjs (Politost vendored)
 
-Upstream [pagedjs@0.4.3](https://www.npmjs.com/package/pagedjs/v/0.4.3) with one change: **`@babel/polyfill` removed from `dependencies`**.
+Upstream [pagedjs@0.4.3](https://www.npmjs.com/package/pagedjs/v/0.4.3) **runtime-only** vendored copy:
 
-That polyfill (and `core-js@2`) is never imported by pagedjs ESM/CJS entry points — only declared in upstream `package.json`. Latest beta (`0.5.0-beta.2`) still lists it.
+- `@babel/polyfill` removed (never imported by ESM/CJS entry)
+- `devDependencies` / build toolchain removed (not needed to run print)
 
-Drop this vendored copy when upstream removes the dead dep or we migrate print-engine off pagedjs.
+Drop when upstream cleans its manifest or print-engine moves off pagedjs.
