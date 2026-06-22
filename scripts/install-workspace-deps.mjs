@@ -10,7 +10,3 @@ execSync('npm install --omit=dev --ignore-scripts', {
   cwd: path.join(packages, 'pagedjs-politost'),
   stdio: 'inherit',
 });
-execSync('npm install --ignore-scripts', {
-  cwd: path.join(packages, 'print-engine'),
-  stdio: 'inherit',
-});

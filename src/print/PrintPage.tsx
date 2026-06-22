@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { loadSmartbook } from '../lib/loader';
-import {
-  getReturnUrl,
-  PrintApp,
-  PrintFrame,
-  PrintChapter,
-  PrintFormulario,
-  PrintExercises,
-  cleanupLeakedPagedStyles,
-  triggerBrowserPrint,
-} from '@politost/print-engine';
+import { getReturnUrl } from './routes';
+import { PrintApp } from './PrintApp';
+import { PrintFrame } from './PrintFrame';
+import { PrintChapter } from './bodies/PrintChapter';
+import { PrintFormulario } from './bodies/PrintFormulario';
+import { PrintExercises } from './bodies/PrintExercises';
+import { cleanupLeakedPagedStyles, triggerBrowserPrint } from './pagedRunner';
 import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
 import { useAuth } from '../context/AuthContext';
@@ -217,7 +214,7 @@ export function PrintPage({ kind }: PrintPageProps) {
   const { bookId, chapterId } = useParams<{ bookId: string; chapterId?: string }>();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { watermark } = useReaderFeatures();
+  const { watermark: watermarkEnabled } = useReaderFeatures();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [paginating, setPaginating] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -240,9 +237,9 @@ export function PrintPage({ kind }: PrintPageProps) {
   const paginationKey = `${bookId ?? ''}:${kind}:${chapterId ?? ''}`;
 
   const watermarkLabel = useMemo(() => {
-    if (!watermark || !user) return '';
+    if (!watermarkEnabled || !user) return '';
     return buildWatermarkLabel(user.email, user.id);
-  }, [watermark, user, paginationKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [watermarkEnabled, user, paginationKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Resolve section metadata + body for the current print kind
   const printMeta = useMemo(() => {
@@ -292,7 +289,6 @@ export function PrintPage({ kind }: PrintPageProps) {
     return (
       <PrintApp
         bookTitle={data.config.title}
-        sectionTitle={printMeta.sectionTitle}
         documentTitle={printMeta.documentTitle}
       >
         {printMeta.body}

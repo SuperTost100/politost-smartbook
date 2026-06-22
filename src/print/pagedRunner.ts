@@ -9,17 +9,15 @@ import {
 
 const previewers = new WeakMap<HTMLIFrameElement, Previewer>();
 
-/** Remove leaked Paged.js styles from prior broken sessions in the parent document */
+/** Remove Paged.js styles leaked into the parent document from a prior session. */
 export function cleanupLeakedPagedStyles(): void {
   document.querySelectorAll('style[data-pagedjs-inserted-styles]').forEach((el) => el.remove());
   document.querySelectorAll('head > style').forEach((el) => {
-    if (el.textContent?.includes('--pagedjs-width')) {
-      el.remove();
-    }
+    if (el.textContent?.includes('--pagedjs-width')) el.remove();
   });
 }
 
-/** Wait for images and fonts; times out per image so lazy/off-screen assets cannot hang forever */
+/** Wait for images and fonts before pagination (per-image timeout avoids hangs). */
 export async function waitForPrintAssets(
   root: HTMLElement,
   options?: { timeoutMs?: number },
@@ -56,8 +54,7 @@ export async function waitForPrintAssets(
 export function teardownPagedPreview(iframe?: HTMLIFrameElement | null): void {
   if (!iframe) return;
 
-  const previewer = previewers.get(iframe);
-  previewer?.polisher.destroy();
+  previewers.get(iframe)?.polisher.destroy();
   previewers.delete(iframe);
 
   if (iframe.contentWindow) {
@@ -74,12 +71,6 @@ function preparePrintClone(source: HTMLElement): HTMLElement {
     img.decoding = 'sync';
   });
   return clone;
-}
-
-/** Remove pre-pagination source after Paged.js (running heads already captured via string-set) */
-function removePaginatedSource(renderRoot: HTMLElement): void {
-  renderRoot.querySelectorAll('.print-root').forEach((el) => el.remove());
-  renderRoot.querySelectorAll('.print-flow').forEach((el) => el.remove());
 }
 
 export async function runPagedPreview(
@@ -104,14 +95,14 @@ export async function runPagedPreview(
   }
 
   await previewer.preview(contentEl, stylesheets, renderRoot);
-  removePaginatedSource(renderRoot);
+
+  renderRoot.querySelectorAll('.print-root, .print-flow').forEach((el) => el.remove());
 }
 
 export function triggerBrowserPrint(iframe: HTMLIFrameElement): void {
   iframe.contentWindow?.print();
 }
 
-/** Match iframe height to paginated page stack for PDF-like preview scrolling */
 export function resizeIframeToContent(iframe: HTMLIFrameElement): void {
   const pages = iframe.contentDocument?.querySelector('.pagedjs_pages');
   if (pages instanceof HTMLElement) {
@@ -124,7 +115,6 @@ export interface IframePrintShell {
   renderRoot: HTMLElement;
 }
 
-/** Reset iframe document and return React mount point + Paged.js render root */
 export function resetIframeShell(iframe: HTMLIFrameElement): IframePrintShell {
   const doc = iframe.contentDocument;
   if (!doc) throw new Error('Iframe not ready');
@@ -148,7 +138,7 @@ export function resetIframeShell(iframe: HTMLIFrameElement): IframePrintShell {
 
 /**
  * Render React in the iframe, clone the print root, unmount React,
- * paginate only `.print-flow`, then remove the source flow from the DOM.
+ * paginate `.print-flow`, then remove the source flow from the DOM.
  */
 export async function paginateReactInIframe(
   iframe: HTMLIFrameElement,
@@ -170,18 +160,12 @@ export async function paginateReactInIframe(
   const clone = preparePrintClone(printRoot as HTMLElement);
   unmount();
 
-  const meta = clone.querySelector('.print-meta');
   const flowClone = clone.querySelector('.print-flow');
   if (!flowClone) throw new Error('Print flow not found');
 
-  renderRoot.replaceChildren();
-  if (meta) renderRoot.appendChild(meta);
-  renderRoot.appendChild(flowClone);
+  renderRoot.replaceChildren(flowClone);
 
-  const flowEl = renderRoot.querySelector('.print-flow');
-  if (!flowEl) throw new Error('Print flow not found after flatten');
-
-  await runPagedPreview(iframe, flowEl as HTMLElement, renderRoot, handlerOptions);
+  await runPagedPreview(iframe, flowClone as HTMLElement, renderRoot, handlerOptions);
   cleanupLeakedPagedStyles();
   resizeIframeToContent(iframe);
 }

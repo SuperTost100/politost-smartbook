@@ -8,9 +8,11 @@ Extract parser + renderer + chapter validator into a testable package. Zero beha
 
 **Exit:** `npm run test:content` + `npm run test:e2e` green.
 
-## Phase B — `print-engine`
+## Phase B — Print (done)
 
-Extract `src/print/` as a package. Keep `e2e/print.spec.ts` green.
+Print preview is inlined in `src/print/` with `ContentFlow variant="print"` and `packages/pagedjs-politost`. No separate `@politost/print-engine` package.
+
+**Exit:** `npm run test:print` + `npm run test:print:unit` green.
 
 ## Phase C — Reader vs platform frontend
 

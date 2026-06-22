@@ -1,11 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════════
-   document.css — Inside the Paged.js print iframe
-   Full Politost-branded printed document layout.
-   ═══════════════════════════════════════════════════════════════════ */
+/* Print document layout inside the Paged.js iframe */
 
 @import './tokens.css';
-
-/* ── Base reset ──────────────────────────────────────────────────── */
 
 html,
 body {
@@ -13,15 +8,13 @@ body {
   padding: 0;
   background: var(--print-surface);
   color: var(--print-ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
-
-/* ── Paged.js root ───────────────────────────────────────────────── */
 
 .paged-render-root {
   position: relative;
 }
-
-/* ── Content flow ────────────────────────────────────────────────── */
 
 .print-flow {
   font-family: var(--print-font-serif);
@@ -30,8 +23,7 @@ body {
   color: var(--print-ink);
 }
 
-/* ── Brand opener (document header block) ────────────────────────── */
-/*    Replaces the old plain .print-opener eyebrow + h1             */
+/* ── Brand opener ─────────────────────────────────────────────── */
 
 .print-brand-block {
   margin: 0 0 var(--print-space-2xl);
@@ -40,7 +32,6 @@ body {
   page-break-after: avoid;
 }
 
-/* Top: Politost wordmark bar */
 .print-brand-wordmark {
   display: flex;
   align-items: center;
@@ -75,21 +66,19 @@ body {
   margin-left: 0.25em;
 }
 
-/* Separator accent line */
 .print-brand-rule {
   border: none;
   margin: 0 0 var(--print-space-xl);
   height: 2px;
   background: linear-gradient(
     90deg,
-    var(--print-primary)       0%,
-    var(--print-primary-mid)  60%,
-    var(--print-border)       100%
+    var(--print-primary) 0%,
+    var(--print-primary-mid) 60%,
+    var(--print-border) 100%
   );
   border-radius: 2px;
 }
 
-/* Book title (small, above the doc title) */
 .print-brand-book {
   font-family: var(--print-font-sans);
   font-size: var(--print-size-eyebrow);
@@ -100,7 +89,6 @@ body {
   margin: 0 0 var(--print-space-sm);
 }
 
-/* Main document title */
 .print-brand-title {
   font-family: var(--print-font-serif);
   font-size: var(--print-size-title);
@@ -111,7 +99,7 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* ── Paged.js split fixes ────────────────────────────────────────── */
+/* ── Paged.js split fixes ─────────────────────────────────────── */
 
 [data-split-from] {
   padding-top: 0 !important;
@@ -123,7 +111,7 @@ body {
   margin-bottom: 0 !important;
 }
 
-/* ── Print chunks (Paged.js break boundaries) ───────────────────── */
+/* ── Print chunks ─────────────────────────────────────────────── */
 
 .print-flow .print-chunk {
   break-inside: auto;
@@ -136,7 +124,7 @@ body {
   page-break-inside: avoid;
 }
 
-/* ── Chapter paragraphs ──────────────────────────────────────────── */
+/* ── Chapters ─────────────────────────────────────────────────── */
 
 .print-flow .paragraph-section {
   break-inside: auto;
@@ -166,7 +154,7 @@ body {
   margin-right: 0.35em;
 }
 
-/* ── Content flow ────────────────────────────────────────────────── */
+/* ── Content flow ─────────────────────────────────────────────── */
 
 .print-flow .content-flow {
   font-size: var(--print-size-body);
@@ -203,7 +191,7 @@ body {
   margin-bottom: 0.45em;
 }
 
-/* ── Formula references ──────────────────────────────────────────── */
+/* ── Formulas ─────────────────────────────────────────────────── */
 
 .print-flow .formula-ref {
   color: var(--print-primary);
@@ -215,8 +203,6 @@ body {
   color: var(--print-ink-faint);
   font-style: italic;
 }
-
-/* ── Numbered formulas ───────────────────────────────────────────── */
 
 .print-flow .numbered-formula {
   margin: 1.1rem 0;
@@ -245,7 +231,7 @@ body {
   text-align: center;
 }
 
-/* ── KaTeX ───────────────────────────────────────────────────────── */
+/* ── KaTeX (WebKit + Gecko need MathML hidden after Paged.js clone) */
 
 .print-flow .katex,
 .print-flow .katex-block,
@@ -262,11 +248,11 @@ body {
   color: inherit;
 }
 
-/* Paged.js can drop KaTeX clip rules — hide MathML so only HTML render shows */
 .print-flow .katex-mathml,
 .pagedjs_page .katex-mathml {
   border: 0 !important;
   clip: rect(1px, 1px, 1px, 1px) !important;
+  -webkit-clip-path: inset(50%) !important;
   clip-path: inset(50%) !important;
   height: 1px !important;
   overflow: hidden !important;
@@ -276,7 +262,7 @@ body {
   white-space: nowrap !important;
 }
 
-/* ── Figures ─────────────────────────────────────────────────────── */
+/* ── Figures ──────────────────────────────────────────────────── */
 
 .print-flow .smartbook-figure {
   break-inside: avoid;
@@ -311,7 +297,7 @@ body {
   font-size: var(--print-size-small);
 }
 
-/* ── Internal cross-refs ─────────────────────────────────────────── */
+/* ── Cross-refs ───────────────────────────────────────────────── */
 
 .print-flow .smartbook-ref {
   color: var(--print-accent);
@@ -326,7 +312,7 @@ body {
   color: var(--print-ink-muted);
 }
 
-/* ── Formulario ──────────────────────────────────────────────────── */
+/* ── Formulario ───────────────────────────────────────────────── */
 
 .print-flow .formulario-chapter {
   break-inside: auto;
@@ -377,7 +363,7 @@ body {
   margin-left: 0.35em;
 }
 
-/* ── Exercises ───────────────────────────────────────────────────── */
+/* ── Exercises ────────────────────────────────────────────────── */
 
 .print-flow .exercise-list {
   margin: 0;
@@ -471,7 +457,7 @@ body {
   margin: var(--print-space-lg) 0;
 }
 
-/* ── Watermark (injected per page by printHandler) ───────────────── */
+/* ── Watermark ────────────────────────────────────────────────── */
 
 .pagedjs_page .print-watermark {
   position: absolute;
@@ -504,7 +490,6 @@ body {
   z-index: 1;
 }
 
-/* Hide leftover pre-pagination source once pages exist (JS removal is primary) */
 .paged-render-root:has(.pagedjs_pages) .print-root,
 .paged-render-root:has(.pagedjs_pages) .print-flow {
   display: none !important;

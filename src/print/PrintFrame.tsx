@@ -5,12 +5,13 @@ import {
   paginateReactInIframe,
   teardownPagedPreview,
 } from './pagedRunner';
+import type { PrintHandlerOptions } from './printHandler';
 
 interface PrintFrameProps {
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   paginationKey: string;
   content: ReactElement;
-  handlerOptions?: { watermarkLabel?: string; bookId?: string };
+  handlerOptions?: PrintHandlerOptions;
   onPaginatingChange?: (paginating: boolean) => void;
   onError?: (message: string | null) => void;
 }
@@ -57,9 +58,7 @@ export function PrintFrame({
           return {
             unmount: () => {
               root.unmount();
-              if (iframeRootRef.current === root) {
-                iframeRootRef.current = null;
-              }
+              if (iframeRootRef.current === root) iframeRootRef.current = null;
             },
           };
         }, handlerOptions);

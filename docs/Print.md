@@ -28,4 +28,4 @@ npm run test:print    # 5 Playwright tests
 npm run test:print:unit
 ```
 
-Print CSS contract will be documented in the extracted `@politost/print-engine` package during the rewrite.
+Print CSS lives in `src/print/styles/` (tokens, document layout, `@page` rules).

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { dedupePagedChunks } from '../src/dedupePages.ts';
+import { dedupePagedChunks } from './dedupePages.ts';
 
 function page(html: string): HTMLElement {
   const dom = new JSDOM(`<div class="pagedjs_pages">${html}</div>`);

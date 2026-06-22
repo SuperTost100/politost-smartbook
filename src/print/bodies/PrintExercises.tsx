@@ -1,6 +1,6 @@
-import type { Exercise } from '@politost/content-core';
-import { preprocessContent } from '@politost/content-core';
-import { PrintContentFlow } from '../PrintContentFlow';
+import type { Exercise } from '../../types/smartbook';
+import { preprocessContent } from '../../lib/parser';
+import { ContentFlow } from '../../components/ContentFlow';
 
 interface PrintExercisesProps {
   exercises: Exercise[];
@@ -21,7 +21,7 @@ function PrintReveal({
   return (
     <div className={`print-reveal-block print-reveal-block--${kind}`}>
       <div className="print-reveal-header">{label}</div>
-      <PrintContentFlow content={content} resolveAsset={resolveAsset} />
+      <ContentFlow variant="print" content={content} resolveAsset={resolveAsset} />
     </div>
   );
 }
@@ -44,7 +44,8 @@ export function PrintExercises({ exercises, resolveAsset }: PrintExercisesProps)
           </header>
 
           <div className="exercise-question">
-            <PrintContentFlow
+            <ContentFlow
+              variant="print"
               content={preprocessContent(ex.question)}
               resolveAsset={resolveAsset}
             />

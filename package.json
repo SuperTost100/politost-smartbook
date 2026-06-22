@@ -8,22 +8,22 @@
     "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-headers.mjs",
     "build": "tsc -b && vite build",
     "postinstall": "node scripts/install-workspace-deps.mjs && node scripts/copy-pyodide.mjs",
+    "prepare:e2e": "playwright install chromium",
     "lint": "eslint .",
     "preview": "vite preview",
     "validate:chapter": "tsx scripts/validate-chapter.ts",
     "pack:ptsb": "tsx scripts/pack-ptsb.ts",
     "test:security": "tsx --test src/lib/sanitizeHtml.test.ts",
     "test:content": "npm run test --prefix packages/content-core && tsx --test src/lib/safeMathExpr.test.ts",
-    "test:print:unit": "npm run test --prefix packages/print-engine",
+    "test:print:unit": "tsx --test src/print/dedupePages.test.ts",
     "test:print": "npm run prepare:e2e && playwright test e2e/print.spec.ts",
     "test:e2e": "npm run prepare:e2e && playwright test",
-    "test:e2e:ui": "npm run prepare:e2e && playwright test --ui",
-    "prepare:e2e": "playwright install chromium"
+    "test:e2e:ui": "npm run prepare:e2e && playwright test --ui"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@politost/content-core": "file:packages/content-core",
-    "@politost/print-engine": "file:packages/print-engine",
+    "pagedjs": "file:packages/pagedjs-politost",
     "@tanstack/react-query": "^5.101.0",
     "dompurify": "^3.4.11",
     "fflate": "^0.8.3",
@@ -56,13 +56,13 @@
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
   },
+  "overrides": {
+    "dompurify": "^3.4.11"
+  },
   "allowScripts": {
     "es5-ext@0.10.64": true,
     "esbuild@0.28.1": true,
     "fsevents@2.3.2": true,
     "fsevents@2.3.3": true
-  },
-  "overrides": {
-    "dompurify": "^3.4.11"
   }
 }

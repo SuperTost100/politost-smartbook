@@ -4,14 +4,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
-const enablePlatformProxy = process.env.VITE_ENABLE_PLATFORM_PROXY === 'true';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
       '@politost/content-core': path.resolve(rootDir, 'packages/content-core/src/index.ts'),
-      '@politost/print-engine': path.resolve(rootDir, 'packages/print-engine/src/index.ts'),
     },
     dedupe: ['react', 'react-dom'],
   },
@@ -38,15 +36,14 @@ export default defineConfig({
       },
     },
   },
-  server: enablePlatformProxy
-    ? {
-        proxy: {
-          '/api': 'http://localhost:8001',
-          '/users': 'http://localhost:8001',
-          '/auth/jwt': 'http://localhost:8001',
-          '/auth/register': 'http://localhost:8001',
-          '/auth/google': 'http://localhost:8001',
-        },
-      }
-    : undefined,
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8001',
+      '/users': 'http://localhost:8001',
+      // API auth only — do not proxy SPA routes (/auth, /auth/callback, …)
+      '/auth/jwt': 'http://localhost:8001',
+      '/auth/register': 'http://localhost:8001',
+      '/auth/google': 'http://localhost:8001',
+    },
+  },
 });

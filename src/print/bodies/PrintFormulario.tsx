@@ -1,5 +1,6 @@
-import type { Chapter } from '@politost/content-core';
-import { sanitizeHtml, renderFormulaLatex } from '@politost/content-core';
+import type { Chapter } from '../../types/smartbook';
+import { renderFormulaLatex } from '../../lib/formulaRender';
+import { sanitizeHtml } from '../../lib/sanitizeHtml';
 
 interface PrintFormularioProps {
   chapters: Chapter[];

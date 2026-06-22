@@ -1,0 +1,47 @@
+/* Print tokens — aligned with reader global.css light theme */
+
+:root {
+  --print-font-serif: Georgia, 'Times New Roman', serif;
+  --print-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --print-size-body: 11pt;
+  --print-size-small: 9pt;
+  --print-size-caption: 9pt;
+  --print-size-heading: 12pt;
+  --print-size-title: 22pt;
+  --print-size-eyebrow: 8pt;
+  --print-size-brand: 14pt;
+
+  --print-leading-body: 1.65;
+  --print-leading-tight: 1.3;
+
+  --print-ink: #1a1d2e;
+  --print-ink-muted: #636b7f;
+  --print-ink-faint: #a0a8bb;
+
+  --print-primary: #2563eb;
+  --print-primary-light: rgba(37, 99, 235, 0.08);
+  --print-primary-mid: #bfdbfe;
+  --print-accent: #e85d26;
+
+  --print-surface: #ffffff;
+  --print-surface-dim: #f8f9fc;
+  --print-border: #e2e6ef;
+  --print-border-strong: #c5cde0;
+
+  --print-hint-bg: #ecfdf5;
+  --print-hint-border: #a7f3d0;
+  --print-hint-ink: #065f46;
+
+  --print-solution-bg: #fffbeb;
+  --print-solution-border: #fcd34d;
+  --print-solution-ink: #92400e;
+
+  --print-radius: 6px;
+  --print-space-xs: 0.25rem;
+  --print-space-sm: 0.5rem;
+  --print-space-md: 0.75rem;
+  --print-space-lg: 1.25rem;
+  --print-space-xl: 1.75rem;
+  --print-space-2xl: 2.5rem;
+}

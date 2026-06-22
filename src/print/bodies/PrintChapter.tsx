@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import type { Chapter } from '@politost/content-core';
-import { buildFormulaIndex, preprocessContent } from '@politost/content-core';
-import { PrintContentFlow } from '../PrintContentFlow';
+import type { Chapter } from '../../types/smartbook';
+import { buildFormulaIndex, preprocessContent } from '../../lib/parser';
+import { ContentFlow } from '../../components/ContentFlow';
 
 interface PrintChapterProps {
   chapter: Chapter;
@@ -20,7 +20,8 @@ export function PrintChapter({ chapter, allChapters, resolveAsset }: PrintChapte
             <span className="para-num">{para.id}</span> {para.title}
           </h3>
           <div className="paragraph-body">
-            <PrintContentFlow
+            <ContentFlow
+              variant="print"
               chunkPrefix={para.id}
               content={preprocessContent(para.content)}
               formulaIndex={formulaIndex}

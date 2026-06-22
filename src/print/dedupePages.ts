@@ -1,16 +1,14 @@
 /**
  * Paged.js can re-render earlier chunks when repeated text confuses the break
- * token (see pagedjs/pagedjs#208). Remove leading duplicate print-chunks on each
- * page when their data-chunk-id was already fully laid out on a prior page.
+ * token (pagedjs/pagedjs#208). Drop leading duplicate print-chunks on each page
+ * when their data-chunk-id was already laid out on a prior page.
  */
 export function dedupePagedChunks(pagesRoot: HTMLElement): void {
   const completed = new Set<string>();
 
   for (const page of pagesRoot.querySelectorAll('.pagedjs_page')) {
     const area = page.querySelector('.pagedjs_area');
-    if (!area) continue;
-
-    dedupeArea(area, completed);
+    if (area) dedupeArea(area, completed);
   }
 }
 
@@ -31,8 +29,7 @@ function dedupeArea(area: Element, completed: Set<string>): void {
       while (i < chunks.length) {
         const current = chunks[i] as HTMLElement;
         const currentId = current.dataset.chunkId;
-        const currentContinuation = isSplitContinuation(current);
-        if (currentContinuation) break;
+        if (isSplitContinuation(current)) break;
         if (currentId && !completed.has(currentId)) break;
         current.remove();
         i++;
@@ -41,9 +38,7 @@ function dedupeArea(area: Element, completed: Set<string>): void {
       continue;
     }
 
-    if (id && !continuation) {
-      completed.add(id);
-    }
+    if (id && !continuation) completed.add(id);
     i++;
   }
 
@@ -60,8 +55,9 @@ function dedupeParagraphTitles(area: Element, completed: Set<string>): void {
       const section = title.closest('.paragraph-section');
       if (section) {
         const sectionChunks = section.querySelectorAll('.print-chunk');
-        const allDuplicate = sectionChunks.length > 0
-          && [...sectionChunks].every((c) => {
+        const allDuplicate =
+          sectionChunks.length > 0 &&
+          [...sectionChunks].every((c) => {
             const id = (c as HTMLElement).dataset.chunkId;
             return !id || completed.has(id);
           });
@@ -74,8 +70,6 @@ function dedupeParagraphTitles(area: Element, completed: Set<string>): void {
       continue;
     }
 
-    if (!continuation) {
-      completed.add(`title:${key}`);
-    }
+    if (!continuation) completed.add(`title:${key}`);
   }
 }

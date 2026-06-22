@@ -39,11 +39,11 @@ Formulario aggregates numbered formulas from all chapters automatically.
 
 ## Rewrite boundary (target)
 
-| Package | Contents |
-|---------|----------|
+| Package / module | Contents |
+|------------------|----------|
 | `@politost/content-core` | parser, render, validate |
-| `@politost/print-engine` | `src/print/` |
-| `@politost/reader` | SPA shell, catalog, routes |
+| `src/print/` | Paged.js iframe preview (inlined in reader) |
+| `pagedjs-politost` | vendored pagination runtime |
 | Politost platform (private) | auth, licenses, cloud, keys |
 
 Reader accepts `ReaderConfig` for optional platform features:
