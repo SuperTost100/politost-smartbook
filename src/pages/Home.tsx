@@ -1,20 +1,20 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
-import { getCatalog, isBuiltinBook, registerUploadedBook, unregisterUploadedBook } from '../lib/loader';
+import { getCatalog, initUploadedBooks, isBuiltinBook, registerUploadedBook, unregisterUploadedBook } from '../lib/loader';
+import { whenCloudBooksReady } from '../lib/cloudLoader';
 import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
 import { subjectAccentClass } from '../lib/subjectColor';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
-
-const PLATFORM_REQUIRED_MSG =
-  'Questo file è protetto con DRM. Aprirlo richiede la piattaforma Politost (account e licenza).';
+import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 
 export function Home() {
-  const { user } = useAuth();
-  const { drm } = useReaderFeatures();
+  const { user, isLoading: authLoading } = useAuth();
+  const { auth: authEnabled } = useReaderFeatures();
+  const isMobile = useMediaQuery(MOBILE_LAYOUT_QUERY);
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -26,6 +26,32 @@ export function Home() {
     setCatalog(getCatalog());
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    void whenCloudBooksReady().then(
+      () => {
+        if (!cancelled) refreshCatalog();
+      },
+      () => {
+        if (!cancelled) refreshCatalog();
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshCatalog]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    let cancelled = false;
+    void initUploadedBooks(user?.id ?? null).then(() => {
+      if (!cancelled) refreshCatalog();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.id, refreshCatalog]);
+
   async function processFile(file: File) {
     if (!file.name.toLowerCase().endsWith('.ptsb')) {
       setUploadError('Seleziona un file .ptsb');
@@ -36,12 +62,12 @@ export function Home() {
     setUploadStatus('Lettura file…');
     try {
       const buf = await file.arrayBuffer();
-      if (isEncryptedPtsb(buf) && !drm) {
-        setUploadError(PLATFORM_REQUIRED_MSG);
-        return;
-      }
       if (isEncryptedPtsb(buf) && !user) {
-        setUploadError('Questo libro è protetto. Accedi con il tuo account per aprirlo.');
+        setUploadError(
+          authEnabled
+            ? 'Questo libro è protetto. Accedi con il tuo account per aprirlo.'
+            : 'Questo libro è protetto e richiede la piattaforma Politost.',
+        );
         return;
       }
       setUploadStatus('Validazione…');
@@ -50,7 +76,7 @@ export function Home() {
         setUploadError(`Lo smartbook "${bundle.config.id}" è già incluso nella piattaforma.`);
         return;
       }
-      if (bundle.config.access === 'licensed' && drm && !user) {
+      if (bundle.config.access === 'licensed' && !user && authEnabled) {
         setUploadError('Accedi per caricare smartbook con licenza.');
         return;
       }
@@ -99,6 +125,9 @@ export function Home() {
           <div className="book-grid">
             {catalog.map((book) => (
               <div key={book.id} className="book-card-wrap">
+                {book.source === 'cloud' && (
+                  <span className="book-card-badge-corner">Cloud</span>
+                )}
                 {book.source === 'uploaded' && (
                   <span className="book-card-badge-corner">Importato</span>
                 )}
@@ -106,7 +135,7 @@ export function Home() {
                   <div className={`book-card-accent ${subjectAccentClass(book.subject)}`} aria-hidden />
                   <span className="book-card-subject">{book.subject}</span>
                   <h3>{book.title}</h3>
-                  {book.access === 'licensed' && drm && (
+                  {book.access === 'licensed' && (
                     <div className="book-card-badges">
                       <span className="badge badge-licensed">Richiede accesso</span>
                     </div>
@@ -131,14 +160,23 @@ export function Home() {
             </summary>
             <div className="home-import-body">
               <p className="home-import-hint">
-                Seleziona o trascina il file che ti è stato fornito (formato <code>.ptsb</code>).
-                Il libro resterà disponibile su questo dispositivo.
+                {isMobile ? (
+                  <>
+                    Scegli il file <code>.ptsb</code> ricevuto dal docente o dall&apos;editore.
+                    Il libro resterà disponibile su questo dispositivo.
+                  </>
+                ) : (
+                  <>
+                    Seleziona o trascina il file che ti è stato fornito (formato <code>.ptsb</code>).
+                    Il libro resterà disponibile su questo dispositivo.
+                  </>
+                )}
               </p>
               <div
-                className={`upload-dropzone${dragOver ? ' drag-over' : ''}`}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={onDrop}
+                className={`upload-dropzone${dragOver ? ' drag-over' : ''}${isMobile ? ' upload-dropzone--mobile' : ''}`}
+                onDragOver={isMobile ? undefined : (e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={isMobile ? undefined : () => setDragOver(false)}
+                onDrop={isMobile ? undefined : onDrop}
                 onClick={() => inputRef.current?.click()}
                 role="button"
                 aria-label="Carica un file smartbook in formato ptsb"
@@ -156,7 +194,7 @@ export function Home() {
                     e.target.value = '';
                   }}
                 />
-                {uploading ? 'Caricamento in corso…' : 'Clicca o trascina il file qui'}
+                {uploading ? 'Caricamento in corso…' : isMobile ? 'Scegli file .ptsb' : 'Clicca o trascina il file qui'}
               </div>
               {uploadStatus && <p className="upload-success" aria-live="polite">{uploadStatus}</p>}
               {uploadError && <p className="upload-error" role="alert">{uploadError}</p>}

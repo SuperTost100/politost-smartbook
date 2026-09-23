@@ -1,4 +1,10 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? '';
+import { getReaderConfig } from '../config/readerConfig';
+import type { GraficoConfig, IdeSnippet, SectionKey } from '../types/smartbook';
+import { withSafeNext } from './safeNext';
+
+function apiBase(): string {
+  return getReaderConfig().apiBaseUrl ?? import.meta.env.VITE_API_URL ?? '';
+}
 
 type FetchInit = RequestInit & { json?: unknown };
 
@@ -7,7 +13,7 @@ async function apiFetch<T>(path: string, init: FetchInit = {}): Promise<T> {
   if (init.json !== undefined) {
     headers['Content-Type'] = 'application/json';
   }
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${apiBase()}${path}`, {
     ...init,
     headers,
     credentials: 'include',
@@ -69,8 +75,19 @@ export function recordConsent(tos_version: string, privacy_version: string): Pro
   return apiFetch('/api/consent', { method: 'POST', json: { tos_version, privacy_version } });
 }
 
-export function googleLoginUrl(): string {
-  return `${API_BASE}/auth/google/authorize`;
+export function googleLoginUrl(nextPath?: string | null): string {
+  return withSafeNext(`${apiBase()}/auth/google/authorize`, nextPath);
+}
+
+export interface KeyRedeemResult {
+  smartbook_id: string;
+  key_type: string;
+  license_granted: boolean;
+  message: string;
+}
+
+export function redeemActivationKey(code: string): Promise<KeyRedeemResult> {
+  return apiFetch('/api/keys/redeem', { method: 'POST', json: { code } });
 }
 
 export function fetchContentKey(
@@ -92,4 +109,39 @@ export function fetchBookAccess(smartbookId: string): Promise<{
   authenticated: boolean;
 }> {
   return apiFetch(`/api/books/${smartbookId}/access`);
+}
+
+export interface CatalogBook {
+  id: string;
+  title: string;
+  subject: string;
+  access: string;
+  delivery: 'cloud' | 'ptsb';
+  chapters?: Array<{ id: string; number: number; title: string; file: string; printable?: boolean }>;
+  sections?: Partial<Record<SectionKey, { enabled: boolean; label?: string }>>;
+  esercizi?: string;
+  esami?: string;
+  ide?: IdeSnippet[];
+  grafici?: GraficoConfig[];
+  assets?: Record<string, string>;
+}
+
+export function fetchCatalog(): Promise<{ books: CatalogBook[] }> {
+  return apiFetch('/api/catalog');
+}
+
+export function fetchBookManifest(smartbookId: string): Promise<Record<string, unknown>> {
+  return apiFetch(`/api/books/${smartbookId}/manifest`);
+}
+
+export function fetchChapterMarkdown(
+  smartbookId: string,
+  chapterId: string,
+): Promise<{
+  smartbook_id: string;
+  chapter_id: string;
+  markdown: string;
+  assets?: Record<string, string>;
+}> {
+  return apiFetch(`/api/books/${smartbookId}/chapters/${chapterId}`);
 }

@@ -6,7 +6,7 @@ test.describe('Home', () => {
     await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
 
     await expect(page.getByRole('link', { name: /Guida di esempio/ })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Guida di esempio/ })).toHaveCount(1);
+    await expect(page.getByRole('link', { name: /Chimica Organica/i })).toBeVisible();
   });
 
   test('shows ptsb upload area', async ({ page }) => {

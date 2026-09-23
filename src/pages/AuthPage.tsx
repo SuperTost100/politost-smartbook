@@ -5,6 +5,7 @@ import versions from '../legal/versions.json';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
 import { Icon } from '../components/Icon';
+import { isSafeNextPath } from '../lib/safeNext';
 
 export function AuthPage() {
   const { user, login, register, loginWithGoogle, logout } = useAuth();
@@ -32,7 +33,7 @@ export function AuthPage() {
       } else {
         await login(email, password);
       }
-      navigate(nextPath && nextPath.startsWith('/') ? nextPath : '/');
+      navigate(isSafeNextPath(nextPath) ? nextPath : '/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore di autenticazione');
     } finally {
@@ -109,7 +110,7 @@ export function AuthPage() {
             role="tabpanel"
             aria-labelledby={mode === 'login' ? 'auth-tab-login' : 'auth-tab-register'}
           >
-          <button type="button" className="btn-google" onClick={loginWithGoogle}>
+          <button type="button" className="btn-google" onClick={() => loginWithGoogle(nextPath)}>
             <Icon name="google" size={20} />
             Continua con Google
           </button>

@@ -1,6 +1,9 @@
-import { lazy, Suspense, useEffect, useCallback, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
-import { loadSmartbook } from '../lib/loader';
+import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
+import { chapterFromCloudMarkdown, cloudChapterAssets, loadCloudChapterMarkdown } from '../lib/cloudLoader';
+import { resolveBookAsset } from '../lib/cloudAssets';
+import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
@@ -10,7 +13,7 @@ import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
-import type { SectionKey } from '../types/smartbook';
+import type { SectionKey, Chapter } from '../types/smartbook';
 import type { SmartbookData } from '../lib/loader';
 
 const IdeView = lazy(() => import('../components/IdeView').then((m) => ({ default: m.IdeView })));
@@ -40,11 +43,9 @@ function useScrollToHash() {
   }, [hash]);
 }
 
-function useBookData(): SmartbookData {
+function useBookData(): SmartbookData | null {
   const { bookId } = useParams<{ bookId: string }>();
-  const data = loadSmartbook(bookId ?? '');
-  if (!data) throw new Error('Smartbook non trovato');
-  return data;
+  return loadSmartbook(bookId ?? '');
 }
 
 function BookShell({
@@ -57,6 +58,7 @@ function BookShell({
   const { bookId, chapterId } = useParams<{ bookId: string; chapterId?: string }>();
   const data = useBookData();
   useScrollToHash();
+  if (!data) return <BookNotFound />;
 
   return (
     <Layout
@@ -73,31 +75,100 @@ function BookShell({
 
 function ChapterContent() {
   const { chapterId, bookId } = useParams<{ chapterId: string; bookId: string }>();
-  const { chapters, config, assets } = useBookData();
+  const data = useBookData();
   const { user } = useAuth();
   const { audit } = useReaderFeatures();
-  const chapter = chapters.find((c) => c.meta.id === chapterId);
-  const resolveAsset = useCallback((src: string) => assets[src], [assets]);
+  const cloud = isCloudBook(bookId ?? '');
+  const [cloudChapter, setCloudChapter] = useState<Chapter | null>(null);
+  const [cloudAssets, setCloudAssets] = useState<Record<string, string>>({});
+  const [cloudError, setCloudError] = useState<string | null>(null);
+  const [cloudLoading, setCloudLoading] = useState(cloud);
+  const assets = data?.assets ?? {};
+  const chapterMeta = data?.config.chapters;
+  const resolveAsset = useCallback(
+    (src: string) => resolveBookAsset(src, { ...assets, ...cloudAssets }, cloud ? bookId : undefined),
+    [assets, cloudAssets, cloud, bookId],
+  );
 
   useEffect(() => {
-    if (audit && user && bookId && config.access === 'licensed' && chapterId) {
+    if (!cloud || !bookId || !chapterId || !chapterMeta) return;
+    let cancelled = false;
+    setCloudLoading(true);
+    setCloudError(null);
+    const meta = chapterMeta.find((c) => c.id === chapterId);
+    loadCloudChapterMarkdown(bookId, chapterId)
+      .then((raw) => {
+        if (cancelled || !meta) return;
+        setCloudChapter(chapterFromCloudMarkdown(raw, meta));
+        setCloudAssets(cloudChapterAssets(bookId));
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setCloudError(err instanceof Error ? err.message : 'Impossibile caricare il capitolo');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCloudLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookId, chapterId, cloud, chapterMeta]);
+
+  const staticChapter = data?.chapters.find((c) => c.meta.id === chapterId);
+  const chapter = cloud ? cloudChapter : staticChapter;
+
+  useEffect(() => {
+    if (audit && user && bookId && data?.config.access === 'licensed' && chapterId && chapter) {
       void auditChapterOpen(bookId, chapterId).catch(() => undefined);
     }
-  }, [audit, user, bookId, chapterId, config.access]);
+  }, [audit, user, bookId, chapterId, data?.config.access, chapter]);
 
+  if (!data) return <BookNotFound />;
+  if (cloudLoading) return <p className="empty-note">Caricamento capitolo…</p>;
+  if (cloudError) return <p className="empty-note" role="alert">{cloudError}</p>;
   if (!chapter) return <p className="empty-note">Capitolo non trovato.</p>;
 
-  return <SmartbookView bookId={bookId!} chapter={chapter} allChapters={chapters} resolveAsset={resolveAsset} />;
+  const allChapters = cloud ? withLoadedChapter(data.chapters, chapter) : data.chapters;
+  return (
+    <SmartbookView
+      key={chapter.meta.id}
+      bookId={bookId!}
+      chapter={chapter}
+      allChapters={allChapters}
+      resolveAsset={resolveAsset}
+    />
+  );
 }
 
 function FirstChapterRedirect() {
   const { bookId } = useParams<{ bookId: string }>();
-  const { config } = useBookData();
-  return <Navigate to={`/libro/${bookId}/capitolo/${config.chapters[0]?.id}`} replace />;
+  const data = useBookData();
+  if (!data || !bookId) return <BookNotFound />;
+  const target = firstChapterPath(bookId, data.config.chapters);
+  if (!target) return <p className="empty-note">Questo smartbook non ha capitoli.</p>;
+  return <Navigate to={target} replace />;
 }
 
 function BookRoutes() {
   const { bookId } = useParams<{ bookId: string }>();
+  const [contentReady, setContentReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setContentReady(false);
+    void ensureBookContent(bookId ?? '')
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setContentReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bookId]);
+
+  if (!contentReady) return <p className="empty-note">Caricamento libro…</p>;
+
   const data = loadSmartbook(bookId ?? '');
 
   if (!data) return <BookNotFound />;
@@ -177,14 +248,21 @@ export function SmartbookRouter() {
 
 function FormularioRoute() {
   const { bookId } = useParams<{ bookId: string }>();
-  const { chapters } = useBookData();
-  return <FormularioView bookId={bookId!} chapters={chapters} />;
+  const data = useBookData();
+  if (!data || !bookId) return <BookNotFound />;
+  return <FormularioView bookId={bookId} chapters={data.chapters} />;
 }
 
 function EserciziRoute() {
   const { bookId } = useParams<{ bookId: string }>();
-  const { esercizi, config, assets } = useBookData();
-  const resolveAsset = useCallback((src: string) => assets[src], [assets]);
+  const data = useBookData();
+  const cloud = isCloudBook(bookId ?? '');
+  const resolveAsset = useCallback(
+    (src: string) => resolveBookAsset(src, data?.assets ?? {}, cloud ? bookId : undefined),
+    [data?.assets, cloud, bookId],
+  );
+  if (!data || !bookId) return <BookNotFound />;
+  const { esercizi, config } = data;
   return (
     <EserciziView
       bookId={bookId!}
@@ -198,8 +276,14 @@ function EserciziRoute() {
 
 function EsamiRoute() {
   const { bookId } = useParams<{ bookId: string }>();
-  const { esami, config, assets } = useBookData();
-  const resolveAsset = useCallback((src: string) => assets[src], [assets]);
+  const data = useBookData();
+  const cloud = isCloudBook(bookId ?? '');
+  const resolveAsset = useCallback(
+    (src: string) => resolveBookAsset(src, data?.assets ?? {}, cloud ? bookId : undefined),
+    [data?.assets, cloud, bookId],
+  );
+  if (!data || !bookId) return <BookNotFound />;
+  const { esami, config } = data;
   return (
     <EserciziView
       bookId={bookId!}
@@ -212,7 +296,9 @@ function EsamiRoute() {
 }
 
 function IdeRoute() {
-  const { ide } = useBookData();
+  const data = useBookData();
+  if (!data) return <BookNotFound />;
+  const { ide } = data;
   return (
     <Suspense fallback={<SectionLoading>Caricamento laboratorio…</SectionLoading>}>
       <IdeView snippets={ide} />
@@ -221,7 +307,9 @@ function IdeRoute() {
 }
 
 function GraficiRoute() {
-  const { grafici } = useBookData();
+  const data = useBookData();
+  if (!data) return <BookNotFound />;
+  const { grafici } = data;
   return (
     <Suspense fallback={<SectionLoading>Caricamento grafici…</SectionLoading>}>
       <GraficiView grafici={grafici} />

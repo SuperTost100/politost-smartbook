@@ -75,11 +75,12 @@ function InlineFlow({
             );
             return seg.bold ? <strong key={i}>{link}</strong> : <span key={i}>{link}</span>;
           }
-          return (
-            <a key={i} href="#" className="smartbook-ref" data-ref={seg.ref}>
+          const link = (
+            <button type="button" className="smartbook-ref" data-ref={seg.ref}>
               {seg.label}
-            </a>
+            </button>
           );
+          return seg.bold ? <strong key={i}>{link}</strong> : <span key={i}>{link}</span>;
         }
 
         return null;
@@ -133,8 +134,8 @@ export function ContentFlow({
       );
     }
 
-    if (block.type === 'formula' && formulaIndex) {
-      const f = formulaIndex.get(block.formulaId);
+    if (block.type === 'formula') {
+      const f = formulaIndex?.get(block.formulaId);
       if (f) {
         return wrap(
           <div
@@ -145,6 +146,11 @@ export function ContentFlow({
           />,
         );
       }
+      return wrap(
+        <p className="formula-missing" data-formula-id={block.formulaId}>
+          Formula ({block.formulaId}) non disponibile
+        </p>,
+      );
     }
 
     if (block.type === 'image') {

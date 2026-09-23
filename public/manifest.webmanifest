@@ -1,0 +1,29 @@
+{
+  "name": "Politost Smartbook",
+  "short_name": "Smartbook",
+  "description": "Libri di testo interattivi con formulario, esercizi e laboratorio.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f0f2f7",
+  "theme_color": "#2563eb",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

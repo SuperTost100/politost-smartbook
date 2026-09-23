@@ -10,23 +10,29 @@ export interface ReaderConfig {
 }
 
 export const defaultReaderConfig: ReaderConfig = {
-  features: {
-    auth: false,
-    drm: false,
-    cloud: false,
-    audit: false,
-    watermark: false,
-  },
+  features: { auth: false, drm: false, cloud: false, audit: false, watermark: false },
 };
 
-export type ReaderFeatures = Required<NonNullable<ReaderConfig['features']>>;
+/** Monorepo platform shell — auth + DRM enabled. OSS reader uses defaultReaderConfig. */
+export const platformReaderConfig: ReaderConfig = {
+  apiBaseUrl: import.meta.env?.VITE_API_URL ?? '',
+  features: { auth: true, drm: true, cloud: true, audit: true, watermark: true },
+};
 
-export function resolveFeatures(config: ReaderConfig): ReaderFeatures {
+let activeConfig: ReaderConfig = { ...defaultReaderConfig, features: { ...defaultReaderConfig.features } };
+
+function mergeConfig(config: ReaderConfig): ReaderConfig {
   return {
-    auth: config.features?.auth ?? false,
-    drm: config.features?.drm ?? false,
-    cloud: config.features?.cloud ?? false,
-    audit: config.features?.audit ?? false,
-    watermark: config.features?.watermark ?? false,
+    ...defaultReaderConfig,
+    ...config,
+    features: { ...defaultReaderConfig.features, ...config.features },
   };
+}
+
+export function setReaderConfig(config: ReaderConfig): void {
+  activeConfig = mergeConfig(config);
+}
+
+export function getReaderConfig(): ReaderConfig {
+  return activeConfig;
 }

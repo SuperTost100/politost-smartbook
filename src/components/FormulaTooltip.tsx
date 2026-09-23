@@ -20,7 +20,9 @@ function renderFormulaLatex(latex: string): string {
 }
 
 export function FormulaTooltip({ formulaId, formulas, children }: FormulaTooltipProps) {
-  const [visible, setVisible] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [focus, setFocus] = useState(false);
+  const visible = hover || focus;
   const formula = formulas.get(formulaId);
 
   if (!formula) {
@@ -30,10 +32,19 @@ export function FormulaTooltip({ formulaId, formulas, children }: FormulaTooltip
   return (
     <span
       className="formula-hover-wrapper"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
-      <span className="formula-hover-trigger">{children ?? `(${formulaId})`}</span>
+      <button
+        type="button"
+        className="formula-hover-trigger"
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        {children ?? `(${formulaId})`}
+      </button>
       {visible && (
         <div className="formula-tooltip">
           <div className="formula-tooltip-header">

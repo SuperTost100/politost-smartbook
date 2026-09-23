@@ -3,9 +3,23 @@ import { Icon } from './Icon';
 
 interface FooterProps {
   showCatalogLink?: boolean;
+  compact?: boolean;
 }
 
-export function Footer({ showCatalogLink = false }: FooterProps) {
+export function Footer({ showCatalogLink = false, compact = false }: FooterProps) {
+  if (compact) {
+    return (
+      <footer className="site-footer site-footer--compact no-print">
+        {showCatalogLink && (
+          <Link to="/" className="site-footer-compact-catalog">
+            ← Catalogo
+          </Link>
+        )}
+        <span className="site-footer-compact-copy">© Politost</span>
+      </footer>
+    );
+  }
+
   return (
     <footer className="site-footer no-print">
       <div className="site-footer-inner">

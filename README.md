@@ -1,46 +1,46 @@
-# Politost Smartbook
+# Politost Smartbook (Reader)
 
-Open-source web reader for **Smartbooks** — interactive digital textbooks with formulas, exercises, code lab, graphs, and print preview.
+Viewer web per smartbook interattivi: capitoli, formulario, esercizi, laboratorio, grafici, stampa.
 
-**License:** [AGPL-3.0](LICENSE)
-
-## Features
-
-- Builtin books from `src/content/` + `.ptsb` file import (browser-local)
-- Sections: chapters, formulario, exercises, exams, lab (Python/MATLAB), graphs
-- Print preview (`/libro/:id/stampa/*`) with Paged.js
-- Dark mode, accessibility landmarks, cookie consent
-
-## Quick start
+## Avvio
 
 ```bash
 npm install
-npm run dev   # → http://localhost:5173
+npm run dev          # → http://localhost:5173
 ```
 
-Open `/libro/esempio` for the demo book.
+Con API auth/DRM: vedi [server/README.md](server/README.md).
 
-## Documentation
+## Comandi
 
-| Topic | Doc |
-|-------|-----|
-| Index | [docs/Home.md](docs/Home.md) |
-| Setup | [docs/Getting-Started.md](docs/Getting-Started.md) |
-| Authoring | [docs/Content-Format.md](docs/Content-Format.md) |
-| `.ptsb` import | [docs/PTSB-Import.md](docs/PTSB-Import.md) |
-| Deploy | [docs/Self-Hosting.md](docs/Self-Hosting.md) |
-| Architecture | [docs/Architecture.md](docs/Architecture.md) |
-| Roadmap | [docs/Roadmap.md](docs/Roadmap.md) |
+```bash
+npm run build
+npm run validate:chapter -- --file src/content/esempio/chapters/02-nel-libro.md --chapter-number 2
+npm run pack:ptsb -- --dir src/content/esempio --out ../esempio.ptsb
+```
 
-**[GitHub Wiki](https://github.com/SuperTost100/politost-smartbook/wiki)** — enable via *Wiki → Create the first page*, then sync from `docs/`.
+## Documentazione
 
-## Development monorepo
+| Documento | Contenuto |
+|-----------|-----------|
+| [**docs/reader.md**](../docs/reader.md) | Viewer: UI, architettura, stampa, auth |
+| [**docs/content-format.md**](../docs/content-format.md) | Sintassi capitoli, `smartbook.json` |
+| [**docs/ptsb.md**](../docs/ptsb.md) | Pacchetti `.ptsb` |
+| [DEPLOY.md](DEPLOY.md) | Deploy Cloudflare + Render + Neon |
+| [docs/SMARTBOOK.md](docs/SMARTBOOK.md) | Reindirizzamento (link legacy) |
 
-Active development lives in [politost-smartbook-monorepo](https://github.com/SuperTost100/politost-smartbook-monorepo).
+Indice monorepo: [../docs/README.md](../docs/README.md)
 
-## Related
+## Esempio
 
-| Repo | Role |
-|------|------|
-| [politost-smartbook-monorepo](https://github.com/SuperTost100/politost-smartbook-monorepo) | Monorepo (transition) |
-| Politost platform *(private)* | Auth, cloud, license keys |
+- Builtin: `src/content/esempio/` → `/libro/esempio`
+- Pacchetto: `../esempio.ptsb`
+
+## Struttura
+
+```
+src/content/     # Smartbook integrati
+src/lib/         # loader, parser, ptsb
+src/print/       # Anteprima stampa
+server/          # FastAPI auth + DRM
+```

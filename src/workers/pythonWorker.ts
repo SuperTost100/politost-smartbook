@@ -1,7 +1,15 @@
 /// <reference lib="webworker" />
 
+import { freshGlobals } from '../lib/pythonIsolate';
+
+type PyProxy = {
+  destroy?: () => void;
+  get: (key: string) => string;
+};
+
 type PyodideInterface = {
-  runPythonAsync: (code: string) => Promise<unknown>;
+  runPythonAsync: (code: string, options?: { globals?: PyProxy }) => Promise<PyProxy>;
+  globals: { get: (name: string) => PyProxy & (() => PyProxy) };
 };
 
 let pyodideReady: Promise<PyodideInterface> | null = null;
@@ -26,8 +34,13 @@ export interface WorkerRunResult {
 
 self.onmessage = async (event: MessageEvent<{ id: string; code: string }>) => {
   const { id, code } = event.data;
+  let dictCtor: (PyProxy & (() => PyProxy)) | undefined;
+  let globals: PyProxy | undefined;
   try {
     const pyodide = await getPyodide();
+    const dict = pyodide.globals.get('dict');
+    dictCtor = dict;
+    globals = freshGlobals(() => dict());
     const wrapped = `
 import sys
 from io import StringIO
@@ -45,14 +58,13 @@ finally:
 
 {'stdout': _stdout.getvalue(), 'stderr': _stderr.getvalue(), 'error': str(_err) if _err else ''}
 `;
-    const result = await pyodide.runPythonAsync(wrapped) as {
-      get: (k: string) => string;
-    };
+    const result = await pyodide.runPythonAsync(wrapped, { globals });
     const payload: WorkerRunResult = {
       stdout: result.get('stdout') ?? '',
       stderr: result.get('stderr') ?? '',
       error: result.get('error') || undefined,
     };
+    result.destroy?.();
     self.postMessage({ id, ...payload });
   } catch (e) {
     self.postMessage({
@@ -61,5 +73,8 @@ finally:
       stderr: '',
       error: e instanceof Error ? e.message : String(e),
     });
+  } finally {
+    globals?.destroy?.();
+    dictCtor?.destroy?.();
   }
 };

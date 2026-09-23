@@ -8,6 +8,10 @@ export interface PrintRoute {
   expectChapterContent?: boolean;
 }
 
+function printPagesRoot(iframe: ReturnType<Page['frameLocator']>) {
+  return iframe.locator('.paged-render-root > .pagedjs_pages');
+}
+
 export const PRINT_ROUTES: PrintRoute[] = [
   {
     name: 'esempio / nel-libro',
@@ -36,7 +40,7 @@ export async function waitForPrintPagination(page: Page): Promise<void> {
 
   // Also wait for the iframe to contain the paginated output
   const iframe = page.frameLocator('.print-preview-frame');
-  await iframe.locator('.pagedjs_pages').waitFor({ timeout: 30_000 });
+  await printPagesRoot(iframe).waitFor({ timeout: 30_000 });
 
   const errorLocator = page.locator('.print-error-card[role="alert"]');
   if (await errorLocator.count()) {
@@ -53,7 +57,7 @@ async function assertNoSourceLeak(iframe: ReturnType<Page['frameLocator']>): Pro
 }
 
 async function assertUniqueFormulaIds(iframe: ReturnType<Page['frameLocator']>): Promise<void> {
-  const duplicates = await iframe.locator('.pagedjs_pages').evaluate((pagesRoot) => {
+  const duplicates = await printPagesRoot(iframe).evaluate((pagesRoot) => {
     const counts = new Map<string, number>();
     for (const el of pagesRoot.querySelectorAll('[data-formula-id]')) {
       const id = el.getAttribute('data-formula-id');
@@ -67,7 +71,7 @@ async function assertUniqueFormulaIds(iframe: ReturnType<Page['frameLocator']>):
 
 async function assertPrintDocumentContent(
   iframe: ReturnType<Page['frameLocator']>,
-  route: PrintRoute,
+  _route: PrintRoute,
 ): Promise<void> {
   await expect(iframe.locator('.print-brand-block').first()).toBeVisible();
   await expect(iframe.locator('.content-paragraph').first()).toBeVisible();
@@ -79,9 +83,9 @@ export async function assertPrintPreview(page: Page, route: PrintRoute): Promise
   await waitForPrintPagination(page);
 
   const iframe = page.frameLocator('.print-preview-frame');
-  await iframe.locator('.pagedjs_pages').waitFor({ timeout: 30_000 });
+  await printPagesRoot(iframe).waitFor({ timeout: 30_000 });
 
-  await expect(iframe.locator('.pagedjs_pages')).toHaveCount(1);
+  await expect(printPagesRoot(iframe)).toHaveCount(1);
   await assertNoSourceLeak(iframe);
 
   const pageCount = await iframe.locator('.pagedjs_page').count();

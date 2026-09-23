@@ -5,17 +5,17 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
 import { AuthProvider } from './context/AuthContext';
 import { CookieConsentInit } from './lib/cookieConsent';
-import { initUploadedBooks } from './lib/loader';
-import { useReaderFeatures } from './context/ReaderConfigContext';
+import { InstallBanner } from './components/InstallBanner';
+import { initBuiltinBooks, initUploadedBooks } from './lib/loader';
+import { initCloudBooks } from './lib/cloudLoader';
 import { Home } from './pages/Home';
+import { AuthPage } from './pages/AuthPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { AcceptTermsPage } from './pages/AcceptTermsPage';
+import { RedeemPage } from './pages/RedeemPage';
+import { getReaderConfig } from './config/readerConfig';
+import { useReaderFeatures } from './context/ReaderConfigContext';
 
-const AuthPage = lazy(() => import('./pages/AuthPage').then((m) => ({ default: m.AuthPage })));
-const AuthCallbackPage = lazy(() =>
-  import('./pages/AuthCallbackPage').then((m) => ({ default: m.AuthCallbackPage })),
-);
-const AcceptTermsPage = lazy(() =>
-  import('./pages/AcceptTermsPage').then((m) => ({ default: m.AcceptTermsPage })),
-);
 const SmartbookRouter = lazy(() =>
   import('./pages/SmartbookPage').then((m) => ({ default: m.SmartbookRouter })),
 );
@@ -25,38 +25,18 @@ const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { auth } = useReaderFeatures();
+  const { auth: authEnabled } = useReaderFeatures();
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        {auth && (
+        {authEnabled && (
           <>
-            <Route
-              path="/auth"
-              element={
-                <Suspense fallback={<div className="app-loading"><p>Caricamento…</p></div>}>
-                  <AuthPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/auth/callback"
-              element={
-                <Suspense fallback={<div className="app-loading"><p>Caricamento…</p></div>}>
-                  <AuthCallbackPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/auth/accept-terms"
-              element={
-                <Suspense fallback={<div className="app-loading"><p>Caricamento…</p></div>}>
-                  <AcceptTermsPage />
-                </Suspense>
-              }
-            />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/auth/accept-terms" element={<AcceptTermsPage />} />
+            <Route path="/redeem" element={<RedeemPage />} />
           </>
         )}
         <Route
@@ -108,9 +88,13 @@ export function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    initUploadedBooks()
-      .catch(console.error)
-      .finally(() => setReady(true));
+    const cloudEnabled = getReaderConfig().features?.cloud;
+    const jobs: Promise<unknown>[] = [
+      initBuiltinBooks().catch(console.error),
+      initUploadedBooks(null).catch(console.error),
+    ];
+    if (cloudEnabled) jobs.push(initCloudBooks().catch(console.error));
+    void Promise.all(jobs).finally(() => setReady(true));
   }, []);
 
   if (!ready) {
@@ -123,15 +107,16 @@ export function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReaderConfigProvider>
+    <ReaderConfigProvider>
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
             <CookieConsentInit />
             <AppRoutes />
+            <InstallBanner />
           </AuthProvider>
         </ThemeProvider>
-      </ReaderConfigProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ReaderConfigProvider>
   );
 }

@@ -18,15 +18,34 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-export async function listUploaded(): Promise<StoredBookBundle[]> {
-  const db = await openDb();
+function readAll(db: IDBDatabase): Promise<StoredBookBundle[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly');
-    const store = tx.objectStore(STORE);
-    const req = store.getAll();
+    const req = tx.objectStore(STORE).getAll();
     req.onsuccess = () => resolve(req.result as StoredBookBundle[]);
     req.onerror = () => reject(req.error);
   });
+}
+
+/** Logged-out listing is rows with no owner. A signed-in user only sees their rows. */
+export function filterUploadedForUser(
+  rows: StoredBookBundle[],
+  userId: string | null,
+): StoredBookBundle[] {
+  if (!userId) return rows.filter((row) => !row.userId);
+  return rows.filter((row) => row.userId === userId);
+}
+
+export async function listUploaded(userId: string | null): Promise<StoredBookBundle[]> {
+  const db = await openDb();
+  return filterUploadedForUser(await readAll(db), userId);
+}
+
+export async function removeUploadedForUser(userId: string): Promise<string[]> {
+  const db = await openDb();
+  const ids = (await readAll(db)).filter((row) => row.userId === userId).map((row) => row.config.id);
+  await Promise.all(ids.map((id) => removeUploaded(id)));
+  return ids;
 }
 
 export async function getUploaded(id: string): Promise<StoredBookBundle | undefined> {

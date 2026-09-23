@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useReaderFeatures } from '../context/ReaderConfigContext';
 
 function shortId(id: string): string {
   return id.replace(/-/g, '').slice(0, 8);
@@ -20,6 +21,7 @@ interface UserWatermarkProps {
 
 export function UserWatermark({ bookId, licensed }: UserWatermarkProps) {
   const { user } = useAuth();
+  const { watermark } = useReaderFeatures();
 
   const label = useMemo(() => {
     if (!user) return '';
@@ -27,7 +29,7 @@ export function UserWatermark({ bookId, licensed }: UserWatermarkProps) {
     return `${user.email} · ${shortId(user.id)} · ${session}`;
   }, [user]);
 
-  if (!user) return null;
+  if (!watermark || !user) return null;
 
   return (
     <div

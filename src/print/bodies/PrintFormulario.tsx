@@ -10,7 +10,7 @@ export function PrintFormulario({ chapters }: PrintFormularioProps) {
   return (
     <>
       {chapters.map((ch) => (
-        <section key={ch.meta.id} className="formulario-chapter">
+        <section key={ch.meta.id} className="formulario-chapter" data-print-chapter={ch.meta.id}>
           <h3>
             Capitolo {ch.meta.number} — {ch.meta.title}
           </h3>

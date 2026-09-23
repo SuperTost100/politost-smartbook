@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { recordConsent } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import versions from '../legal/versions.json';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
 import { Icon } from '../components/Icon';
+import { isSafeNextPath } from '../lib/safeNext';
 
 export function AcceptTermsPage() {
   const { refresh, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = searchParams.get('next');
   const [accept, setAccept] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,7 @@ export function AcceptTermsPage() {
     try {
       await recordConsent(versions.tos, versions.privacy);
       await refresh();
-      navigate('/', { replace: true });
+      navigate(isSafeNextPath(nextPath) ? nextPath : '/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Errore');
     } finally {

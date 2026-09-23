@@ -1,19 +1,25 @@
 # @politost/content-core
 
-Parser, renderer, and validator for Politost Smartbook markdown.
+Parser, renderer, and validator for [Politost Smartbook](https://github.com/SuperTost100/politost-smartbook) markdown.
 
-Extracted from the viewer (Phase A rewrite). Consumed by `politost-smartbook` via workspace path `file:../packages/content-core`.
+Spec: [politost-content-format](https://github.com/SuperTost100/politost-content-format)
+
+## Install
+
+```bash
+npm install github:SuperTost100/politost-content-core
+```
+
+Monorepo dev: `file:../packages/content-core`
 
 ## Test
 
 ```bash
-npm test
+npm ci && npm test
 ```
 
 ## Exports
 
-- `parseChapterMarkdown`, `parseExercises`, `preprocessContent`
-- `parseContentBlocks`, `parseInlineSegments`, `renderLatexInText`
-- `renderFormulaLatex`, `renderNumberedFormulaHtml`
-- `validateChapter`, `validateBundle`
+- `parseChapterMarkdown`, `parseExercises`, `validateChapter`, `validateBundle`
+- `renderContent`, `formulaRender`, `assetResolver`
 - Types in `types/smartbook.ts`

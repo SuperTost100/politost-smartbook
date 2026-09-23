@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import type { GraficoConfig } from '../types/smartbook';
 import { evalExprAtX } from '../lib/safeMathExpr';
+import { sanitizePlotlyConfig } from '../lib/plotlySanitize';
 
 interface GraficiViewProps {
   grafici: GraficoConfig[];
@@ -32,10 +33,11 @@ export function GraficiView({ grafici }: GraficiViewProps) {
   const [showTools, setShowTools] = useState(false);
   const grafico = grafici.find((g) => g.id === active) ?? grafici[0];
 
-  const plotlyData = useMemo(() => {
+  const plot = useMemo(() => {
     if (!grafico) return null;
     if (grafico.type === 'plotly') {
-      return (grafico.config as { data: object[] }).data;
+      const cfg = grafico.config as { data?: unknown; layout?: unknown };
+      return sanitizePlotlyConfig(cfg.data, cfg.layout);
     }
     const cfg = grafico.config as {
       functions: { fn: string; label?: string }[];
@@ -44,28 +46,17 @@ export function GraficiView({ grafici }: GraficiViewProps) {
       xLabel?: string;
       yLabel?: string;
     };
-    return buildPlotlyFromFunctions(cfg);
-  }, [grafico]);
-
-  const plotlyLayout = useMemo(() => {
-    if (!grafico) return {};
-    if (grafico.type === 'plotly') {
-      return (grafico.config as { layout?: object }).layout ?? {};
-    }
-    const cfg = grafico.config as {
-      xDomain: [number, number];
-      yDomain?: [number, number];
-      xLabel?: string;
-      yLabel?: string;
-    };
     return {
-      title: grafico.title,
-      xaxis: { title: cfg.xLabel ?? 't (s)', range: cfg.xDomain },
-      yaxis: { title: cfg.yLabel ?? 'valore', range: cfg.yDomain },
+      data: buildPlotlyFromFunctions(cfg),
+      layout: {
+        title: grafico.title,
+        xaxis: { title: cfg.xLabel ?? 't (s)', range: cfg.xDomain },
+        yaxis: { title: cfg.yLabel ?? 'valore', range: cfg.yDomain },
+      },
     };
   }, [grafico]);
 
-  if (!grafico || !plotlyData) {
+  if (!grafico) {
     return <p className="empty-note">Nessun grafico disponibile.</p>;
   }
 
@@ -97,18 +88,22 @@ export function GraficiView({ grafici }: GraficiViewProps) {
 
       <div className="grafico-container">
         <h3>{grafico.title}</h3>
-        <Plot
-          data={plotlyData}
-          layout={{
-            ...plotlyLayout,
-            autosize: true,
-            margin: { l: 55, r: 20, t: 50, b: 50 },
-          }}
-          useResizeHandler
-          style={{ width: '100%', height: '420px' }}
-          config={{ displayModeBar: showTools, responsive: true }}
-        />
-        {grafico.type === 'function' && (
+        {plot ? (
+          <Plot
+            data={plot.data}
+            layout={{
+              ...plot.layout,
+              autosize: true,
+              margin: { l: 55, r: 20, t: 50, b: 50 },
+            }}
+            useResizeHandler
+            style={{ width: '100%', height: '420px' }}
+            config={{ displayModeBar: showTools, responsive: true }}
+          />
+        ) : (
+          <p className="empty-note">Nessun grafico disponibile.</p>
+        )}
+        {grafico.type === 'function' && plot && (
           <p className="grafico-legend no-print">
             Grafico generato dalle funzioni definite nel contenuto dello smartbook.
           </p>

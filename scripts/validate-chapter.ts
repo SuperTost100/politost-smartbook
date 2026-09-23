@@ -11,6 +11,7 @@ function main(): void {
       file: { type: 'string', short: 'f' },
       'chapter-number': { type: 'string', short: 'n' },
       compact: { type: 'boolean', default: false },
+      strict: { type: 'boolean', default: true },
       output: { type: 'string', short: 'o' },
     },
   });
@@ -20,13 +21,13 @@ function main(): void {
 
   if (!file || !Number.isFinite(chapterNumber) || chapterNumber < 1) {
     console.error(
-      'Usage: npx tsx scripts/validate-chapter.ts --file <path> --chapter-number <N> [--compact] [--output <path>]',
+      'Usage: npx tsx scripts/validate-chapter.ts --file <path> --chapter-number <N> [--compact] [--strict] [--output <path>]',
     );
     process.exit(2);
   }
 
   const raw = readFileSync(file, 'utf-8');
-  const result = validateChapter(raw, chapterNumber);
+  const result = validateChapter(raw, chapterNumber, { strict: values.strict === true });
   const payload = values.compact
     ? {
         valid: result.valid,

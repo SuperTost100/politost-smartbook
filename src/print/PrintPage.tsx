@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { loadSmartbook } from '../lib/loader';
+import { isCloudBook, loadSmartbook } from '../lib/loader';
+import { chapterFromCloudMarkdown, cloudChapterAssets, loadCloudChapterMarkdown } from '../lib/cloudLoader';
+import { resolveBookAsset } from '../lib/cloudAssets';
+import { withLoadedChapter } from '../lib/chapterNav';
+import type { Chapter } from '../types/smartbook';
 import { getReturnUrl } from './routes';
 import { PrintApp } from './PrintApp';
 import { PrintFrame } from './PrintFrame';
@@ -223,6 +227,37 @@ export function PrintPage({ kind }: PrintPageProps) {
     () => (bookId ? loadSmartbook(bookId) : null),
     [bookId],
   );
+  const cloud = Boolean(bookId && isCloudBook(bookId));
+  const [cloudChapter, setCloudChapter] = useState<Chapter | null>(null);
+  const [cloudAssets, setCloudAssets] = useState<Record<string, string>>({});
+  const [cloudLoading, setCloudLoading] = useState(cloud && kind === 'capitolo');
+  const [cloudError, setCloudError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!cloud || kind !== 'capitolo' || !bookId || !chapterId || !data) return;
+    const meta = data.config.chapters.find((c) => c.id === chapterId);
+    if (!meta) return;
+    let cancelled = false;
+    setCloudLoading(true);
+    setCloudError(null);
+    loadCloudChapterMarkdown(bookId, chapterId)
+      .then((raw) => {
+        if (cancelled) return;
+        setCloudChapter(chapterFromCloudMarkdown(raw, meta));
+        setCloudAssets(cloudChapterAssets(bookId));
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setCloudError(err instanceof Error ? err.message : 'Impossibile caricare il capitolo');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCloudLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cloud, kind, bookId, chapterId, data]);
 
   const returnUrl = getReturnUrl(
     searchParams.toString(),
@@ -230,8 +265,12 @@ export function PrintPage({ kind }: PrintPageProps) {
   );
 
   const resolveAsset = useCallback(
-    (src: string) => data?.assets[src],
-    [data?.assets],
+    (src: string) => resolveBookAsset(
+      src,
+      { ...(data?.assets ?? {}), ...cloudAssets },
+      cloud ? bookId : undefined,
+    ),
+    [data?.assets, cloudAssets, cloud, bookId],
   );
 
   const paginationKey = `${bookId ?? ''}:${kind}:${chapterId ?? ''}`;
@@ -251,14 +290,16 @@ export function PrintPage({ kind }: PrintPageProps) {
 
     switch (kind) {
       case 'capitolo': {
-        const chapter = data.chapters.find((c) => c.meta.id === chapterId);
+        const chapter = cloud
+          ? cloudChapter
+          : data.chapters.find((c) => c.meta.id === chapterId);
         if (!chapter) return null;
         documentTitle = `Cap. ${chapter.meta.number} — ${chapter.meta.title}`;
         sectionTitle = data.config.sections.smartbook.label;
         body = (
           <PrintChapter
             chapter={chapter}
-            allChapters={data.chapters}
+            allChapters={cloud ? withLoadedChapter(data.chapters, chapter) : data.chapters}
             resolveAsset={resolveAsset}
           />
         );
@@ -308,6 +349,12 @@ export function PrintPage({ kind }: PrintPageProps) {
     const chapter = data.chapters.find((c) => c.meta.id === chapterId);
     if (!chapter) {
       return <p className="empty-note">Capitolo non trovato.</p>;
+    }
+    if (cloud && cloudLoading) {
+      return <PrintLoadingScreen />;
+    }
+    if (cloud && cloudError) {
+      return <PrintErrorCard message={cloudError} />;
     }
     if (!chapter.meta.printable) {
       return (

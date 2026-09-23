@@ -1,38 +1,34 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import {
   defaultReaderConfig,
-  resolveFeatures,
+  getReaderConfig,
+  platformReaderConfig,
+  setReaderConfig,
   type ReaderConfig,
-  type ReaderFeatures,
 } from '../config/readerConfig';
 
-interface ReaderConfigState {
-  config: ReaderConfig;
-  features: ReaderFeatures;
-}
-
-const ReaderConfigContext = createContext<ReaderConfigState | null>(null);
+const ReaderConfigContext = createContext<ReaderConfig>(defaultReaderConfig);
 
 export function ReaderConfigProvider({
-  config = defaultReaderConfig,
+  config = platformReaderConfig,
   children,
 }: {
   config?: ReaderConfig;
   children: ReactNode;
 }) {
-  const value = useMemo(
-    () => ({ config, features: resolveFeatures(config) }),
-    [config],
-  );
+  const value = useMemo(() => {
+    setReaderConfig(config);
+    return getReaderConfig();
+  }, [config]);
+
   return <ReaderConfigContext.Provider value={value}>{children}</ReaderConfigContext.Provider>;
 }
 
-export function useReaderConfig(): ReaderConfigState {
-  const ctx = useContext(ReaderConfigContext);
-  if (!ctx) throw new Error('useReaderConfig richiede ReaderConfigProvider');
-  return ctx;
+export function useReaderConfig(): ReaderConfig {
+  return useContext(ReaderConfigContext);
 }
 
-export function useReaderFeatures(): ReaderFeatures {
-  return useReaderConfig().features;
+export function useReaderFeatures(): NonNullable<ReaderConfig['features']> {
+  const { features } = useReaderConfig();
+  return features ?? defaultReaderConfig.features!;
 }

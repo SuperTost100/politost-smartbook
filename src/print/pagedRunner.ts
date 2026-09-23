@@ -1,4 +1,5 @@
 import { Previewer } from 'pagedjs';
+import { paginateSlices, slicePrintChapters } from './chapterSlices';
 import katexCssUrl from 'katex/dist/katex.min.css?url';
 import { getPrintStylesheetUrls } from './styles';
 import {
@@ -8,6 +9,13 @@ import {
 } from './printHandler';
 
 const previewers = new WeakMap<HTMLIFrameElement, Previewer>();
+const previewToken = new WeakMap<HTMLIFrameElement, symbol>();
+
+function yieldToPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+}
 
 /** Remove Paged.js styles leaked into the parent document from a prior session. */
 export function cleanupLeakedPagedStyles(): void {
@@ -54,6 +62,7 @@ export async function waitForPrintAssets(
 export function teardownPagedPreview(iframe?: HTMLIFrameElement | null): void {
   if (!iframe) return;
 
+  previewToken.delete(iframe);
   previewers.get(iframe)?.polisher.destroy();
   previewers.delete(iframe);
 
@@ -88,13 +97,44 @@ export async function runPagedPreview(
     new URL(katexCssUrl, window.location.href).href,
   );
 
-  const previewer = new Previewer();
-  previewers.set(iframe, previewer);
-  if (iframe.contentWindow) {
-    iframe.contentWindow.__pagedPreviewer = previewer;
-  }
+  const token = Symbol();
+  previewToken.set(iframe, token);
+  const aborted = () => previewToken.get(iframe) !== token;
 
-  await previewer.preview(contentEl, stylesheets, renderRoot);
+  // ponytail: one Paged.js preview per chapter, then pages are concatenated.
+  // Page numbers restart on each chapter. A single chunker would keep one counter.
+  const slices = slicePrintChapters(contentEl);
+  const doc = contentEl.ownerDocument;
+  const combined = slices.length > 1 ? doc.createElement('div') : null;
+  if (combined) combined.className = 'pagedjs_pages';
+
+  await paginateSlices(
+    slices,
+    async (slice) => {
+      if (aborted()) return false;
+      const previewer = new Previewer();
+      previewers.set(iframe, previewer);
+      if (iframe.contentWindow) {
+        iframe.contentWindow.__pagedPreviewer = previewer;
+      }
+      const target = combined ? doc.createElement('div') : renderRoot;
+      await previewer.preview(slice, stylesheets, target);
+      if (aborted()) return false;
+      if (combined) {
+        const area = target.querySelector('.pagedjs_pages');
+        if (area) {
+          while (area.firstChild) combined.appendChild(area.firstChild);
+        }
+        previewer.polisher.destroy();
+        if (previewers.get(iframe) === previewer) previewers.delete(iframe);
+      }
+      return true;
+    },
+    yieldToPaint,
+  );
+
+  if (aborted()) return;
+  if (combined) renderRoot.replaceChildren(combined);
 
   renderRoot.querySelectorAll('.print-root, .print-flow').forEach((el) => el.remove());
 }

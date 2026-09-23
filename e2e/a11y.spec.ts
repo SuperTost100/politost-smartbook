@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { waitForPrintPagination } from './helpers/print';
+import { preparePlatformShell, PRINT_GOTO_OPTIONS } from './helpers/platform';
 
 test.describe('Accessibility landmarks', () => {
+  test.beforeEach(async ({ page }) => {
+    await preparePlatformShell(page);
+  });
   test('home has a main landmark', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('main#main-content')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
   });
 
-  test.skip('auth page has a main landmark and tab panel', async ({ page }) => {
+  test('auth page has a main landmark and tab panel', async ({ page }) => {
     await page.goto('/auth');
     await expect(page.locator('main#main-content')).toBeVisible();
     await expect(page.getByRole('tablist', { name: 'Modalità accesso' })).toBeVisible();
@@ -36,13 +40,13 @@ test.describe('Accessibility landmarks', () => {
   });
 
   test('print preview has a main landmark', async ({ page }) => {
-    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', { waitUntil: 'networkidle' });
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await expect(page.locator('main#main-content')).toBeVisible();
     await expect(page.locator('.print-preview-frame')).toBeVisible();
   });
 
   test('print preview toolbar has labeled actions', async ({ page }) => {
-    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', { waitUntil: 'networkidle' });
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await expect(page.getByRole('banner', { name: 'Barra strumenti anteprima di stampa' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Torna al libro' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Stampa' })).toBeVisible();
@@ -124,7 +128,7 @@ test.describe('Dark mode', () => {
   });
 
   test('theme toggle updates print preview shell in dark mode', async ({ page }) => {
-    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', { waitUntil: 'networkidle' });
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 

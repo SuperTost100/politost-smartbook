@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-// Auth UI is disabled in the OSS reader (ReaderConfig.features.auth === false).
-test.describe.skip('Auth form', () => {
+test.describe('Auth form', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cc_cookie', '{"categories":["necessary","functional"],"revision":0,"data":null,"consentTimestamp":"2020-01-01T00:00:00.000Z","consentId":"e2e","services":{"necessary":[],"functional":[]},"lastConsentTimestamp":"2020-01-01T00:00:00.000Z"}');

@@ -44,7 +44,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/mobile.spec.ts',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'mobile',
+      testMatch: '**/mobile.spec.ts',
+      use: {
+        ...devices['iPhone 13'],
+        browserName: 'chromium',
+      },
     },
   ],
   globalSetup: './e2e/global-setup.ts',

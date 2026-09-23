@@ -10,6 +10,9 @@ import {
   type AuthUser,
 } from '../lib/api';
 import { useReaderFeatures } from './ReaderConfigContext';
+import { unregisterUploadedBook } from '../lib/loader';
+import { removeUploadedForUser } from '../lib/ptsbStore';
+import { rememberOAuthNext } from '../lib/safeNext';
 
 interface AuthState {
   user: AuthUser | null;
@@ -19,28 +22,24 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, tos: string, privacy: string) => Promise<void>;
   logout: () => Promise<void>;
-  loginWithGoogle: () => void;
+  loginWithGoogle: (nextPath?: string | null) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
-const disabledAuthState: AuthState = {
-  user: null,
-  isLoading: false,
-  hasConsent: false,
-  refresh: async () => undefined,
-  login: async () => undefined,
-  register: async () => undefined,
-  logout: async () => undefined,
-  loginWithGoogle: () => undefined,
-};
-
-function EnabledAuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { auth: authEnabled } = useReaderFeatures();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hasConsent, setHasConsent] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(authEnabled !== false);
 
   const refresh = useCallback(async () => {
+    if (!authEnabled) {
+      setUser(null);
+      setHasConsent(false);
+      setIsLoading(false);
+      return;
+    }
     try {
       const me = await fetchMe();
       setUser(me);
@@ -52,7 +51,7 @@ function EnabledAuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [authEnabled]);
 
   useEffect(() => {
     void refresh();
@@ -71,13 +70,23 @@ function EnabledAuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const logout = useCallback(async () => {
+    const leavingId = user?.id;
     await apiLogout();
+    if (leavingId) {
+      try {
+        const ids = await removeUploadedForUser(leavingId);
+        for (const id of ids) unregisterUploadedBook(id);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     setUser(null);
     setHasConsent(false);
-  }, []);
+  }, [user]);
 
-  const loginWithGoogle = useCallback(() => {
-    window.location.href = googleLoginUrl();
+  const loginWithGoogle = useCallback((nextPath?: string | null) => {
+    rememberOAuthNext(nextPath);
+    window.location.href = googleLoginUrl(nextPath);
   }, []);
 
   const value = useMemo(
@@ -86,14 +95,6 @@ function EnabledAuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const { auth } = useReaderFeatures();
-  if (!auth) {
-    return <AuthContext.Provider value={disabledAuthState}>{children}</AuthContext.Provider>;
-  }
-  return <EnabledAuthProvider>{children}</EnabledAuthProvider>;
 }
 
 export function useAuth(): AuthState {

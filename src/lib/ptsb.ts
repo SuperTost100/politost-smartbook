@@ -4,11 +4,8 @@ import { validateBundle } from './validateChapter';
 import { isValidAssetPath } from './assetResolver';
 import { b64decode, decryptPayload, parseEncryptedHeader } from './ptsbCrypto';
 import { fetchContentKey } from './api';
-import { defaultReaderConfig, resolveFeatures } from '../config/readerConfig';
+import { getReaderConfig } from '../config/readerConfig';
 import { MAX_COMPRESSED_BYTES, safeUnzip } from './safeUnzip';
-
-const PLATFORM_REQUIRED_MSG =
-  'Questo file è protetto con DRM. Aprirlo richiede la piattaforma Politost (account e licenza).';
 
 const ID_RE = /^[a-z0-9-]+$/;
 
@@ -50,7 +47,12 @@ function parseZipBundle(entries: Record<string, Uint8Array>): StoredBookBundle {
   const eserciziRaw = entries['esercizi.md'] ? decodeText(entries['esercizi.md']) : '';
   const esamiRaw = entries['esami.md'] ? decodeText(entries['esami.md']) : '';
 
-  const validation = validateBundle(config, chapterFiles, assets, { eserciziRaw, esamiRaw });
+  const validation = validateBundle(config, chapterFiles, assets, {
+    eserciziRaw,
+    esamiRaw,
+    ideRaw: entries['ide.json'] ? decodeText(entries['ide.json']) : '',
+    graficiRaw: entries['grafici.json'] ? decodeText(entries['grafici.json']) : '',
+  });
   if (!validation.valid) {
     throw new Error(validation.errors.join('\n'));
   }
@@ -71,7 +73,10 @@ async function decryptLicensedFile(
   data: Uint8Array,
   header: PtsbEncryptedHeader,
 ): Promise<Uint8Array> {
-  const { header: parsed, ciphertext } = parseEncryptedHeader(data);
+  if (!getReaderConfig().features?.drm) {
+    throw new Error('Libro protetto: richiede la piattaforma Politost.');
+  }
+  const { header: parsed, ciphertext, headerBytes } = parseEncryptedHeader(data);
   const payloadIv = b64decode(parsed.iv);
 
   const keyRes = await fetchContentKey(header.id, {
@@ -80,7 +85,7 @@ async function decryptLicensedFile(
     wrappedKey: parsed.wrappedKey,
   });
   const cek = b64decode(keyRes.cek);
-  return decryptPayload(cek, payloadIv, ciphertext);
+  return decryptPayload(cek, payloadIv, ciphertext, headerBytes);
 }
 
 export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
@@ -96,20 +101,16 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
   }
 
   if (new TextDecoder().decode(buf.slice(0, 4)) === 'PTSB') {
-    if (!resolveFeatures(defaultReaderConfig).drm) {
-      throw new Error(PLATFORM_REQUIRED_MSG);
-    }
-
     const { header } = parseEncryptedHeader(buf);
     const encHeader = header as unknown as PtsbEncryptedHeader;
+    // Tag check before the access field is trusted. A rewritten access value
+    // fails decrypt because the header bytes are AES-GCM associated data.
+    const zipBytes = await decryptLicensedFile(buf, encHeader);
     const access = encHeader.access ?? 'licensed';
-
-    if (access === 'licensed') {
-      const zipBytes = await decryptLicensedFile(buf, encHeader);
-      return parseZipBundle(readZipEntries(zipBytes));
+    if (access !== 'licensed' && access !== 'public') {
+      throw new Error('Libro protetto: accedi e verifica la licenza per aprire questo file.');
     }
-
-    throw new Error('Libro protetto: accedi e verifica la licenza per aprire questo file.');
+    return parseZipBundle(readZipEntries(zipBytes));
   }
 
   throw new Error('Formato file non riconosciuto. Usa un file .ptsb valido.');

@@ -13,7 +13,7 @@ export function PrintChapter({ chapter, allChapters, resolveAsset }: PrintChapte
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
 
   return (
-    <>
+    <div data-print-chapter={chapter.meta.id}>
       {chapter.paragraphs.map((para) => (
         <section key={para.id} className="paragraph-section">
           <h3 className="paragraph-title">
@@ -30,6 +30,6 @@ export function PrintChapter({ chapter, allChapters, resolveAsset }: PrintChapte
           </div>
         </section>
       ))}
-    </>
+    </div>
   );
 }

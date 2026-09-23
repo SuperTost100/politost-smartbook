@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
@@ -71,6 +71,11 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
     [bookId, allChapters, navigate]
   );
 
+  const nextChapter = useMemo(() => {
+    const idx = allChapters.findIndex((c) => c.meta.id === chapter.meta.id);
+    return idx >= 0 && idx < allChapters.length - 1 ? allChapters[idx + 1] : null;
+  }, [allChapters, chapter.meta.id]);
+
   return (
     <div className="smartbook-view">
       <div className="view-toolbar">
@@ -115,6 +120,23 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
           </section>
         ))}
       </article>
+
+      {nextChapter && (
+        <nav className="chapter-next-nav" aria-label="Capitolo successivo">
+          <Link
+            to={`/libro/${bookId}/capitolo/${nextChapter.meta.id}`}
+            className="chapter-next-link"
+          >
+            <span className="chapter-next-body">
+              <span className="chapter-next-eyebrow">Capitolo successivo</span>
+              <span className="chapter-next-title">
+                Cap. {nextChapter.meta.number} — {nextChapter.meta.title}
+              </span>
+            </span>
+            <span className="chapter-next-arrow" aria-hidden>→</span>
+          </Link>
+        </nav>
+      )}
     </div>
   );
 }
