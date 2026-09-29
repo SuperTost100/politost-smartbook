@@ -21,6 +21,8 @@ export interface CatalogEntry {
   subject: string;
   source: 'builtin' | 'uploaded' | 'cloud';
   access?: 'public' | 'licensed';
+  authors?: string[];
+  version?: string;
 }
 
 export interface BookBundle {
@@ -295,6 +297,8 @@ export function getCatalog(): CatalogEntry[] {
       subject: config.subject,
       source: 'builtin',
       access: config.access ?? 'public',
+      authors: config.authors,
+      version: config.version,
     });
   }
 
@@ -306,6 +310,8 @@ export function getCatalog(): CatalogEntry[] {
       subject: config.subject,
       source: 'uploaded',
       access: config.access ?? 'public',
+      authors: config.authors,
+      version: config.version,
     });
   }
 
@@ -318,6 +324,8 @@ export function getCatalog(): CatalogEntry[] {
       subject: config.subject,
       source: 'cloud',
       access: config.access ?? 'licensed',
+      authors: config.authors,
+      version: config.version,
     });
   }
 

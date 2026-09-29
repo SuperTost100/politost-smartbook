@@ -2,6 +2,7 @@
   "id": "esempio",
   "title": "Guida di esempio",
   "subject": "Esempio",
+  "specVersion": "1.1",
   "sections": {
     "smartbook": { "enabled": true, "label": "Capitoli" },
     "formulario": { "enabled": true, "label": "Formulario" },

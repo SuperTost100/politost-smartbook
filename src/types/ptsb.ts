@@ -1,24 +1,14 @@
-import type { IdeSnippet, GraficoConfig, SmartbookConfig } from '../types/smartbook';
+import type { PtsbBundle } from '@politost/content-core';
 
-export interface StoredBookBundle {
-  config: SmartbookConfig;
-  chapterFiles: Record<string, string>;
-  eserciziRaw: string;
-  esamiRaw: string;
-  ide: IdeSnippet[];
-  grafici: GraficoConfig[];
+export type { PtsbManifest } from '@politost/content-core';
+
+/** A parsed package as the reader stores it in IndexedDB. */
+export interface StoredBookBundle extends Omit<PtsbBundle, 'manifest' | 'assets' | 'warnings'> {
   assets?: Record<string, Uint8Array>;
+  /** Older IndexedDB records predate persisted validation warnings. */
+  warnings?: string[];
   importedAt: string;
   userId?: string;
-}
-
-export interface PtsbManifest {
-  formatVersion: number;
-  packageType: string;
-  encrypted: boolean;
-  access: 'public' | 'licensed';
-  createdAt: string;
-  producer?: string;
 }
 
 export interface PtsbEncryptedHeader {

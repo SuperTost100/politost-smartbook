@@ -18,6 +18,7 @@ export function Home() {
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +54,7 @@ export function Home() {
   }, [authLoading, user?.id, refreshCatalog]);
 
   async function processFile(file: File) {
+    setUploadWarnings([]);
     if (!file.name.toLowerCase().endsWith('.ptsb')) {
       setUploadError('Seleziona un file .ptsb');
       return;
@@ -86,6 +88,7 @@ export function Home() {
       registerUploadedBook(bundle);
       refreshCatalog();
       setUploadStatus(`"${bundle.config.title}" caricato su questo dispositivo.`);
+      setUploadWarnings(bundle.warnings ?? []);
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Caricamento fallito');
       setUploadStatus(null);
@@ -99,6 +102,7 @@ export function Home() {
     unregisterUploadedBook(id);
     refreshCatalog();
     setUploadStatus(null);
+    setUploadWarnings([]);
   }
 
   function onDrop(e: React.DragEvent) {
@@ -135,6 +139,11 @@ export function Home() {
                   <div className={`book-card-accent ${subjectAccentClass(book.subject)}`} aria-hidden />
                   <span className="book-card-subject">{book.subject}</span>
                   <h3>{book.title}</h3>
+                  {(book.authors?.length || book.version) && (
+                    <p className="book-card-meta">
+                      {[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                   {book.access === 'licensed' && (
                     <div className="book-card-badges">
                       <span className="badge badge-licensed">Richiede accesso</span>
@@ -197,6 +206,9 @@ export function Home() {
                 {uploading ? 'Caricamento in corso…' : isMobile ? 'Scegli file .ptsb' : 'Clicca o trascina il file qui'}
               </div>
               {uploadStatus && <p className="upload-success" aria-live="polite">{uploadStatus}</p>}
+              <div role="status">
+                {uploadWarnings.map((warning, index) => <p key={index}>{warning}</p>)}
+              </div>
               {uploadError && <p className="upload-error" role="alert">{uploadError}</p>}
             </div>
           </details>

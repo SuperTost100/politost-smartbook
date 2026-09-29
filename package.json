@@ -14,7 +14,7 @@
     "validate:chapter": "tsx scripts/validate-chapter.ts",
     "pack:ptsb": "tsx scripts/pack-ptsb.ts",
     "test:security": "tsx --test src/lib/sanitizeHtml.test.ts",
-    "test:content": "npm run test --prefix packages/content-core && tsx --test src/lib/safeMathExpr.test.ts",
+    "test:content": "npm run test --prefix packages/content-core && tsx --test src/lib/safeMathExpr.test.ts src/lib/ptsb.test.ts",
     "test:print:unit": "tsx --test src/print/dedupePages.test.ts",
     "test:print": "npm run prepare:e2e && playwright test e2e/print.spec.ts",
     "test:e2e": "npm run prepare:e2e && playwright test",

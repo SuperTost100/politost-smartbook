@@ -1214,6 +1214,15 @@ button.formula-hover-trigger {
   min-height: 4.5em;
 }
 
+.book-card-meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .book-card-badges {
   display: flex;
   gap: 0.35rem;
