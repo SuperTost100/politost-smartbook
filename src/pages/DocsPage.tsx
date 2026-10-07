@@ -1,15 +1,20 @@
+import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
-import smartbookDocs from '../../docs/SMARTBOOK.md?raw';
+import smartbookDocs from '../../docs/guida.md?raw';
 
 export function DocsPage() {
+  useEffect(() => {
+    document.title = 'Guida · Politost Smartbook';
+  }, []);
+
   return (
-    <div className="legal-page docs-page no-print">
+    <div className="site-page legal-page docs-page no-print">
       <SiteHeader />
-      <article className="legal-content docs-content">
+      <main id="main-content"><article className="legal-content docs-content sb-prose">
         <ReactMarkdown>{smartbookDocs}</ReactMarkdown>
-      </article>
+      </article></main>
       <Footer />
     </div>
   );

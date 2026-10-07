@@ -1,6 +1,8 @@
 import type { Exercise } from '../types/smartbook';
 import { ContentFlow } from './ContentFlow';
-import { RevealBlock } from './RevealBlock';
+import { SectionHeader } from './ds/SectionHeader';
+import { ExerciseCard } from './ds/ExerciseCard';
+import { RevealBlock } from './ds/RevealBlock';
 import { preprocessContent } from '../lib/parser';
 import { usePrintMode } from '../hooks/usePrintMode';
 import type { PrintSection } from '../print/routes';
@@ -24,58 +26,40 @@ export function EserciziView({
 }: EserciziViewProps) {
   const print = usePrintMode();
   return (
-    <div className="esercizi-view">
-      <div className="view-toolbar">
-        <h2>{title}</h2>
-        {printable && (
-          <button
-            type="button"
-            className="btn-print no-print"
-            onClick={() => print({ bookId, section: printSection })}
-          >
-            Versione stampabile
-          </button>
-        )}
-      </div>
+    <div className="esercizi-view sb-page sb-page-reading">
+      <SectionHeader
+        title={title}
+        meta={<span>{exercises.length} {exercises.length === 1 ? 'esercizio' : 'esercizi'}</span>}
+        onPrint={printable ? () => print({ bookId, section: printSection }) : undefined}
+      />
 
       {exercises.length === 0 ? (
         <p className="empty-note">Nessun esercizio disponibile.</p>
       ) : (
-        <div className="exercise-list">
+        <div className="sb-stack">
           {exercises.map((ex) => (
-            <article key={ex.id} className="exercise-card" id={`ex-${ex.id}`}>
-              <header className="exercise-header">
-                <span className="exercise-id">{ex.id}</span>
-                {ex.chapter && <span className="exercise-ch">Cap. {ex.chapter}</span>}
-                {ex.difficulty && (
-                  <span className={`difficulty difficulty-${ex.difficulty}`}>{ex.difficulty}</span>
-                )}
-              </header>
-
-              <div className="exercise-question content-flow">
-                <ContentFlow content={preprocessContent(ex.question)} resolveAsset={resolveAsset} />
-              </div>
-
-              <div className="exercise-actions">
-                {ex.hint && (
-                  <RevealBlock
-                    label="Mostra suggerimento"
-                    content={preprocessContent(ex.hint)}
-                    variant="hint"
-                    resolveAsset={resolveAsset}
-                  />
-                )}
-
-                {ex.solution && (
-                  <RevealBlock
-                    label="Mostra soluzione"
-                    content={preprocessContent(ex.solution)}
-                    variant="solution"
-                    resolveAsset={resolveAsset}
-                  />
-                )}
-              </div>
-            </article>
+            <ExerciseCard
+              key={ex.id}
+              id={ex.id}
+              chapter={ex.chapter}
+              difficulty={ex.difficulty}
+              hint={
+                ex.hint ? (
+                  <RevealBlock variant="hint">
+                    <ContentFlow content={preprocessContent(ex.hint)} resolveAsset={resolveAsset} />
+                  </RevealBlock>
+                ) : undefined
+              }
+              solution={
+                ex.solution ? (
+                  <RevealBlock variant="solution">
+                    <ContentFlow content={preprocessContent(ex.solution)} resolveAsset={resolveAsset} />
+                  </RevealBlock>
+                ) : undefined
+              }
+            >
+              <ContentFlow content={preprocessContent(ex.question)} resolveAsset={resolveAsset} />
+            </ExerciseCard>
           ))}
         </div>
       )}

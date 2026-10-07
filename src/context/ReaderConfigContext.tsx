@@ -2,7 +2,6 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import {
   defaultReaderConfig,
   getReaderConfig,
-  platformReaderConfig,
   setReaderConfig,
   type ReaderConfig,
 } from '../config/readerConfig';
@@ -10,7 +9,7 @@ import {
 const ReaderConfigContext = createContext<ReaderConfig>(defaultReaderConfig);
 
 export function ReaderConfigProvider({
-  config = platformReaderConfig,
+  config = getReaderConfig(),
   children,
 }: {
   config?: ReaderConfig;

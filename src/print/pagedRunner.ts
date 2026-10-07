@@ -1,7 +1,7 @@
 import { Previewer } from 'pagedjs';
 import { paginateSlices, slicePrintChapters } from './chapterSlices';
 import katexCssUrl from 'katex/dist/katex.min.css?url';
-import { getPrintStylesheetUrls } from './styles';
+import { getPrintFontsUrl, getPrintStylesheetUrls, PRINT_FONT_FACES } from './styles';
 import {
   ensurePrintHandlers,
   setPrintHandlerOptions,
@@ -53,7 +53,13 @@ export async function waitForPrintAssets(
     ),
   );
 
-  await root.ownerDocument.fonts?.ready;
+  // Load the design-system faces explicitly: the print stylesheets are only attached by Paged.js later,
+  // so pagination would otherwise measure text in fallback fonts.
+  const fonts = root.ownerDocument.fonts;
+  if (fonts) {
+    await Promise.all(PRINT_FONT_FACES.map((face) => fonts.load(face).catch(() => [])));
+    await fonts.ready;
+  }
   await new Promise<void>((r) =>
     ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(() => r())),
   );
@@ -118,17 +124,25 @@ export async function runPagedPreview(
         iframe.contentWindow.__pagedPreviewer = previewer;
       }
       const target = combined ? doc.createElement('div') : renderRoot;
-      await previewer.preview(slice, stylesheets, target);
-      if (aborted()) return false;
-      if (combined) {
-        const area = target.querySelector('.pagedjs_pages');
-        if (area) {
-          while (area.firstChild) combined.appendChild(area.firstChild);
+      // Paged.js measures offsetParent bounds, so each chapter target must be attached.
+      if (combined) renderRoot.appendChild(target);
+      try {
+        await previewer.preview(slice, stylesheets, target);
+        if (aborted()) return false;
+        if (combined) {
+          const area = target.querySelector('.pagedjs_pages');
+          if (area) {
+            while (area.firstChild) combined.appendChild(area.firstChild);
+          }
         }
-        previewer.polisher.destroy();
-        if (previewers.get(iframe) === previewer) previewers.delete(iframe);
+        return true;
+      } finally {
+        if (combined) {
+          target.remove();
+          previewer.polisher.destroy();
+          if (previewers.get(iframe) === previewer) previewers.delete(iframe);
+        }
       }
-      return true;
     },
     yieldToPaint,
   );
@@ -164,6 +178,11 @@ export function resetIframeShell(iframe: HTMLIFrameElement): IframePrintShell {
     '<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"></head><body></body></html>',
   );
   doc.close();
+
+  const fontsLink = doc.createElement('link');
+  fontsLink.rel = 'stylesheet';
+  fontsLink.href = getPrintFontsUrl();
+  doc.head.appendChild(fontsLink);
 
   const renderRoot = doc.createElement('div');
   renderRoot.className = 'paged-render-root';

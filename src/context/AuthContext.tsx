@@ -12,6 +12,8 @@ import {
 import { useReaderFeatures } from './ReaderConfigContext';
 import { unregisterUploadedBook } from '../lib/loader';
 import { removeUploadedForUser } from '../lib/ptsbStore';
+import { consentIsCurrent } from '../lib/consentVersion';
+import versions from '../legal/versions.json';
 import { rememberOAuthNext } from '../lib/safeNext';
 
 interface AuthState {
@@ -44,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const me = await fetchMe();
       setUser(me);
       const consent = await fetchConsentStatus();
-      setHasConsent(consent.has_consent);
+      setHasConsent(consentIsCurrent(consent, versions));
     } catch {
       setUser(null);
       setHasConsent(false);

@@ -19,7 +19,7 @@ Works on Cloudflare Pages, Netlify, GitHub Pages, nginx, any CDN.
 |---------|-------|
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node version | 20+ |
+| Node version | 22.13+ |
 
 ## Builtin books
 
@@ -32,7 +32,8 @@ Add folders under `src/content/<book-id>/` before build. Each needs `smartbook.j
 | Variable | When |
 |----------|------|
 | *(none)* | OSS self-host, plain books + upload only |
-| `VITE_API_URL` | Only if wrapping with Politost platform (auth/DRM) |
+| `VITE_PLATFORM_ENABLED=true` | Explicitly enable the private platform integration |
+| `VITE_API_URL` | Platform API base URL |
 
 ## Headers
 
@@ -42,4 +43,4 @@ Add folders under `src/content/<book-id>/` before build. Each needs `smartbook.j
 
 Hosted Politost product adds auth, cloud catalog, and license keys on top of this reader. That stack is **not** AGPL reader scope.
 
-For full platform deploy (API + DB + OAuth), see the monorepo `DEPLOY.md` until the platform repo splits out.
+For full platform deploy (API + DB + OAuth), see the private platform documentation.

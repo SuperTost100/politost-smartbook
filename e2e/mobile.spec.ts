@@ -41,15 +41,13 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
   test('formulario loads without horizontal scroll', async ({ page }) => {
     await page.goto('/libro/esempio/formulario');
     await expect(page.locator('.formulario-view')).toBeVisible();
-    await expect(page.locator('.formulario-card').first()).toBeVisible();
+    await expect(page.locator('.sb-fcard').first()).toBeVisible();
     await assertNoHorizontalOverflow(page);
   });
 
   test('ptsb upload control is present and clickable', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.home-import-details').evaluate((el) => el.setAttribute('open', ''));
-
-    const upload = page.getByRole('button', { name: 'Carica un file smartbook in formato ptsb' });
+    const upload = page.getByRole('button', { name: /file \.ptsb/ });
     await expect(upload).toBeVisible();
     await expect(upload).toBeEnabled();
 
@@ -63,7 +61,9 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
 
   test('hides desktop-only section nav entries', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
-    const sectionNav = page.locator('.section-nav');
+    // on phones the section switcher lives in the drawer next to the chapter index
+    await page.getByRole('button', { name: /Apri indice capitoli/ }).click();
+    const sectionNav = page.getByRole('navigation', { name: 'Sezioni del libro' });
     await expect(sectionNav.getByRole('link', { name: 'Formulario' })).toBeVisible();
     await expect(sectionNav.getByRole('link', { name: 'Laboratorio' })).toHaveCount(0);
     await expect(sectionNav.getByRole('link', { name: 'Grafici & Calcoli' })).toHaveCount(0);

@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
-import { ParagraphNav } from './ParagraphNav';
+import { ChapterHeader } from './ds/ChapterHeader';
+import { ParagraphHeading } from './ds/ParagraphHeading';
+import { ChapterPager } from './ds/ChapterPager';
+import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
 
 interface SmartbookViewProps {
@@ -13,34 +16,41 @@ interface SmartbookViewProps {
   resolveAsset?: (src: string) => string | undefined;
 }
 
+/** ~200 words per minute, rounded up, at least one minute. */
+function readingMinutes(chapter: Chapter): number {
+  const words = chapter.paragraphs.reduce((n, p) => n + p.content.split(/\s+/).filter(Boolean).length, 0);
+  return Math.max(1, Math.ceil(words / 200));
+}
+
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: SmartbookViewProps) {
-  const [activePara, setActivePara] = useState(chapter.paragraphs[0]?.id);
+  const { setParagraphs, setActiveParagraphId } = useReaderProgress();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
   const navigate = useNavigate();
   const print = usePrintMode();
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
 
-  const jumpToPara = useCallback((id: string) => {
-    setActivePara(id);
-    paraRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
+  useEffect(() => {
+    setParagraphs(
+      chapter.paragraphs.map((p, i) => ({ id: p.id, number: `${chapter.meta.number}.${i + 1}`, title: p.title })),
+    );
+    setActiveParagraphId(chapter.paragraphs[0]?.id);
+    return () => setParagraphs([]);
+  }, [chapter, setParagraphs, setActiveParagraphId]);
 
   useEffect(() => {
-    const chromePx = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--app-chrome-height')
-    ) || 112;
-    const topOffset = chromePx + 56;
+    // header (64px) + breathing room
+    const topOffset = 64 + 24;
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting) {
-            setActivePara(e.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
+            setActiveParagraphId(e.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
           }
         }
       },
-      { rootMargin: `-${topOffset}px 0px -60% 0px`, threshold: 0 }
+      { rootMargin: `-${topOffset}px 0px -60% 0px`, threshold: 0 },
     );
 
     chapter.paragraphs.forEach((p) => {
@@ -49,7 +59,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
     });
 
     return () => observer.disconnect();
-  }, [chapter]);
+  }, [chapter, setActiveParagraphId]);
 
   const handleRefClick = useCallback(
     (e: React.MouseEvent) => {
@@ -68,37 +78,32 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         if (ch) navigate(`/libro/${bookId}/capitolo/${ch.meta.id}#${para}`);
       }
     },
-    [bookId, allChapters, navigate]
+    [bookId, allChapters, navigate],
   );
 
-  const nextChapter = useMemo(() => {
+  const { prev, next } = useMemo(() => {
     const idx = allChapters.findIndex((c) => c.meta.id === chapter.meta.id);
-    return idx >= 0 && idx < allChapters.length - 1 ? allChapters[idx + 1] : null;
-  }, [allChapters, chapter.meta.id]);
+    const toTarget = (c?: Chapter) =>
+      c ? { number: c.meta.number, title: c.meta.title, href: `/libro/${bookId}/capitolo/${c.meta.id}` } : null;
+    return { prev: idx > 0 ? toTarget(allChapters[idx - 1]) : null, next: idx >= 0 ? toTarget(allChapters[idx + 1]) : null };
+  }, [allChapters, chapter.meta.id, bookId]);
 
   return (
     <div className="smartbook-view">
-      <div className="view-toolbar">
-        <h2>Cap. {chapter.meta.number} — {chapter.meta.title}</h2>
-        {chapter.meta.printable && (
-          <button
-            type="button"
-            className="btn-print no-print"
-            onClick={() => print({ bookId, section: 'capitolo', chapterId: chapter.meta.id })}
-          >
-            Versione stampabile
-          </button>
-        )}
-      </div>
-
-      <ParagraphNav
-        paragraphs={chapter.paragraphs}
-        activeId={activePara}
-        onJump={jumpToPara}
+      <ChapterHeader
+        number={chapter.meta.number}
+        title={chapter.meta.title}
+        paragraphs={chapter.paragraphs.length}
+        minutes={readingMinutes(chapter)}
+        onPrint={
+          chapter.meta.printable
+            ? () => print({ bookId, section: 'capitolo', chapterId: chapter.meta.id })
+            : undefined
+        }
       />
 
       <article className="chapter-content">
-        {chapter.paragraphs.map((para) => (
+        {chapter.paragraphs.map((para, i) => (
           <section
             key={para.id}
             id={para.id}
@@ -106,9 +111,9 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
             ref={(el) => { paraRefs.current[para.id] = el; }}
             className="paragraph-section"
           >
-            <h3 className="paragraph-title">
-              <span className="para-num">{para.id}</span> {para.title}
-            </h3>
+            <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
+              {para.title}
+            </ParagraphHeading>
             <div className="paragraph-body">
               <ContentFlow
                 content={preprocessContent(para.content)}
@@ -121,22 +126,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         ))}
       </article>
 
-      {nextChapter && (
-        <nav className="chapter-next-nav" aria-label="Capitolo successivo">
-          <Link
-            to={`/libro/${bookId}/capitolo/${nextChapter.meta.id}`}
-            className="chapter-next-link"
-          >
-            <span className="chapter-next-body">
-              <span className="chapter-next-eyebrow">Capitolo successivo</span>
-              <span className="chapter-next-title">
-                Cap. {nextChapter.meta.number} — {nextChapter.meta.title}
-              </span>
-            </span>
-            <span className="chapter-next-arrow" aria-hidden>→</span>
-          </Link>
-        </nav>
-      )}
+      <ChapterPager prev={prev} next={next} />
     </div>
   );
 }

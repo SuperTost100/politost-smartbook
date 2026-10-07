@@ -39,21 +39,18 @@ body {
   margin-bottom: var(--print-space-md);
 }
 
-.print-brand-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--print-primary);
-  display: inline-block;
+.print-brand-mark {
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
 .print-brand-name {
   font-family: var(--print-font-sans);
   font-size: var(--print-size-brand);
-  font-weight: 800;
-  color: var(--print-primary);
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--print-ink);
+  letter-spacing: -0.01em;
 }
 
 .print-brand-sub {
@@ -69,30 +66,24 @@ body {
 .print-brand-rule {
   border: none;
   margin: 0 0 var(--print-space-xl);
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--print-primary) 0%,
-    var(--print-primary-mid) 60%,
-    var(--print-border) 100%
-  );
-  border-radius: 2px;
+  height: 0;
+  border-top: 1.5pt solid var(--print-ink);
 }
 
 .print-brand-book {
-  font-family: var(--print-font-sans);
+  font-family: var(--print-font-mono);
   font-size: var(--print-size-eyebrow);
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   color: var(--print-ink-muted);
   margin: 0 0 var(--print-space-sm);
 }
 
 .print-brand-title {
-  font-family: var(--print-font-serif);
+  font-family: var(--print-font-sans);
   font-size: var(--print-size-title);
-  font-weight: 700;
+  font-weight: 600;
   line-height: var(--print-leading-tight);
   color: var(--print-ink);
   margin: 0;
@@ -149,8 +140,10 @@ body {
 }
 
 .print-flow .para-num {
-  color: var(--print-primary);
-  font-weight: 700;
+  font-family: var(--print-font-mono);
+  font-size: 0.8em;
+  color: var(--print-ink-muted);
+  font-weight: 400;
   margin-right: 0.35em;
 }
 
@@ -207,9 +200,8 @@ body {
 .print-flow .numbered-formula {
   margin: 1.1rem 0;
   padding: 0.85rem 1rem;
-  background: var(--print-primary-light);
-  border-left: 3px solid var(--print-primary);
-  border-radius: 0 var(--print-radius) var(--print-radius) 0;
+  border: 1px solid var(--print-border);
+  border-radius: var(--print-radius);
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -283,6 +275,8 @@ body {
 }
 
 .print-flow .smartbook-figure figcaption {
+  font-family: var(--print-font-serif);
+  font-style: italic;
   font-size: var(--print-size-caption);
   color: var(--print-ink-muted);
   margin-top: 0.45rem;
@@ -300,7 +294,7 @@ body {
 /* ── Cross-refs ───────────────────────────────────────────────── */
 
 .print-flow .smartbook-ref {
-  color: var(--print-accent);
+  color: var(--print-primary);
   font-weight: 500;
   text-decoration: none;
 }
@@ -324,10 +318,10 @@ body {
   font-family: var(--print-font-sans);
   font-size: var(--print-size-heading);
   font-weight: 600;
-  color: var(--print-primary);
+  color: var(--print-ink);
   margin: 0 0 var(--print-space-md);
   padding-bottom: var(--print-space-sm);
-  border-bottom: 2px solid var(--print-primary-light);
+  border-bottom: 1pt solid var(--print-border-strong);
   break-after: avoid;
   page-break-after: avoid;
 }
@@ -341,7 +335,6 @@ body {
 .print-flow .formulario-card {
   break-inside: avoid;
   page-break-inside: avoid;
-  background: var(--print-surface-dim);
   border: 1px solid var(--print-border);
   border-radius: var(--print-radius);
   padding: var(--print-space-md);
@@ -386,15 +379,15 @@ body {
   gap: 0.5em 0.75em;
   margin-bottom: var(--print-space-md);
   padding-bottom: var(--print-space-sm);
-  border-bottom: 1px solid var(--print-primary-light);
+  border-bottom: 1px solid var(--print-border);
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
 .print-flow .exercise-id {
-  font-family: var(--print-font-sans);
-  font-weight: 700;
-  color: var(--print-primary);
+  font-family: var(--print-font-mono);
+  font-weight: 600;
+  color: var(--print-ink);
 }
 
 .print-flow .exercise-ch {
@@ -427,28 +420,21 @@ body {
 }
 
 .print-flow .print-reveal-block--hint {
-  background: var(--print-hint-bg);
-  border: 1px solid var(--print-hint-border);
+  border: 1px solid var(--print-border);
 }
 
 .print-flow .print-reveal-block--solution {
-  background: var(--print-solution-bg);
-  border: 1px solid var(--print-solution-border);
+  border: 1px solid var(--print-border-strong);
 }
 
 .print-flow .print-reveal-header {
-  font-family: var(--print-font-sans);
-  font-size: var(--print-size-small);
-  font-weight: 700;
+  font-family: var(--print-font-mono);
+  font-size: var(--print-size-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--print-ink-muted);
   margin-bottom: var(--print-space-sm);
-}
-
-.print-flow .print-reveal-block--hint .print-reveal-header {
-  color: var(--print-hint-ink);
-}
-
-.print-flow .print-reveal-block--solution .print-reveal-header {
-  color: var(--print-solution-ink);
 }
 
 .print-flow .empty-note {

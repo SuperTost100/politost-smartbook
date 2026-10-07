@@ -1,46 +1,51 @@
-# Politost Smartbook (Reader)
+# Politost Smartbook
 
-Viewer web per smartbook interattivi: capitoli, formulario, esercizi, laboratorio, grafici, stampa.
+The standalone reader for interactive smartbooks, with the redesigned reading shell, library, formulas, exercises, lab, graphs and print preview.
 
-## Avvio
+## Start
+
+Use Node.js 22.13 or newer.
 
 ```bash
-npm install
-npm run dev          # → http://localhost:5173
+npm ci
+npm run dev
 ```
 
-Con API auth/DRM: vedi [server/README.md](server/README.md).
+Open http://localhost:5173 and choose "Guida di esempio". This public repository includes only the example book. Import other books as `.ptsb` files or add your own content locally.
 
-## Comandi
+The default build works without a backend. For a private platform integration, set `VITE_PLATFORM_ENABLED=true` and `VITE_API_URL` before building. The commercial API and private course books are maintained separately.
+
+## Checks
 
 ```bash
+npm run test:content
+npm run test:security
+npm run test:print:unit
 npm run build
-npm run validate:chapter -- --file src/content/esempio/chapters/02-nel-libro.md --chapter-number 2
-npm run pack:ptsb -- --dir src/content/esempio --out ../esempio.ptsb
+npm run test:e2e
 ```
 
-## Documentazione
+Auth tests run only with `VITE_PLATFORM_ENABLED=true`. Pyodide assets are generated during installation and build.
 
-| Documento | Contenuto |
-|-----------|-----------|
-| [**docs/reader.md**](../docs/reader.md) | Viewer: UI, architettura, stampa, auth |
-| [**docs/content-format.md**](../docs/content-format.md) | Sintassi capitoli, `smartbook.json` |
-| [**docs/ptsb.md**](../docs/ptsb.md) | Pacchetti `.ptsb` |
-| [DEPLOY.md](DEPLOY.md) | Deploy Cloudflare + Render + Neon |
-| [docs/SMARTBOOK.md](docs/SMARTBOOK.md) | Reindirizzamento (link legacy) |
+## Documentation
 
-Indice monorepo: [../docs/README.md](../docs/README.md)
+- [Reader guide](docs/guida.md), also available at `/docs`
+- [Reader architecture](docs/reader.md)
+- [Design system](design-system/README.md)
+- [Content format](https://github.com/SuperTost100/politost-content-format)
+- [PTSB format](docs/ptsb.md)
+- [Self-hosting](docs/Self-Hosting.md)
+- [Repository sync](docs/Repository-Sync.md)
 
-## Esempio
+## Related repositories
 
-- Builtin: `src/content/esempio/` → `/libro/esempio`
-- Pacchetto: `../esempio.ptsb`
+- [content-core](https://github.com/SuperTost100/politost-content-core): shared parser, validator and PTSB reader, MIT
+- [ptsb-pack](https://github.com/SuperTost100/politost-ptsb-pack): Python packaging CLI
+- [Smart Builder](https://github.com/SuperTost100/politost-smartbook-builder): current authoring app, private
+- [Pyxis](https://github.com/SuperTost100/politost-pyxis): desktop study app
 
-## Struttura
+Development continues in these standalone repositories. The old monorepo is retained as migration history. The archived `politost-builder` is withdrawn and must not be re-exported.
 
-```
-src/content/     # Smartbook integrati
-src/lib/         # loader, parser, ptsb
-src/print/       # Anteprima stampa
-server/          # FastAPI auth + DRM
-```
+## License
+
+[AGPL-3.0](LICENSE). The bundled content-core package has its own [MIT license](packages/content-core/LICENSE).

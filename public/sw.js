@@ -1,5 +1,5 @@
 // ponytail: minimal static cache — bump CACHE when shell assets change
-const CACHE = 'smartbook-static-v1';
+const CACHE = 'smartbook-static-v2';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
@@ -8,6 +8,8 @@ const PRECACHE = [
   '/apple-touch-icon.png',
   '/favicon-32x32.png',
   '/favicon-16x16.png',
+  '/icon-192.png',
+  '/icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {

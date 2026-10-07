@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import * as CookieConsent from 'vanilla-cookieconsent';
 import 'vanilla-cookieconsent/dist/cookieconsent.css';
+import '../styles/cookieconsent.css';
 
 export function initCookieConsent(): void {
   CookieConsent.run({
@@ -20,7 +21,7 @@ export function initCookieConsent(): void {
           consentModal: {
             title: 'Utilizziamo i cookie',
             description:
-              'Usiamo cookie necessari per la sessione e, con il tuo consenso, per preferenze come il tema. ' +
+              'Il cookie di sessione è necessario per l\'accesso. Il tema chiaro o scuro si salva solo se accetti i cookie funzionali. ' +
               '<a href="/privacy" class="cc-link">Privacy</a> · <a href="/cookie" class="cc-link">Cookie</a>',
             acceptAllBtn: 'Accetta tutti',
             acceptNecessaryBtn: 'Solo necessari',
@@ -34,17 +35,17 @@ export function initCookieConsent(): void {
             sections: [
               {
                 title: 'Necessari',
-                description: 'Cookie di sessione e consenso — sempre attivi.',
+                description: 'Cookie di sessione e memoria della scelta. Sempre attivi.',
                 linkedCategory: 'necessary',
               },
               {
                 title: 'Funzionali',
-                description: 'Preferenza tema chiaro/scuro (localStorage).',
+                description: 'Salva il tema chiaro o scuro su questo browser. Senza consenso il tema vale solo per la visita in corso.',
                 linkedCategory: 'functional',
               },
               {
                 title: 'Analitici',
-                description: 'Nessun tracker in questa versione.',
+                description: 'Spento. Questa versione non carica strumenti di statistica.',
                 linkedCategory: 'analytics',
               },
             ],
@@ -52,12 +53,22 @@ export function initCookieConsent(): void {
         },
       },
     },
-    onConsent: ({ cookie }) => {
-      if (!cookie.categories.includes('functional')) {
-        /* tema resta ma rispettiamo opt-out futuro */
-      }
-    },
   });
+}
+
+export function hasFunctionalConsent(): boolean {
+  try {
+    const raw = localStorage.getItem('cc_cookie');
+    if (!raw) return false;
+    const data = JSON.parse(raw) as { categories?: unknown };
+    return Array.isArray(data.categories) && data.categories.includes('functional');
+  } catch {
+    return false;
+  }
+}
+
+export function openCookiePreferences(): void {
+  CookieConsent.showPreferences();
 }
 
 export function CookieConsentInit() {

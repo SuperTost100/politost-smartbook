@@ -17,6 +17,8 @@ import { BookNotFound } from '../components/BookNotFound';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { Lockup } from '../components/shell/Lockup';
+import { Ban, ChevronLeft, CircleAlert, Printer } from 'lucide-react';
 import './styles/shell.css';
 
 export type PrintKind = 'capitolo' | 'formulario' | 'esercizi' | 'esami';
@@ -62,22 +64,7 @@ function PrintLoadingScreen() {
 function PrintErrorCard({ message }: { message: string }) {
   return (
     <div className="print-error-card" role="alert">
-      <svg
-        className="print-error-icon"
-        width={18}
-        height={18}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <circle cx={12} cy={12} r={10} />
-        <line x1={12} y1={8} x2={12} y2={12} />
-        <line x1={12} y1={16} x2={12.01} y2={16} />
-      </svg>
+      <CircleAlert className="print-error-icon" size={18} strokeWidth={1.75} aria-hidden />
       <span>{message}</span>
     </div>
   );
@@ -107,17 +94,7 @@ function PrintToolbar({
       <header className="print-toolbar no-print" aria-label="Barra strumenti anteprima di stampa">
         {/* Brand */}
         <Link to="/" className="print-toolbar-brand" tabIndex={-1} aria-hidden>
-          <img
-            src="/logo.svg"
-            alt=""
-            className="print-toolbar-logo"
-            width={32}
-            height={32}
-          />
-          <div className="print-toolbar-wordmark">
-            <span className="print-toolbar-name">Politost</span>
-            <span className="print-toolbar-sub">Smartbook</span>
-          </div>
+          <Lockup />
         </Link>
 
         <div className="print-toolbar-divider" aria-hidden />
@@ -139,9 +116,7 @@ function PrintToolbar({
             className="print-toolbar-btn print-toolbar-btn--back"
             aria-label="Torna al libro"
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
             Torna al libro
           </Link>
 
@@ -160,11 +135,7 @@ function PrintToolbar({
               </>
             ) : (
               <>
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <polyline points="6 9 6 2 18 2 18 9" />
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <rect x="6" y="14" width="12" height="8" />
-                </svg>
+                <Printer size={16} strokeWidth={1.75} aria-hidden />
                 Stampa
               </>
             )}
@@ -172,8 +143,6 @@ function PrintToolbar({
         </div>
       </header>
 
-      {/* Brand accent strip */}
-      <div className="print-toolbar-accent no-print" aria-hidden />
     </>
   );
 }
@@ -201,10 +170,7 @@ function PrintUnavailableShell({
       />
       <div className="print-canvas">
         <div className="print-unavailable-body">
-          <svg className="print-unavailable-icon" width={48} height={48} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <circle cx={12} cy={12} r={10} />
-            <line x1={4.93} y1={4.93} x2={19.07} y2={19.07} />
-          </svg>
+          <Ban className="print-unavailable-icon" size={48} strokeWidth={1.5} aria-hidden />
           <p>Questo capitolo non è disponibile in versione stampabile.</p>
         </div>
       </div>

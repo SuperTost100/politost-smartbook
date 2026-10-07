@@ -1,6 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
+const legalVersions = JSON.parse(
+  readFileSync(new URL('../src/legal/versions.json', import.meta.url), 'utf8'),
+) as { tos: string; privacy: string };
+
 test.describe('Auth form', () => {
+  test.skip(process.env.VITE_PLATFORM_ENABLED !== 'true', 'Auth requires an explicitly enabled private platform build.');
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cc_cookie', '{"categories":["necessary","functional"],"revision":0,"data":null,"consentTimestamp":"2020-01-01T00:00:00.000Z","consentId":"e2e","services":{"necessary":[],"functional":[]},"lastConsentTimestamp":"2020-01-01T00:00:00.000Z"}');
@@ -62,7 +68,11 @@ test.describe('Auth form', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ has_consent: true }),
+        body: JSON.stringify({
+          has_consent: true,
+          tos_version: legalVersions.tos,
+          privacy_version: legalVersions.privacy,
+        }),
       }),
     );
 

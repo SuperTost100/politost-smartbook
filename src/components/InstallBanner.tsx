@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Share } from 'lucide-react';
 import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 
 const SNOOZE_KEY = 'pwa-install-snooze-until';
@@ -119,7 +120,6 @@ export function InstallBanner() {
       role="region"
       aria-label="Installa l'app"
     >
-      <div className="install-banner-glow" aria-hidden />
       <div className="install-banner-body">
         <img src="/logo.svg" alt="" className="install-banner-icon" width={44} height={44} />
         <div className="install-banner-copy">
@@ -141,16 +141,7 @@ export function InstallBanner() {
             <span className="install-banner-ios-num">1</span>
             Tocca
             {' '}
-            <svg className="install-banner-share-icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-              <path
-                d="M12 3v10M8 7l4-4 4 4M5 21h14a2 2 0 0 0 2-2v-7"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Share className="install-banner-share-icon" size={16} strokeWidth={1.75} aria-hidden />
             {' '}
             in basso
           </span>

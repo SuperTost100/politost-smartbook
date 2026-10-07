@@ -1,27 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { App } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
 import { getCatalog, initUploadedBooks, isBuiltinBook, registerUploadedBook, unregisterUploadedBook } from '../lib/loader';
 import { whenCloudBooksReady } from '../lib/cloudLoader';
 import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
-import { subjectAccentClass } from '../lib/subjectColor';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
-import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
+import { BookCard } from '../components/ds/BookCard';
+import { ImportDropzone } from '../components/ds/ImportDropzone';
 
 export function Home() {
   const { user, isLoading: authLoading } = useAuth();
   const { auth: authEnabled } = useReaderFeatures();
-  const isMobile = useMediaQuery(MOBILE_LAYOUT_QUERY);
+  const { modal } = App.useApp();
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const refreshCatalog = useCallback(() => {
     setCatalog(getCatalog());
@@ -97,125 +95,69 @@ export function Home() {
     }
   }
 
-  async function handleRemove(id: string) {
-    await removeUploaded(id);
-    unregisterUploadedBook(id);
-    refreshCatalog();
-    setUploadStatus(null);
-    setUploadWarnings([]);
+  function confirmRemove(id: string, title: string) {
+    modal.confirm({
+      title: 'Rimuovere il libro?',
+      content: `"${title}" sarà eliminato da questo dispositivo. Potrai importarlo di nuovo dal file .ptsb.`,
+      okText: 'Rimuovi',
+      cancelText: 'Annulla',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await removeUploaded(id);
+        unregisterUploadedBook(id);
+        refreshCatalog();
+        setUploadStatus(null);
+        setUploadWarnings([]);
+      },
+    });
   }
 
-  function onDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) void processFile(file);
-  }
+  const dropState = uploading ? 'busy' : uploadError ? 'error' : uploadStatus ? 'success' : 'idle';
 
   return (
-    <div className="home-page">
-        <SiteHeader />
+    <div className="site-page home-page">
+      <SiteHeader />
 
-        <main id="main-content">
-        <div className="home-hero">
+      <main id="main-content" className="home-main">
+        <section className="home-hero">
           <h1>I tuoi libri di testo, interattivi</h1>
           <p>
-            Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio — tutto in un unico libro digitale.
+            Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.
           </p>
-        </div>
+        </section>
 
         <section className="home-catalog">
           <h2>Smartbook disponibili</h2>
           <div className="book-grid">
             {catalog.map((book) => (
-              <div key={book.id} className="book-card-wrap">
-                {book.source === 'cloud' && (
-                  <span className="book-card-badge-corner">Cloud</span>
-                )}
-                {book.source === 'uploaded' && (
-                  <span className="book-card-badge-corner">Importato</span>
-                )}
-                <Link to={`/libro/${book.id}`} className="book-card">
-                  <div className={`book-card-accent ${subjectAccentClass(book.subject)}`} aria-hidden />
-                  <span className="book-card-subject">{book.subject}</span>
-                  <h3>{book.title}</h3>
-                  {(book.authors?.length || book.version) && (
-                    <p className="book-card-meta">
-                      {[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
-                  {book.access === 'licensed' && (
-                    <div className="book-card-badges">
-                      <span className="badge badge-licensed">Richiede accesso</span>
-                    </div>
-                  )}
-                  <span className="book-card-cta">Apri →</span>
-                </Link>
-                {book.source === 'uploaded' && (
-                  <button type="button" className="book-remove-btn" onClick={() => void handleRemove(book.id)}>
-                    Rimuovi da questo dispositivo
-                  </button>
-                )}
-              </div>
+              <BookCard
+                key={book.id}
+                subject={book.subject}
+                title={book.title}
+                meta={[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ') || undefined}
+                href={`/libro/${book.id}`}
+                cloud={book.source === 'cloud'}
+                uploaded={book.source === 'uploaded'}
+                licensed={book.access === 'licensed'}
+                onRemove={book.source === 'uploaded' ? () => confirmRemove(book.id, book.title) : undefined}
+              />
             ))}
           </div>
         </section>
 
-        <section className="home-import no-print">
-          <details className="home-import-details">
-            <summary className="home-import-summary">
-              <span className="home-import-title">Hai un libro digitale?</span>
-              <span className="home-import-subtitle">Se hai ricevuto un file dal tuo docente o dall&apos;editore, importalo qui.</span>
-            </summary>
-            <div className="home-import-body">
-              <p className="home-import-hint">
-                {isMobile ? (
-                  <>
-                    Scegli il file <code>.ptsb</code> ricevuto dal docente o dall&apos;editore.
-                    Il libro resterà disponibile su questo dispositivo.
-                  </>
-                ) : (
-                  <>
-                    Seleziona o trascina il file che ti è stato fornito (formato <code>.ptsb</code>).
-                    Il libro resterà disponibile su questo dispositivo.
-                  </>
-                )}
-              </p>
-              <div
-                className={`upload-dropzone${dragOver ? ' drag-over' : ''}${isMobile ? ' upload-dropzone--mobile' : ''}`}
-                onDragOver={isMobile ? undefined : (e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={isMobile ? undefined : () => setDragOver(false)}
-                onDrop={isMobile ? undefined : onDrop}
-                onClick={() => inputRef.current?.click()}
-                role="button"
-                aria-label="Carica un file smartbook in formato ptsb"
-                tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), inputRef.current?.click())}
-              >
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept=".ptsb"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void processFile(f);
-                    e.target.value = '';
-                  }}
-                />
-                {uploading ? 'Caricamento in corso…' : isMobile ? 'Scegli file .ptsb' : 'Clicca o trascina il file qui'}
-              </div>
-              {uploadStatus && <p className="upload-success" aria-live="polite">{uploadStatus}</p>}
-              <div role="status">
-                {uploadWarnings.map((warning, index) => <p key={index}>{warning}</p>)}
-              </div>
-              {uploadError && <p className="upload-error" role="alert">{uploadError}</p>}
-            </div>
-          </details>
+        <section className="home-import no-print" aria-labelledby="home-import-title">
+          <h2 id="home-import-title">Hai un libro digitale?</h2>
+          <p>Se hai ricevuto un file dal tuo docente o dall&apos;editore, importalo qui: il libro resterà disponibile su questo dispositivo.</p>
+          <ImportDropzone
+            state={dropState}
+            message={uploadError ?? uploadStatus}
+            warnings={uploadWarnings}
+            onFile={(file) => void processFile(file)}
+          />
         </section>
-        </main>
+      </main>
 
-        <Footer />
+      <Footer />
     </div>
   );
 }

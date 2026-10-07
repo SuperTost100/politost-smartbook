@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
+import { AntdProvider } from './context/AntdProvider';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CookieConsentInit } from './lib/cookieConsent';
 import { InstallBanner } from './components/InstallBanner';
 import { initBuiltinBooks, initUploadedBooks } from './lib/loader';
@@ -24,11 +25,25 @@ const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m
 
 const queryClient = new QueryClient();
 
+const CONSENT_OPEN = ['/auth', '/termini', '/privacy', '/cookie', '/docs'];
+
+function ConsentGate({ children }: { children: ReactNode }) {
+  const { auth: authEnabled } = useReaderFeatures();
+  const { user, isLoading, hasConsent } = useAuth();
+  const location = useLocation();
+  if (!authEnabled || isLoading || !user || hasConsent) return children;
+  const path = location.pathname;
+  if (CONSENT_OPEN.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) return children;
+  const next = encodeURIComponent(path + location.search);
+  return <Navigate to={`/auth/accept-terms?next=${next}`} replace />;
+}
+
 function AppRoutes() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
     <BrowserRouter>
+      <ConsentGate>
       <Routes>
         <Route path="/" element={<Home />} />
         {authEnabled && (
@@ -80,6 +95,7 @@ function AppRoutes() {
           }
         />
       </Routes>
+      </ConsentGate>
     </BrowserRouter>
   );
 }
@@ -110,11 +126,13 @@ export function App() {
     <ReaderConfigProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <AuthProvider>
-            <CookieConsentInit />
-            <AppRoutes />
-            <InstallBanner />
-          </AuthProvider>
+          <AntdProvider>
+            <AuthProvider>
+              <CookieConsentInit />
+              <AppRoutes />
+              <InstallBanner />
+            </AuthProvider>
+          </AntdProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ReaderConfigProvider>

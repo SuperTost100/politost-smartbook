@@ -2,7 +2,9 @@ import { Fragment, useMemo, type ReactNode } from 'react';
 import type { FormulaRef } from '../types/smartbook';
 import { parseContentBlocks, type InlineSegment } from '../lib/renderContent';
 import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/formulaRender';
-import { FormulaTooltip } from './FormulaTooltip';
+import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
+import { Formula } from './ds/Formula';
+import { Figure } from './ds/Figure';
 import { SmartbookFigure } from './SmartbookFigure';
 
 export type ContentFlowVariant = FormulaRenderVariant;
@@ -61,9 +63,7 @@ function InlineFlow({
               </Fragment>
             );
           }
-          return (
-            <FormulaTooltip key={i} formulaId={seg.formulaId} formulas={formulaIndex} />
-          );
+          return <FormulaRefChip key={i} formulaId={seg.formulaId} formulas={formulaIndex} />;
         }
 
         if (seg.type === 'link') {
@@ -76,7 +76,7 @@ function InlineFlow({
             return seg.bold ? <strong key={i}>{link}</strong> : <span key={i}>{link}</span>;
           }
           const link = (
-            <button type="button" className="smartbook-ref" data-ref={seg.ref}>
+            <button type="button" className="smartbook-ref sb-link" data-ref={seg.ref}>
               {seg.label}
             </button>
           );
@@ -137,11 +137,11 @@ export function ContentFlow({
     if (block.type === 'formula') {
       const f = formulaIndex?.get(block.formulaId);
       if (f) {
+        if (!isPrint) return <Formula formula={f} />;
         return wrap(
           <div
             className="numbered-formula"
             data-formula-id={f.id}
-            {...(!isPrint ? { id: `formula-${f.id}` } : {})}
             dangerouslySetInnerHTML={{ __html: renderNumberedFormulaHtml(f, variant) }}
           />,
         );
@@ -154,6 +154,9 @@ export function ContentFlow({
     }
 
     if (block.type === 'image') {
+      if (!isPrint) {
+        return <Figure src={block.src} alt={block.alt} caption={block.caption} resolveAsset={resolveAsset} />;
+      }
       return wrap(
         <SmartbookFigure
           src={block.src}
@@ -181,7 +184,7 @@ export function ContentFlow({
   }
 
   return (
-    <div className="content-flow" onClick={onRefClick}>
+    <div className="content-flow sb-prose" onClick={onRefClick}>
       {blocks.map((block, i) => (
         <Fragment key={i}>{renderBlock(block, i)}</Fragment>
       ))}

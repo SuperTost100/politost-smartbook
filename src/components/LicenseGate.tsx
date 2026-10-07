@@ -59,7 +59,7 @@ export function LicenseGate({ bookId, access = 'public', children }: LicenseGate
         <div className="license-locked-actions">
           <button
             type="button"
-            className="btn-primary"
+            className="sb-btn sb-btn-primary"
             onClick={() => {
               setState('loading');
               setAttempt((n) => n + 1);
@@ -83,7 +83,7 @@ export function LicenseGate({ bookId, access = 'public', children }: LicenseGate
           con l&apos;email <strong>{user?.email}</strong>.
         </p>
         <div className="license-locked-actions">
-          <Link to="/redeem" className="btn-primary">Riscatta codice attivazione</Link>
+          <Link to="/redeem" className="sb-btn sb-btn-primary">Riscatta codice attivazione</Link>
           <Link to="/" className="license-locked-catalog-link">Torna al catalogo</Link>
         </div>
       </div>

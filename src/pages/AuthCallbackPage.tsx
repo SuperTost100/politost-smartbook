@@ -2,8 +2,10 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchConsentStatus } from '../lib/api';
+import { consentIsCurrent } from '../lib/consentVersion';
+import versions from '../legal/versions.json';
 import { consumeOAuthNext, isSafeNextPath } from '../lib/safeNext';
-import { Icon } from '../components/Icon';
+import { LoaderCircle } from 'lucide-react';
 
 export function AuthCallbackPage() {
   const { refresh } = useAuth();
@@ -17,7 +19,7 @@ export function AuthCallbackPage() {
       await refresh();
       try {
         const consent = await fetchConsentStatus();
-        if (!consent.has_consent) {
+        if (!consentIsCurrent(consent, versions)) {
           const dest = isSafeNextPath(next)
             ? `/auth/accept-terms?next=${encodeURIComponent(next)}`
             : '/auth/accept-terms';
@@ -33,7 +35,7 @@ export function AuthCallbackPage() {
 
   return (
     <div className="app-loading">
-      <Icon name="loader" size={32} />
+      <LoaderCircle className="icon-spin" size={32} strokeWidth={1.75} aria-hidden />
       <p>Accesso in corso…</p>
     </div>
   );

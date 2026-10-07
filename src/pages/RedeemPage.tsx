@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { redeemActivationKey } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { SiteHeader } from '../components/SiteHeader';
-import { Footer } from '../components/Footer';
-import { Icon } from '../components/Icon';
+import { Alert, Button, Form, Input } from 'antd';
+import { LockKeyhole } from 'lucide-react';
+import { AuthLayout } from '../components/AuthLayout';
 
 export function RedeemPage() {
   const { user, isLoading, hasConsent } = useAuth();
@@ -20,8 +20,7 @@ export function RedeemPage() {
     }
   }, [isLoading, navigate, user]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setError('');
     setSuccess(null);
     setLoading(true);
@@ -38,81 +37,60 @@ export function RedeemPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="auth-page">
-        <SiteHeader />
-        <main id="main-content" className="auth-shell">
-          <p className="empty-note">Caricamento…</p>
-        </main>
-        <Footer />
-      </div>
+      <AuthLayout>
+        <p className="empty-note">Caricamento…</p>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="auth-page">
-      <SiteHeader />
-      <main id="main-content" className="auth-shell">
-        <div className="auth-hero-band">
-          <img src="/logo.svg" alt="" className="auth-hero-logo" width={48} height={48} />
-          <h1 className="auth-hero-title">Riscatta codice</h1>
-          <p className="auth-hero-tagline">Inserisci il codice di attivazione ricevuto dall&apos;editore</p>
-        </div>
-
-        <div className="auth-body">
-          {!hasConsent && (
-            <div className="auth-error-banner" role="alert">
+    <AuthLayout title="Riscatta codice" tagline="Inserisci il codice di attivazione ricevuto dall'editore">
+      {!hasConsent && (
+        <Alert
+          className="auth-error"
+          type="error"
+          showIcon={false}
+          role="alert"
+          title={
+            <>
               Devi accettare Termini e Privacy prima di riscattare un codice.{' '}
               <Link to="/auth/accept-terms?next=/redeem">Completa il consenso</Link>
-            </div>
-          )}
+            </>
+          }
+        />
+      )}
 
-          <form className="auth-form" onSubmit={(e) => void handleSubmit(e)}>
-            <label className="auth-field">
-              <span className="auth-field-label">Codice attivazione</span>
-              <span className="auth-field-control">
-                <Icon name="lock" size={18} className="auth-field-icon" />
-                <input
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="off"
-                  placeholder="XXXX-XXXX-XXXX-XXXX"
-                  disabled={!hasConsent}
-                />
-              </span>
-            </label>
+      <Form className="auth-form" layout="vertical" requiredMark={false} onFinish={() => void handleSubmit()}>
+        <Form.Item label="Codice attivazione" htmlFor="redeem-code">
+          <Input
+            id="redeem-code"
+            size="large"
+            prefix={<LockKeyhole size={18} strokeWidth={1.75} aria-hidden />}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="off"
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            disabled={!hasConsent}
+          />
+        </Form.Item>
 
-            {error && (
-              <div className="auth-error-banner" role="alert">
-                {error}
-              </div>
-            )}
+        {error && <Alert className="auth-error" type="error" showIcon={false} title={error} role="alert" />}
 
-            {success && (
-              <div className="upload-success" role="status">
-                <p>{success.message}</p>
-                <Link to={`/libro/${success.smartbookId}`} className="btn-primary auth-btn-full">
-                  Apri smartbook
-                </Link>
-              </div>
-            )}
+        {success && (
+          <div className="auth-success" role="status">
+            <p>{success.message}</p>
+            <Link to={`/libro/${success.smartbookId}`} className="sb-btn sb-btn-primary sb-btn-block">
+              Apri smartbook
+            </Link>
+          </div>
+        )}
 
-            <button type="submit" className="btn-primary auth-btn-full" disabled={loading || !hasConsent}>
-              {loading ? (
-                <>
-                  <Icon name="loader" size={18} />
-                  Verifica codice…
-                </>
-              ) : (
-                'Riscatta codice'
-              )}
-            </button>
-          </form>
-        </div>
-      </main>
-      <Footer />
-    </div>
+        <Button block size="large" type="primary" shape="round" htmlType="submit" loading={loading} disabled={!hasConsent}>
+          {loading ? 'Verifica codice…' : 'Riscatta codice'}
+        </Button>
+      </Form>
+    </AuthLayout>
   );
 }

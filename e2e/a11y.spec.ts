@@ -13,6 +13,7 @@ test.describe('Accessibility landmarks', () => {
   });
 
   test('auth page has a main landmark and tab panel', async ({ page }) => {
+    test.skip(process.env.VITE_PLATFORM_ENABLED !== 'true', 'Auth requires the private platform build.');
     await page.goto('/auth');
     await expect(page.locator('main#main-content')).toBeVisible();
     await expect(page.getByRole('tablist', { name: 'Modalità accesso' })).toBeVisible();
@@ -77,17 +78,17 @@ test.describe('Dark mode', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
     const lightBg = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim(),
+      getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
     );
-    expect(lightBg).toBe('#f0f2f7');
+    expect(lightBg).toBe('#f6f5f1');
 
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     const darkBg = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim(),
+      getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
     );
-    expect(darkBg).toBe('#0b0f19');
+    expect(darkBg).toBe('#0d1015');
   });
 
   test('theme toggle updates body colors on reader', async ({ page }) => {
@@ -99,13 +100,13 @@ test.describe('Dark mode', () => {
       .poll(async () =>
         page.evaluate(() => getComputedStyle(document.body).backgroundColor),
       )
-      .toBe('rgb(11, 15, 25)');
+      .toBe('rgb(13, 16, 21)');
 
     const textColor = await page.evaluate(() => {
       const paragraph = document.querySelector('.content-paragraph');
       return paragraph ? getComputedStyle(paragraph).color : getComputedStyle(document.body).color;
     });
-    expect(textColor).toBe('rgb(228, 232, 241)');
+    expect(textColor).toBe('rgb(232, 234, 239)');
   });
 
   test('formulario and difficulty badges stay readable in dark mode', async ({ page }) => {
@@ -113,14 +114,14 @@ test.describe('Dark mode', () => {
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
 
     const formulaColor = await page.evaluate(() =>
-      getComputedStyle(document.querySelector('.formulario-card-body .katex')!).color,
+      getComputedStyle(document.querySelector('.sb-fcard-math .katex')!).color,
     );
-    expect(formulaColor).toBe('rgb(228, 232, 241)');
+    expect(formulaColor).toBe('rgb(232, 234, 239)');
 
     await page.goto('/libro/esempio/esercizi');
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    const badge = page.locator('.difficulty').first();
+    const badge = page.locator('.sb-diff').first();
     if (await badge.count()) {
       const badgeColor = await badge.evaluate((el) => getComputedStyle(el).color);
       expect(badgeColor).not.toBe('rgb(0, 0, 0)');
@@ -136,17 +137,18 @@ test.describe('Dark mode', () => {
       .poll(async () =>
         page.evaluate(() => getComputedStyle(document.querySelector('.print-page-shell')!).backgroundColor),
       )
-      .toBe('rgb(11, 15, 25)');
+      .toBe('rgb(13, 16, 21)');
 
     const titleColor = await page.evaluate(() =>
       getComputedStyle(document.querySelector('.print-toolbar-title')!).color,
     );
-    expect(titleColor).toBe('rgb(228, 232, 241)');
+    expect(titleColor).toBe('rgb(232, 234, 239)');
 
     await waitForPrintPagination(page);
     const frameShadow = await page.evaluate(() =>
       getComputedStyle(document.querySelector('.print-preview-frame')!).boxShadow,
     );
-    expect(frameShadow).toContain('rgba(255, 255, 255, 0.06)');
+    // dark: the frame is outlined by the design-system hairline (--border, #292f3a)
+    expect(frameShadow).toContain('rgb(41, 47, 58)');
   });
 });

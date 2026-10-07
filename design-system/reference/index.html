@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="it" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PoliTost Smartbook — component reference</title>
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="bundle.css">
+<link rel="stylesheet" href="lib/katex/katex.min.css">
+<script src="lib/katex/katex.min.js"></script>
+<script src="lib/react.production.min.js"></script>
+<script src="lib/react-dom.production.min.js"></script>
+<script src="bundle.js"></script>
+<style>
+  body { background: var(--bg); }
+  .ref-top { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-6); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .ref-top h1 { margin: 0; font: 600 15px/22px var(--font-sans); }
+  .ref-top .sb-btn { margin-left: auto; }
+  .ref-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); }
+  .ref-nav { position: sticky; top: 57px; align-self: start; display: flex; flex-direction: column; padding: var(--space-6) var(--space-4); max-height: calc(100vh - 57px); overflow: auto; }
+  .ref-nav a { padding: 4px var(--space-2); border-radius: var(--radius-sm); color: var(--ink-muted); font: 400 13px/18px var(--font-sans); text-decoration: none; }
+  .ref-nav a:hover { background: var(--surface-raised); color: var(--ink); }
+  .ref-main { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+  .ref-card header h2 { margin: var(--space-1) 0; font: 600 22px/30px var(--font-sans); }
+  .ref-card header p { margin: 0 0 var(--space-3); color: var(--ink-muted); max-width: 720px; }
+  .ref-frame { background: var(--page); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; }
+  .ref-wide > div { min-width: 1280px; }
+  #c-Reader { height: 860px; }
+</style>
+</head>
+<body>
+<div class="ref-top"><span id="ref-logo"></span><h1>Component reference</h1><button class="sb-btn sb-btn-secondary sb-btn-sm" id="ref-theme" type="button">Tema scuro</button></div>
+<div class="ref-layout"><nav class="ref-nav"><a href="#Logo">Logo</a><a href="#Icon">Icon</a><a href="#Button">Button</a><a href="#IconButton">IconButton</a><a href="#Tag">Tag</a><a href="#DifficultyTag">DifficultyTag</a><a href="#SectionTabs">SectionTabs</a><a href="#ReaderHeader">ReaderHeader</a><a href="#ChapterToc">ChapterToc</a><a href="#ParagraphRail">ParagraphRail</a><a href="#ChapterHeader">ChapterHeader</a><a href="#ParagraphHeading">ParagraphHeading</a><a href="#Prose">Prose</a><a href="#Formula">Formula</a><a href="#FormulaRef">FormulaRef</a><a href="#Figure">Figure</a><a href="#RevealBlock">RevealBlock</a><a href="#ExerciseCard">ExerciseCard</a><a href="#FormulaCard">FormulaCard</a><a href="#CodeCell">CodeCell</a><a href="#GraphPanel">GraphPanel</a><a href="#BookCard">BookCard</a><a href="#ImportDropzone">ImportDropzone</a><a href="#ChapterPager">ChapterPager</a><a href="#Reader">Reader</a></nav><main class="ref-main">
+<section class="ref-card" id="Logo"><header><span class="sb-eyebrow">Brand</span><h2>Logo</h2><p>The Smartbook mark: an open book with a gold bookmark ribbon, alone or with the "Smartbook" wordmark.</p></header><div class="ref-frame"><div id="c-Logo" class="sb-row"></div></div></section>
+<section class="ref-card" id="Icon"><header><span class="sb-eyebrow">Brand</span><h2>Icon</h2><p>Lucide line icon at a 1.75 stroke in `currentColor`.</p></header><div class="ref-frame"><div id="c-Icon" class="sb-row"></div></div></section>
+<section class="ref-card" id="Button"><header><span class="sb-eyebrow">Actions</span><h2>Button</h2><p>Pill action button; antd `Button` with `shape="round"`.</p></header><div class="ref-frame"><div id="c-Button" class="sb-row"></div></div></section>
+<section class="ref-card" id="IconButton"><header><span class="sb-eyebrow">Actions</span><h2>IconButton</h2><p>Circular icon-only button for the header, the lab toolbar and card actions.</p></header><div class="ref-frame"><div id="c-IconButton" class="sb-row"></div></div></section>
+<section class="ref-card" id="Tag"><header><span class="sb-eyebrow">Status</span><h2>Tag</h2><p>Small mono label for the subject and a book's origin.</p></header><div class="ref-frame"><div id="c-Tag" class="sb-row"></div></div></section>
+<section class="ref-card" id="DifficultyTag"><header><span class="sb-eyebrow">Status</span><h2>DifficultyTag</h2><p>Exercise difficulty as a three-step bar signal plus the word.</p></header><div class="ref-frame"><div id="c-DifficultyTag" class="sb-row"></div></div></section>
+<section class="ref-card" id="SectionTabs"><header><span class="sb-eyebrow">Navigation</span><h2>SectionTabs</h2><p>Pill tab switcher with UPPERCASE mono labels for the book's sections.</p></header><div class="ref-frame"><div id="c-SectionTabs" class="sb-col"></div></div></section>
+<section class="ref-card" id="ReaderHeader"><header><span class="sb-eyebrow">Navigation</span><h2>ReaderHeader</h2><p>The 64px reader header: lockup, section tabs, print and theme.</p></header><div class="ref-frame ref-wide"><div id="c-ReaderHeader" class=""></div></div></section>
+<section class="ref-card" id="ChapterToc"><header><span class="sb-eyebrow">Navigation</span><h2>ChapterToc</h2><p>The left sider: the book, then its chapters, with the current chapter expanded to its paragraphs.</p></header><div class="ref-frame"><div id="c-ChapterToc" class=""></div></div></section>
+<section class="ref-card" id="ParagraphRail"><header><span class="sb-eyebrow">Navigation</span><h2>ParagraphRail</h2><p>Right-hand list of the chapter's paragraphs with the current one marked and a reading meter.</p></header><div class="ref-frame"><div id="c-ParagraphRail" class=""></div></div></section>
+<section class="ref-card" id="ChapterHeader"><header><span class="sb-eyebrow">Reading</span><h2>ChapterHeader</h2><p>The top of a chapter: eyebrow, title, reading facts and the print action.</p></header><div class="ref-frame"><div id="c-ChapterHeader" class=""></div></div></section>
+<section class="ref-card" id="ParagraphHeading"><header><span class="sb-eyebrow">Reading</span><h2>ParagraphHeading</h2><p>A paragraph heading from `## p1 | Title`, with its number and a hover anchor.</p></header><div class="ref-frame"><div id="c-ParagraphHeading" class=""></div></div></section>
+<section class="ref-card" id="Prose"><header><span class="sb-eyebrow">Reading</span><h2>Prose</h2><p>Rendered chapter markdown in the serif reading style.</p></header><div class="ref-frame"><div id="c-Prose" class=""></div></div></section>
+<section class="ref-card" id="Formula"><header><span class="sb-eyebrow">Reading</span><h2>Formula</h2><p>A numbered display formula from `:::formula{id label}`.</p></header><div class="ref-frame"><div id="c-Formula" class=""></div></div></section>
+<section class="ref-card" id="FormulaRef"><header><span class="sb-eyebrow">Reading</span><h2>FormulaRef</h2><p>Inline reference to a numbered formula (`{{formula:2.1}}`) that previews it on hover or focus.</p></header><div class="ref-frame"><div id="c-FormulaRef" class=""></div></div></section>
+<section class="ref-card" id="Figure"><header><span class="sb-eyebrow">Reading</span><h2>Figure</h2><p>An image from `:::image{src alt caption}` with a numbered caption.</p></header><div class="ref-frame"><div id="c-Figure" class=""></div></div></section>
+<section class="ref-card" id="RevealBlock"><header><span class="sb-eyebrow">Exercises</span><h2>RevealBlock</h2><p>A hint or solution that stays closed until the student asks.</p></header><div class="ref-frame"><div id="c-RevealBlock" class=""></div></div></section>
+<section class="ref-card" id="ExerciseCard"><header><span class="sb-eyebrow">Exercises</span><h2>ExerciseCard</h2><p>An exercise or exam question with its id, chapter, difficulty, hint and solution.</p></header><div class="ref-frame"><div id="c-ExerciseCard" class=""></div></div></section>
+<section class="ref-card" id="FormulaCard"><header><span class="sb-eyebrow">Formulario</span><h2>FormulaCard</h2><p>One chapter of the formulario: numbered formulas with their labels.</p></header><div class="ref-frame"><div id="c-FormulaCard" class=""></div></div></section>
+<section class="ref-card" id="CodeCell"><header><span class="sb-eyebrow">Lab</span><h2>CodeCell</h2><p>A lab snippet from `ide.json`: editor, run, output.</p></header><div class="ref-frame"><div id="c-CodeCell" class=""></div></div></section>
+<section class="ref-card" id="GraphPanel"><header><span class="sb-eyebrow">Graphs</span><h2>GraphPanel</h2><p>A plot from `grafici.json` with its title, graph switcher and legend.</p></header><div class="ref-frame"><div id="c-GraphPanel" class=""></div></div></section>
+<section class="ref-card" id="BookCard"><header><span class="sb-eyebrow">Library</span><h2>BookCard</h2><p>A book in the library: subject, origin badges, title, contents and Apri.</p></header><div class="ref-frame"><div id="c-BookCard" class=""></div></div></section>
+<section class="ref-card" id="ImportDropzone"><header><span class="sb-eyebrow">Library</span><h2>ImportDropzone</h2><p>The `.ptsb` import area in the library.</p></header><div class="ref-frame"><div id="c-ImportDropzone" class=""></div></div></section>
+<section class="ref-card" id="ChapterPager"><header><span class="sb-eyebrow">Navigation</span><h2>ChapterPager</h2><p>Previous / next chapter links at the end of a chapter.</p></header><div class="ref-frame"><div id="c-ChapterPager" class=""></div></div></section>
+<section class="ref-card" id="Reader"><header><span class="sb-eyebrow">Pages</span><h2>Reader</h2><p>The reading view composed: header, TOC sider, chapter column, paragraph rail.</p></header><div class="ref-frame ref-wide"><div id="c-Reader" class=""></div></div></section>
+</main></div>
+<script>
+  ReactDOM.createRoot(document.getElementById('ref-logo')).render(React.createElement(PTSB.Logo, { size: 28, wordmark: true }));
+  document.getElementById('ref-theme').onclick = function () { var d = document.documentElement, dark = d.dataset.theme !== 'dark'; d.dataset.theme = dark ? 'dark' : 'light'; this.textContent = dark ? 'Tema chiaro' : 'Tema scuro'; };
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Logo')).render(h(React.Fragment, null, h(S.Logo, { size: 56 }), h(S.Logo, { size: 36, wordmark: true }), h(S.Logo, { size: 28, wordmark: true }), h(S.Logo, { size: 24 }), h(S.Logo, { size: 16 })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Icon')).render(h(React.Fragment, null, ['book-open','sigma','pencil-line','graduation-cap','terminal','chart-line','lightbulb','circle-check','printer','moon','sun','file-archive','bookmark','lock','play','upload'].map(function (n) { return h('span', { key: n, title: n, style: { color: 'var(--ink)' } }, h(S.Icon, { name: n })); })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Button')).render(h(React.Fragment, null, h(S.Button, { variant: 'primary', icon: 'upload' }, 'Importa smartbook'), h(S.Button, { icon: 'printer' }, 'Versione stampabile'), h(S.Button, { variant: 'ghost', icon: 'eye-off' }, 'Nascondi'), h(S.Button, { variant: 'danger', size: 'sm', icon: 'x' }, 'Rimuovi'), h(S.Button, { size: 'sm', iconEnd: 'arrow-right' }, 'Apri')));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-IconButton')).render(h(React.Fragment, null, h(S.IconButton, { icon: 'panel-left', label: 'Indice' }), h(S.IconButton, { icon: 'printer', label: 'Versione stampabile' }), h(S.IconButton, { icon: 'moon', label: 'Tema scuro' }), h(S.IconButton, { icon: 'x', label: 'Chiudi', variant: 'secondary', size: 'sm' })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Tag')).render(h(React.Fragment, null, h(S.Tag, { tone: 'subject' }, 'Fisica'), h(S.Tag, { tone: 'uploaded', icon: 'upload' }, 'importato'), h(S.Tag, { tone: 'licensed', icon: 'lock' }, 'con licenza'), h(S.Tag, { tone: 'outline' }, 'python'), h(S.Tag, null, 'cap. 2')));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-DifficultyTag')).render(h(React.Fragment, null, h(S.DifficultyTag, { level: 'facile' }), h(S.DifficultyTag, { level: 'medio' }), h(S.DifficultyTag, { level: 'difficile' })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var secs = [{ value: 'smartbook', label: 'Capitoli' }, { value: 'formulario', label: 'Formulario' }, { value: 'esercizi', label: 'Esercizi' }, { value: 'esami', label: 'Esami' }, { value: 'ide', label: 'Laboratorio' }, { value: 'grafici', label: 'Grafici' }];
+  ReactDOM.createRoot(document.getElementById('c-SectionTabs')).render(h(React.Fragment, null, h(S.SectionTabs, { items: secs, defaultValue: 'smartbook' }), h(S.SectionTabs, { items: secs, defaultValue: 'esercizi', compact: true })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var secs = [{ value: 'smartbook', label: 'Capitoli' }, { value: 'formulario', label: 'Formulario' }, { value: 'esercizi', label: 'Esercizi' }, { value: 'esami', label: 'Esami' }, { value: 'ide', label: 'Laboratorio' }, { value: 'grafici', label: 'Grafici' }];
+  ReactDOM.createRoot(document.getElementById('c-ReaderHeader')).render(h(S.ReaderHeader, { subject: 'Fisica', title: 'Fondamenti di Fisica Generale', sections: secs, active: 'smartbook', onPrint: function () {}, theme: document.documentElement.dataset.theme }));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var chapters = [
+    { id: 'benvenuto', number: 1, title: 'Grandezze e misure' },
+    { id: 'cinematica', number: 2, title: 'Cinematica del punto', paragraphs: [ { id: 'p1', title: 'Posizione e spostamento' }, { id: 'p2', title: 'Velocità media e istantanea' }, { id: 'p3', title: 'Accelerazione' }, { id: 'p4', title: 'Moto uniformemente accelerato' } ] },
+    { id: 'dinamica', number: 3, title: 'Dinamica e leggi di Newton' },
+    { id: 'lavoro', number: 4, title: 'Lavoro ed energia' } ];
+  ReactDOM.createRoot(document.getElementById('c-ChapterToc')).render(h(S.ChapterToc, { subject: 'Fisica', bookTitle: 'Fondamenti di Fisica Generale', chapters: chapters, activeChapter: 'cinematica', activeParagraph: 'p2' }));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var items = [ { id: 'p1', number: '2.1', title: 'Posizione e spostamento' }, { id: 'p2', number: '2.2', title: 'Velocità media e istantanea' }, { id: 'p3', number: '2.3', title: 'Accelerazione' }, { id: 'p4', number: '2.4', title: 'Moto uniformemente accelerato' } ];
+  ReactDOM.createRoot(document.getElementById('c-ParagraphRail')).render(h(S.ParagraphRail, { items: items, active: 'p2', progress: 35 }));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-ChapterHeader')).render(h('div', { style: { maxWidth: 720, padding: 24 } }, h(S.ChapterHeader, { number: 2, title: 'Cinematica del punto', paragraphs: 4, minutes: 25, onPrint: function () {} })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-ParagraphHeading')).render(h('div', { style: { maxWidth: 720, padding: 24 } }, h(S.ParagraphHeading, { number: '2.2', id: 'p2' }, 'Velocità media e istantanea')));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var html = "<p>La <strong>velocità media</strong> è il rapporto tra lo spostamento e l'intervallo di tempo in cui avviene. Se un'auto percorre 120 km in 1,5 h, la sua velocità media è <span class=\"m\" data-tex=\"v_m = 80\\,\\text{km/h}\"></span>.</p><ul><li>Lo spostamento è un vettore: conta solo il punto di partenza e quello di arrivo.</li><li>La distanza percorsa è sempre positiva.</li></ul><p>Rivedi la <a href=\"#\">definizione di spostamento</a> nel paragrafo 2.1 e prova la funzione <code>velocita(s, t)</code> nel laboratorio.</p>";
+  ReactDOM.createRoot(document.getElementById('c-Prose')).render(h('div', { style: { padding: 24 } }, h(S.Prose, { html: html })));
+  setTimeout(function () {
+  document.querySelectorAll('#c-Prose .m').forEach(function (el) { el.innerHTML = S.tex(el.dataset.tex, false); });
+  }, 0);
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Formula')).render(h('div', { style: { maxWidth: 720, padding: 24 } }, h(S.Formula, { number: '2.1', label: 'Velocità media', latex: 'v_m = \\frac{\\Delta x}{\\Delta t} = \\frac{x_2 - x_1}{t_2 - t_1}' })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-FormulaRef')).render(h('div', { className: 'sb-prose', style: { padding: '24px 24px 0' } }, h('p', null, 'Sostituendo nella ', h(S.FormulaRef, { number: '2.1', label: 'Velocità media', latex: 'v_m = \\frac{\\Delta x}{\\Delta t}', defaultOpen: true, onOpen: function () {} }), ' otteniamo la velocità dell\'auto nel primo tratto.')));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-Figure')).render(h('div', { style: { maxWidth: 720, padding: 24 } }, h(S.Figure, { number: '2.1', caption: 'Traiettoria di un proiettile lanciato con angolo di 45°.' }, h('svg', { width: 420, height: 160, viewBox: '0 0 420 160', role: 'img', 'aria-label': 'Traiettoria parabolica' }, h('line', { x1: 20, y1: 140, x2: 400, y2: 140, stroke: 'var(--border-control)' }), h('path', { d: 'M30,140 Q210,-40 390,140', fill: 'none', stroke: 'var(--chart-1)', strokeWidth: 2.25 }), h('circle', { cx: 210, cy: 50, r: 5, fill: 'var(--chart-3)' }), h('text', { x: 222, y: 46, fill: 'var(--ink-muted)', style: { font: '12px var(--font-mono)' } }, 'h max')))));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-RevealBlock')).render(h('div', { className: 'sb-stack', style: { maxWidth: 720 } }, h(S.RevealBlock, { variant: 'hint' }, h('p', null, 'Parti dalla definizione di velocità media.')), h(S.RevealBlock, { variant: 'hint', defaultOpen: true }, h('p', null, 'Converti prima i minuti in ore: 90 min = 1,5 h.')), h(S.RevealBlock, { variant: 'solution', defaultOpen: true }, h('p', null, 'La velocità media è 120 km / 1,5 h = 80 km/h.'))));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-ExerciseCard')).render(h('div', { style: { maxWidth: 760, padding: 16 } }, h(S.ExerciseCard, { id: 'E2.3', chapter: 2, difficulty: 'medio', hint: h('p', null, 'Converti prima i minuti in ore.'), solution: h('p', null, 'v = 120 km / 1,5 h = 80 km/h.'), hintOpen: true }, h('p', null, 'Un treno percorre 120 km in 90 minuti. Qual è la sua velocità media in km/h?'))));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-FormulaCard')).render(h('div', { style: { maxWidth: 820, padding: 16 } }, h(S.FormulaCard, { chapter: 2, title: 'Cinematica del punto', items: [ { number: '2.1', label: 'Velocità media', latex: 'v_m = \\frac{\\Delta x}{\\Delta t}' }, { number: '2.2', label: 'Accelerazione media', latex: 'a_m = \\frac{\\Delta v}{\\Delta t}' }, { number: '2.3', label: 'Legge oraria (MRUA)', latex: 'x(t) = x_0 + v_0 t + \\tfrac{1}{2} a t^2' } ] })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-CodeCell')).render(h('div', { className: 'sb-stack', style: { maxWidth: 820 } }, h(S.CodeCell, { title: 'Velocità media', language: 'python', description: 'Calcola la velocità media di un treno. Modifica i valori e premi Esegui.', code: "def velocita_media(s, t):\n    return s / t\n\nprint(velocita_media(120, 1.5), 'km/h')", status: 'ok', output: '80.0 km/h' })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-GraphPanel')).render(h('div', { style: { maxWidth: 820, padding: 16 } }, h(S.GraphPanel, { title: 'Funzione e derivata', tabs: [ { value: 'f', label: 'Parabola' }, { value: 'g', label: 'Seno' } ], activeTab: 'f', domain: [-2, 4], range: [-4, 8], series: [ { label: 'f(x) = x² − 2x', fn: function (x) { return x * x - 2 * x; } }, { label: "f'(x) = 2x − 2", fn: function (x) { return 2 * x - 2; } } ], points: [ [1, -1] ] })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-BookCard')).render(h('div', { className: 'sb-grid2', style: { maxWidth: 760 } }, h(S.BookCard, { subject: 'Fisica', title: 'Fondamenti di Fisica Generale', meta: '8 capitoli · formulario · 64 esercizi', onRemove: null }), h(S.BookCard, { subject: 'Matematica', title: 'Analisi Matematica I', meta: '12 capitoli · laboratorio', uploaded: true, licensed: true, onRemove: function () {} })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-ImportDropzone')).render(h('div', { className: 'sb-stack', style: { maxWidth: 640 } }, h(S.ImportDropzone, { state: 'idle' }), h(S.ImportDropzone, { state: 'success', message: 'Analisi Matematica I aggiunto alla libreria.' })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('c-ChapterPager')).render(h('div', { style: { padding: '0 24px 24px' } }, h(S.ChapterPager, { prev: { number: 1, title: 'Grandezze e misure' }, next: { number: 3, title: 'Dinamica e leggi di Newton' } })));
+})();
+(function(){
+  var S = window.PTSB, h = React.createElement;
+  var chapters = [
+    { id: 'benvenuto', number: 1, title: 'Grandezze e misure' },
+    { id: 'cinematica', number: 2, title: 'Cinematica del punto', paragraphs: [ { id: 'p1', title: 'Posizione e spostamento' }, { id: 'p2', title: 'Velocità media e istantanea' }, { id: 'p3', title: 'Accelerazione' }, { id: 'p4', title: 'Moto uniformemente accelerato' } ] },
+    { id: 'dinamica', number: 3, title: 'Dinamica e leggi di Newton' },
+    { id: 'lavoro', number: 4, title: 'Lavoro ed energia' } ];
+  var items = [ { id: 'p1', number: '2.1', title: 'Posizione e spostamento' }, { id: 'p2', number: '2.2', title: 'Velocità media e istantanea' }, { id: 'p3', number: '2.3', title: 'Accelerazione' }, { id: 'p4', number: '2.4', title: 'Moto uniformemente accelerato' } ];
+  var secs = [{ value: 'smartbook', label: 'Capitoli' }, { value: 'formulario', label: 'Formulario' }, { value: 'esercizi', label: 'Esercizi' }, { value: 'esami', label: 'Esami' }, { value: 'ide', label: 'Laboratorio' }, { value: 'grafici', label: 'Grafici' }];
+  var html = "<p>Per descrivere quanto rapidamente cambia la posizione di un corpo si introduce la <strong>velocità</strong>. Consideriamo un punto materiale che all'istante <span class=\"m\" data-tex=\"t_1\"></span> si trova in <span class=\"m\" data-tex=\"x_1\"></span> e all'istante <span class=\"m\" data-tex=\"t_2\"></span> in <span class=\"m\" data-tex=\"x_2\"></span>.</p>";
+  var html2 = "<p>La velocità media dipende solo dagli estremi dell'intervallo: due moti molto diversi possono avere la stessa velocità media.</p>";
+  ReactDOM.createRoot(document.getElementById('c-Reader')).render(h(S.Reader, {
+    header: h(S.ReaderHeader, { subject: 'Fisica', title: 'Fondamenti di Fisica Generale', sections: secs, active: 'smartbook', onPrint: function () {}, theme: document.documentElement.dataset.theme }),
+    toc: h(S.ChapterToc, { subject: 'Fisica', bookTitle: 'Fondamenti di Fisica Generale', chapters: chapters, activeChapter: 'cinematica', activeParagraph: 'p2' }),
+    rail: h(S.ParagraphRail, { items: items, active: 'p2', progress: 35 })
+  },
+    h(S.ChapterHeader, { number: 2, title: 'Cinematica del punto', paragraphs: 4, minutes: 25, onPrint: function () {} }),
+    h(S.ParagraphHeading, { number: '2.2', id: 'p2' }, 'Velocità media e istantanea'),
+    h(S.Prose, { html: html }),
+    h(S.Formula, { number: '2.1', label: 'Velocità media', latex: 'v_m = \\frac{\\Delta x}{\\Delta t} = \\frac{x_2 - x_1}{t_2 - t_1}' }),
+    h('div', { className: 'sb-prose' }, h('p', null, 'Dalla ', h(S.FormulaRef, { number: '2.1', label: 'Velocità media', latex: 'v_m = \\frac{\\Delta x}{\\Delta t}' }), ' si ricava che la velocità si misura in metri al secondo.')),
+    h(S.Prose, { html: html2 })
+  ));
+  setTimeout(function () {
+  document.querySelectorAll('#c-Reader .m').forEach(function (el) { el.innerHTML = S.tex(el.dataset.tex, false); });
+  }, 0);
+})();
+</script>
+</body>
+</html>

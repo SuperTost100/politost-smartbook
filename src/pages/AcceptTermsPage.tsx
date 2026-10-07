@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Alert, Button, Checkbox, Form } from 'antd';
+import { FileText } from 'lucide-react';
 import { recordConsent } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import versions from '../legal/versions.json';
-import { SiteHeader } from '../components/SiteHeader';
-import { Footer } from '../components/Footer';
-import { Icon } from '../components/Icon';
+import { AuthLayout } from '../components/AuthLayout';
 import { isSafeNextPath } from '../lib/safeNext';
 
 export function AcceptTermsPage() {
@@ -17,8 +17,7 @@ export function AcceptTermsPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     if (!accept) {
       setError('Devi accettare Termini e Privacy per continuare.');
       return;
@@ -37,70 +36,43 @@ export function AcceptTermsPage() {
 
   if (!user) {
     return (
-      <div className="auth-page">
-        <SiteHeader />
-        <div className="auth-shell">
-          <div className="auth-body auth-body--centered">
-            <p>Devi prima accedere.</p>
-            <Link to="/auth" className="btn-primary auth-btn-inline">Vai al login</Link>
-          </div>
+      <AuthLayout>
+        <div className="auth-account">
+          <p>Devi prima accedere.</p>
+          <Link to="/auth" className="sb-btn sb-btn-primary">Vai al login</Link>
         </div>
-        <Footer />
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="auth-page">
-      <SiteHeader />
-      <div className="auth-shell">
-        <div className="auth-hero-band">
-          <img src="/logo.svg" alt="" className="auth-hero-logo" width={48} height={48} />
-          <h1 className="auth-hero-title">Accetta i termini</h1>
-          <p className="auth-hero-tagline">
-            Un ultimo passo per <strong>{user.email}</strong>
-          </p>
-        </div>
-        <div className="auth-body">
-          <p className="auth-terms-intro">Prima di usare Politost Smartbook, leggi e accetta:</p>
-          <ul className="auth-terms-links">
-            <li>
-              <Link to="/termini" target="_blank">
-                <Icon name="fileText" size={16} />
-                Termini di servizio
-              </Link>
-            </li>
-            <li>
-              <Link to="/privacy" target="_blank">
-                <Icon name="fileText" size={16} />
-                Informativa privacy
-              </Link>
-            </li>
-          </ul>
-          <form className="auth-form" onSubmit={(e) => void handleSubmit(e)}>
-            <label className="checkbox-label auth-checkbox">
-              <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} />
-              <span>Accetto Termini e Privacy (v. {versions.tos})</span>
-            </label>
-            {error && (
-              <div className="auth-error-banner" role="alert">
-                {error}
-              </div>
-            )}
-            <button type="submit" className="btn-primary auth-btn-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Icon name="loader" size={18} />
-                  Salvataggio…
-                </>
-              ) : (
-                'Continua'
-              )}
-            </button>
-          </form>
-        </div>
-      </div>
-      <Footer />
-    </div>
+    <AuthLayout title="Accetta i termini" tagline={<>Un ultimo passo per <strong>{user.email}</strong></>}>
+      <p className="auth-terms-intro">Prima di usare Smartbook, leggi e accetta:</p>
+      <ul className="auth-terms-links">
+        <li>
+          <Link to="/termini" target="_blank">
+            <FileText size={16} strokeWidth={1.75} aria-hidden />
+            Termini di servizio
+          </Link>
+        </li>
+        <li>
+          <Link to="/privacy" target="_blank">
+            <FileText size={16} strokeWidth={1.75} aria-hidden />
+            Informativa privacy
+          </Link>
+        </li>
+      </ul>
+      <Form className="auth-form" layout="vertical" onFinish={() => void handleSubmit()}>
+        <Form.Item>
+          <Checkbox checked={accept} onChange={(e) => setAccept(e.target.checked)}>
+            Accetto Termini e Privacy (v. {versions.tos})
+          </Checkbox>
+        </Form.Item>
+        {error && <Alert className="auth-error" type="error" showIcon={false} title={error} role="alert" />}
+        <Button block size="large" type="primary" shape="round" htmlType="submit" loading={loading}>
+          {loading ? 'Salvataggio…' : 'Continua'}
+        </Button>
+      </Form>
+    </AuthLayout>
   );
 }

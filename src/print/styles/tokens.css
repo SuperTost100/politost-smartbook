@@ -1,43 +1,32 @@
-/* Print tokens — aligned with reader global.css light theme */
+/* Print tokens — the light design-system tokens, ink on white paper. No fills. */
 
 :root {
-  --print-font-serif: Georgia, 'Times New Roman', serif;
-  --print-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --print-font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+  --print-font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --print-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --print-size-body: 11pt;
   --print-size-small: 9pt;
   --print-size-caption: 9pt;
-  --print-size-heading: 12pt;
+  --print-size-heading: 13pt;
   --print-size-title: 22pt;
   --print-size-eyebrow: 8pt;
   --print-size-brand: 14pt;
 
-  --print-leading-body: 1.65;
+  --print-leading-body: 1.6;
   --print-leading-tight: 1.3;
 
-  --print-ink: #1a1d2e;
-  --print-ink-muted: #636b7f;
-  --print-ink-faint: #a0a8bb;
+  --print-ink: #15181e;
+  --print-ink-muted: #50576a;
+  --print-ink-faint: #5f6675;
 
-  --print-primary: #2563eb;
-  --print-primary-light: rgba(37, 99, 235, 0.08);
-  --print-primary-mid: #bfdbfe;
-  --print-accent: #e85d26;
+  --print-primary: #0b665f;
 
   --print-surface: #ffffff;
-  --print-surface-dim: #f8f9fc;
-  --print-border: #e2e6ef;
-  --print-border-strong: #c5cde0;
+  --print-border: #c9c6bd;
+  --print-border-strong: #7e8492;
 
-  --print-hint-bg: #ecfdf5;
-  --print-hint-border: #a7f3d0;
-  --print-hint-ink: #065f46;
-
-  --print-solution-bg: #fffbeb;
-  --print-solution-border: #fcd34d;
-  --print-solution-ink: #92400e;
-
-  --print-radius: 6px;
+  --print-radius: 8px;
   --print-space-xs: 0.25rem;
   --print-space-sm: 0.5rem;
   --print-space-md: 0.75rem;

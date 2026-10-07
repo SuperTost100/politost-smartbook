@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import markMonoUrl from '../../design-system/logo/ptsb-mark-mono.svg';
 
 interface PrintAppProps {
   bookTitle: string;
@@ -13,9 +14,8 @@ export function PrintApp({ bookTitle, documentTitle, children }: PrintAppProps) 
       <div className="print-flow">
         <header className="print-brand-block">
           <div className="print-brand-wordmark" aria-hidden>
-            <span className="print-brand-dot" />
-            <span className="print-brand-name">Politost</span>
-            <span className="print-brand-sub">Smartbook</span>
+            <img className="print-brand-mark" src={markMonoUrl} alt="" width={22} height={22} />
+            <span className="print-brand-name">Smartbook</span>
           </div>
           <hr className="print-brand-rule" />
           <p className="print-brand-book">{bookTitle}</p>
