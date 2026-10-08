@@ -29,35 +29,44 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+async function loadSession(): Promise<{ user: AuthUser | null; hasConsent: boolean }> {
+  try {
+    const user = await fetchMe();
+    const consent = await fetchConsentStatus();
+    return { user, hasConsent: consentIsCurrent(consent, versions) };
+  } catch {
+    return { user: null, hasConsent: false };
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { auth: authEnabled } = useReaderFeatures();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hasConsent, setHasConsent] = useState(false);
   const [isLoading, setIsLoading] = useState(authEnabled !== false);
 
+  const applySession = useCallback((session: { user: AuthUser | null; hasConsent: boolean }) => {
+    setUser(session.user);
+    setHasConsent(session.hasConsent);
+    setIsLoading(false);
+  }, []);
+
   const refresh = useCallback(async () => {
-    if (!authEnabled) {
-      setUser(null);
-      setHasConsent(false);
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const me = await fetchMe();
-      setUser(me);
-      const consent = await fetchConsentStatus();
-      setHasConsent(consentIsCurrent(consent, versions));
-    } catch {
-      setUser(null);
-      setHasConsent(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [authEnabled]);
+    // Without auth the initial state (no user, not loading) is already final.
+    if (!authEnabled) return;
+    applySession(await loadSession());
+  }, [authEnabled, applySession]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    if (!authEnabled) return;
+    let cancelled = false;
+    void loadSession().then((session) => {
+      if (!cancelled) applySession(session);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authEnabled, applySession]);
 
   const login = useCallback(async (email: string, password: string) => {
     await apiLogin(email, password);

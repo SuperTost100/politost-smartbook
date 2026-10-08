@@ -8,9 +8,6 @@ const legalVersions = JSON.parse(
 test.describe('Auth form', () => {
   test.skip(process.env.VITE_PLATFORM_ENABLED !== 'true', 'Auth requires an explicitly enabled private platform build.');
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cc_cookie', '{"categories":["necessary","functional"],"revision":0,"data":null,"consentTimestamp":"2020-01-01T00:00:00.000Z","consentId":"e2e","services":{"necessary":[],"functional":[]},"lastConsentTimestamp":"2020-01-01T00:00:00.000Z"}');
-    });
     await page.route('**/api/auth/me', (route) =>
       route.fulfill({ status: 401, contentType: 'application/json', body: '{}' }),
     );

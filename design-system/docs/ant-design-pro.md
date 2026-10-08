@@ -19,7 +19,7 @@ import { ReaderShell } from './design-system/theme/ReaderShell';
 - `cssVar` prefix `sb`, `hashed: false`: antd emits `--sb-*` variables beside the design-system variables. Set `<html data-theme>` on the same switch (the shell does) so custom components follow.
 - Icons: `lucide-react` at `strokeWidth={1.75}`. Do not add `@ant-design/icons`.
 - Locales: antd `it_IT` / `en_US`.
-- KaTeX, Plotly, Monaco and Paged.js stay; theme them from the tokens (see GraphPanel and CodeCell in `components.md`).
+- KaTeX, Plotly and Monaco stay; theme them from the tokens (see GraphPanel and CodeCell in `components.md`).
 
 ## Which component for what
 
@@ -35,10 +35,9 @@ import { ReaderShell } from './design-system/theme/ReaderShell';
 | Library grid | `ProList` with `grid={{ gutter: 16, column: 3 }}` or `Row`/`Col` of `BookCard` | |
 | `.ptsb` import | `Upload.Dragger accept=".ptsb" showUploadList={false}` | States as in `ImportDropzone` |
 | Lab | Monaco + custom `CodeCell` chrome | One `primary` (Esegui) per view |
-| Graphs | Plotly + `Tabs`/`Segmented` | Plot colours from `chart-*` tokens |
+| Graphs | Plotly + numbered list and previous / next; native select on phones | Plot colours from `chart-*` tokens; legend in `GraphPanel` |
 | Auth / terms pages | `ProForm`, `LoginForm` | Same tokens; only when the platform features are on |
 | Confirmations, toasts | `App.useApp()` `modal.confirm`, `message` | Removing a book always confirms |
-| Cookie consent | keep `vanilla-cookieconsent`, restyle with tokens | |
 
 ## Rules
 

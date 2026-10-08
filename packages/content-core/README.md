@@ -27,6 +27,13 @@ npm ci && npm test
 
 `readPtsb` and `parsePtsbEntries` return non-fatal validation notices in `bundle.warnings`. Display them to readers, especially when a book declares a newer content-format version. Invalid bundles still throw.
 
+## Changes in 0.3.0
+
+- Markdown inside paragraphs goes through markdown-it (CommonMark): numbered and nested lists, `*italic*`, quotes, code and rules now render. Math, `[[hover:…]]` and `[[link:…]]` are protected before parsing.
+- Breaking: `ContentBlock` is now `heading | p | math | list | quote | code | hr | formula | image`, and `InlineSegment` is a tree (`strong`, `em`, `anchor` and `link` carry `children`). `splitMarkdownBlocks` is gone; `renderInlineFragment(text)` lost its `bold` flag. New: `segmentsToHtml`.
+- `validateChapter` / `validateBundle` reject leaked generator markup (`</markdown>`, `</invoke>`, …) in every profile.
+- `sanitizeHtml` keeps all MathML that KaTeX emits (`mtext`, `msubsup`, `mathvariant`, …), so screen readers get the right formula.
+
 ## License
 
 MIT. The reader, ptsb-pack and the content-format spec stay AGPL-3.0. content-core is MIT so that apps under other licenses, such as PoliTost Pyxis, can read smartbooks with the same code the reader uses.

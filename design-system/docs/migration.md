@@ -45,4 +45,4 @@ Swap `Layout.tsx` (header + `SectionNav` + `ChapterIndex`) for `ReaderShell`. `S
 
 ## 5. Print
 
-`print.css` and Paged.js keep their own page layout. Use `ptsb-mark-mono.svg`, `--font-serif` for text, show hints and solutions open, and no background fills.
+The print sheet (`src/print/styles/document.css`) keeps its own page layout. Use `ptsb-mark-mono.svg`, `--font-serif` for text, show hints and solutions open, and no background fills.

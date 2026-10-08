@@ -60,6 +60,20 @@ Reference implementation: `src/content/esempio/`.
 Body text with **bold** and inline math $E=mc^2$.
 ```
 
+Inside a paragraph the text is CommonMark (rendered by markdown-it in `@politost/content-core`):
+
+| Works | Syntax |
+|-------|--------|
+| Bold, italic | `**bold**`, `*italic*` |
+| Sub-headings | `### Title`, `#### Title` |
+| Bullet and numbered lists, nested | `- item`, `1. item` (numbering may continue after a formula: `2. item`) |
+| Quotes | `> text` |
+| Code | `` `inline` ``, fenced blocks with ```` ``` ```` |
+| Rule | `---` on its own line, with a blank line before it |
+| Math | `$…$`, `$$…$$`, `\(…\)`, `\[…\]`, protected from markdown, so `_` and `*` inside math are safe |
+
+Not supported on purpose: tables, raw HTML (escaped), markdown images (use `:::image`), indented code blocks (indentation is ignored), and setext headings (`Title` followed by `---` is text plus a rule).
+
 ### Numbered formulas
 
 ```markdown

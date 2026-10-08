@@ -1,24 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCloudChapter } from '../hooks/useCloudChapter';
+import { usePrintShortcut } from '../hooks/usePrintShortcut';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { isCloudBook, loadSmartbook } from '../lib/loader';
-import { chapterFromCloudMarkdown, cloudChapterAssets, loadCloudChapterMarkdown } from '../lib/cloudLoader';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { withLoadedChapter } from '../lib/chapterNav';
-import type { Chapter } from '../types/smartbook';
 import { getReturnUrl } from './routes';
-import { PrintApp } from './PrintApp';
-import { PrintFrame } from './PrintFrame';
+import { PrintDocument } from './PrintDocument';
 import { PrintChapter } from './bodies/PrintChapter';
 import { PrintFormulario } from './bodies/PrintFormulario';
 import { PrintExercises } from './bodies/PrintExercises';
-import { cleanupLeakedPagedStyles, triggerBrowserPrint } from './pagedRunner';
-import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
+import { Lockup } from '../components/shell/Lockup';
+import { ChevronLeft, Printer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { Lockup } from '../components/shell/Lockup';
-import { Ban, ChevronLeft, CircleAlert, Printer } from 'lucide-react';
 import './styles/shell.css';
 
 export type PrintKind = 'capitolo' | 'formulario' | 'esercizi' | 'esami';
@@ -26,8 +23,6 @@ export type PrintKind = 'capitolo' | 'formulario' | 'esercizi' | 'esami';
 interface PrintPageProps {
   kind: PrintKind;
 }
-
-/* ── Utilities ───────────────────────────────────────────────────── */
 
 function shortId(id: string): string {
   return id.replace(/-/g, '').slice(0, 8);
@@ -38,362 +33,219 @@ function buildWatermarkLabel(email: string, userId: string): string {
   return `${email} · ${shortId(userId)} · ${session}`;
 }
 
-/* ── Loading screen ─────────────────────────────────────────────── */
-
-function PrintLoadingScreen() {
-  return (
-    <div className="print-loading-screen" aria-live="polite" role="status">
-      <div className="print-loading-icon" aria-hidden>
-        <div className="print-loading-page">
-          <div className="print-loading-lines">
-            <div className="print-loading-line" />
-            <div className="print-loading-line" />
-            <div className="print-loading-line" />
-            <div className="print-loading-line" />
-            <div className="print-loading-line" />
-          </div>
-        </div>
-      </div>
-      <p className="print-loading-label">Impaginazione in corso…</p>
-    </div>
+/** Wait for every <img> in the sheet, so the print dialog never snapshots a half-loaded figure. */
+async function waitForImages(root: ParentNode, timeoutMs = 8000): Promise<void> {
+  const pending = [...root.querySelectorAll('img')].filter((img) => !img.complete);
+  if (pending.length === 0) return;
+  const loads = pending.map(
+    (img) => new Promise<void>((resolve) => {
+      img.addEventListener('load', () => resolve(), { once: true });
+      img.addEventListener('error', () => resolve(), { once: true });
+    }),
   );
+  await Promise.race([Promise.all(loads), new Promise((r) => setTimeout(r, timeoutMs))]);
 }
-
-/* ── Error card ──────────────────────────────────────────────────── */
-
-function PrintErrorCard({ message }: { message: string }) {
-  return (
-    <div className="print-error-card" role="alert">
-      <CircleAlert className="print-error-icon" size={18} strokeWidth={1.75} aria-hidden />
-      <span>{message}</span>
-    </div>
-  );
-}
-
-/* ── Toolbar ─────────────────────────────────────────────────────── */
 
 interface PrintToolbarProps {
   bookTitle: string;
   sectionLabel: string;
   documentTitle: string;
   returnUrl: string;
-  paginating: boolean;
-  onPrint: () => void;
+  onPrint?: () => void;
+  printing?: boolean;
 }
 
-function PrintToolbar({
-  bookTitle,
-  sectionLabel,
-  documentTitle,
-  returnUrl,
-  paginating,
-  onPrint,
-}: PrintToolbarProps) {
+function PrintToolbar({ bookTitle, sectionLabel, documentTitle, returnUrl, onPrint, printing }: PrintToolbarProps) {
   return (
-    <>
-      <header className="print-toolbar no-print" aria-label="Barra strumenti anteprima di stampa">
-        {/* Brand */}
-        <Link to="/" className="print-toolbar-brand" tabIndex={-1} aria-hidden>
-          <Lockup />
+    <header className="print-toolbar no-print" aria-label="Barra strumenti anteprima di stampa">
+      <Link to="/" className="print-toolbar-brand" aria-label="Catalogo Politost Smartbook">
+        <Lockup />
+      </Link>
+
+      <div className="print-toolbar-divider" aria-hidden />
+
+      <div className="print-toolbar-context">
+        <span className="print-toolbar-section-label">{sectionLabel}</span>
+        <span className="print-toolbar-title" title={`${bookTitle} — ${documentTitle}`}>
+          {bookTitle} — {documentTitle}
+        </span>
+      </div>
+
+      <div className="print-toolbar-actions">
+        <ThemeToggle />
+        <Link to={returnUrl} className="print-toolbar-btn print-toolbar-btn--back" aria-label="Torna al libro">
+          <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
+          <span className="print-toolbar-btn-label">Torna al libro</span>
         </Link>
-
-        <div className="print-toolbar-divider" aria-hidden />
-
-        {/* Context */}
-        <div className="print-toolbar-context">
-          <span className="print-toolbar-section-label">{sectionLabel}</span>
-          <span className="print-toolbar-title" title={`${bookTitle} — ${documentTitle}`}>
-            {bookTitle} — {documentTitle}
-          </span>
-        </div>
-
-        {/* Actions */}
-        <div className="print-toolbar-actions">
-          <ThemeToggle />
-
-          <Link
-            to={returnUrl}
-            className="print-toolbar-btn print-toolbar-btn--back"
-            aria-label="Torna al libro"
-          >
-            <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
-            Torna al libro
-          </Link>
-
+        {onPrint && (
           <button
             type="button"
             className="print-toolbar-btn print-toolbar-btn--print"
             onClick={onPrint}
-            disabled={paginating}
-            aria-busy={paginating}
-            aria-describedby={paginating ? 'print-status' : undefined}
+            disabled={printing}
+            aria-busy={printing}
+            aria-label="Stampa o salva PDF"
           >
-            {paginating ? (
-              <>
-                <span className="print-btn-spinner" aria-hidden />
-                Impaginazione…
-              </>
-            ) : (
-              <>
-                <Printer size={16} strokeWidth={1.75} aria-hidden />
-                Stampa
-              </>
-            )}
+            <Printer size={16} strokeWidth={1.75} aria-hidden />
+            <span>
+              Stampa<span className="print-toolbar-btn-extra"> o salva PDF</span>
+            </span>
           </button>
-        </div>
-      </header>
-
-    </>
+        )}
+      </div>
+    </header>
   );
 }
 
-/* ── Not-printable state ─────────────────────────────────────────── */
-
-function PrintUnavailableShell({
-  bookTitle,
-  sectionLabel,
-  returnUrl,
-}: {
-  bookTitle: string;
-  sectionLabel: string;
-  returnUrl: string;
-}) {
+function PrintMessage({ tone = 'neutral', children }: { tone?: 'neutral' | 'error'; children: React.ReactNode }) {
   return (
-    <div className="print-page-shell">
-      <PrintToolbar
-        bookTitle={bookTitle}
-        sectionLabel={sectionLabel}
-        documentTitle="Non disponibile"
-        returnUrl={returnUrl}
-        paginating={false}
-        onPrint={() => undefined}
-      />
-      <div className="print-canvas">
-        <div className="print-unavailable-body">
-          <Ban className="print-unavailable-icon" size={48} strokeWidth={1.5} aria-hidden />
-          <p>Questo capitolo non è disponibile in versione stampabile.</p>
-        </div>
-      </div>
+    <div className={`print-message print-message--${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
+      {children}
     </div>
   );
 }
-
-/* ── Main component ──────────────────────────────────────────────── */
 
 export function PrintPage({ kind }: PrintPageProps) {
   const { bookId, chapterId } = useParams<{ bookId: string; chapterId?: string }>();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { watermark: watermarkEnabled } = useReaderFeatures();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [paginating, setPaginating] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
 
-  const data = useMemo(
-    () => (bookId ? loadSmartbook(bookId) : null),
-    [bookId],
-  );
+  const data = useMemo(() => (bookId ? loadSmartbook(bookId) : null), [bookId]);
   const cloud = Boolean(bookId && isCloudBook(bookId));
-  const [cloudChapter, setCloudChapter] = useState<Chapter | null>(null);
-  const [cloudAssets, setCloudAssets] = useState<Record<string, string>>({});
-  const [cloudLoading, setCloudLoading] = useState(cloud && kind === 'capitolo');
-  const [cloudError, setCloudError] = useState<string | null>(null);
+  const {
+    chapter: cloudChapter,
+    assets: cloudAssets,
+    error: cloudError,
+    loading: cloudLoading,
+  } = useCloudChapter(cloud && kind === 'capitolo', bookId, chapterId, data?.config.chapters);
 
-  useEffect(() => {
-    if (!cloud || kind !== 'capitolo' || !bookId || !chapterId || !data) return;
-    const meta = data.config.chapters.find((c) => c.id === chapterId);
-    if (!meta) return;
-    let cancelled = false;
-    setCloudLoading(true);
-    setCloudError(null);
-    loadCloudChapterMarkdown(bookId, chapterId)
-      .then((raw) => {
-        if (cancelled) return;
-        setCloudChapter(chapterFromCloudMarkdown(raw, meta));
-        setCloudAssets(cloudChapterAssets(bookId));
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setCloudError(err instanceof Error ? err.message : 'Impossibile caricare il capitolo');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setCloudLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [cloud, kind, bookId, chapterId, data]);
-
-  const returnUrl = getReturnUrl(
-    searchParams.toString(),
-    bookId ? `/libro/${bookId}` : '/',
-  );
+  const returnUrl = getReturnUrl(searchParams.toString(), bookId ? `/libro/${bookId}` : '/');
 
   const resolveAsset = useCallback(
-    (src: string) => resolveBookAsset(
-      src,
-      { ...(data?.assets ?? {}), ...cloudAssets },
-      cloud ? bookId : undefined,
-    ),
+    (src: string) => resolveBookAsset(src, { ...(data?.assets ?? {}), ...cloudAssets }, cloud ? bookId : undefined),
     [data?.assets, cloudAssets, cloud, bookId],
   );
 
-  const paginationKey = `${bookId ?? ''}:${kind}:${chapterId ?? ''}`;
+  const watermarkLabel = useMemo(
+    () => (watermarkEnabled && user ? buildWatermarkLabel(user.email, user.id) : undefined),
+    [watermarkEnabled, user],
+  );
 
-  const watermarkLabel = useMemo(() => {
-    if (!watermarkEnabled || !user) return '';
-    return buildWatermarkLabel(user.email, user.id);
-  }, [watermarkEnabled, user, paginationKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Resolve section metadata + body for the current print kind
   const printMeta = useMemo(() => {
     if (!bookId || !data) return null;
-
-    let body: React.ReactNode = null;
-    let documentTitle = '';
-    let sectionTitle = '';
-
     switch (kind) {
       case 'capitolo': {
-        const chapter = cloud
-          ? cloudChapter
-          : data.chapters.find((c) => c.meta.id === chapterId);
+        const chapter = cloud ? cloudChapter : data.chapters.find((c) => c.meta.id === chapterId);
         if (!chapter) return null;
-        documentTitle = `Cap. ${chapter.meta.number} — ${chapter.meta.title}`;
-        sectionTitle = data.config.sections.smartbook.label;
-        body = (
-          <PrintChapter
-            chapter={chapter}
-            allChapters={cloud ? withLoadedChapter(data.chapters, chapter) : data.chapters}
-            resolveAsset={resolveAsset}
-          />
-        );
-        break;
+        return {
+          documentTitle: `Cap. ${chapter.meta.number} — ${chapter.meta.title}`,
+          sectionLabel: data.config.sections.smartbook.label,
+          printable: chapter.meta.printable,
+          body: (
+            <PrintChapter
+              chapter={chapter}
+              allChapters={cloud ? withLoadedChapter(data.chapters, chapter) : data.chapters}
+              resolveAsset={resolveAsset}
+            />
+          ),
+        };
       }
       case 'formulario':
-        documentTitle = data.config.sections.formulario.label;
-        sectionTitle = documentTitle;
-        body = <PrintFormulario chapters={data.chapters} />;
-        break;
+        return {
+          documentTitle: data.config.sections.formulario.label,
+          sectionLabel: data.config.sections.formulario.label,
+          printable: true,
+          body: <PrintFormulario chapters={data.chapters} />,
+        };
       case 'esercizi':
-        documentTitle = data.config.sections.esercizi.label;
-        sectionTitle = documentTitle;
-        body = <PrintExercises exercises={data.esercizi} resolveAsset={resolveAsset} />;
-        break;
-      case 'esami':
-        documentTitle = data.config.sections.esami.label;
-        sectionTitle = documentTitle;
-        body = <PrintExercises exercises={data.esami} resolveAsset={resolveAsset} />;
-        break;
+      case 'esami': {
+        const label = data.config.sections[kind].label;
+        return {
+          documentTitle: label,
+          sectionLabel: label,
+          printable: true,
+          body: (
+            <PrintExercises
+              exercises={kind === 'esercizi' ? data.esercizi : data.esami}
+              resolveAsset={resolveAsset}
+            />
+          ),
+        };
+      }
     }
+  }, [bookId, kind, chapterId, data, cloud, cloudChapter, resolveAsset]);
 
-    return { body, documentTitle, sectionTitle };
-  }, [bookId, kind, chapterId, data, resolveAsset]);
-
-  const printContent = useMemo(() => {
-    if (!bookId || !data || !printMeta) return null;
-    return (
-      <PrintApp
-        bookTitle={data.config.title}
-        documentTitle={printMeta.documentTitle}
-      >
-        {printMeta.body}
-      </PrintApp>
-    );
-  }, [bookId, data, printMeta]);
-
+  // The browser names the saved PDF after document.title.
   useEffect(() => {
-    cleanupLeakedPagedStyles();
+    if (!data || !printMeta) return;
+    const previous = document.title;
+    document.title = `${data.config.title} — ${printMeta.documentTitle}`;
+    return () => {
+      document.title = previous;
+    };
+  }, [data, printMeta]);
+
+  const handlePrint = useCallback(async () => {
+    setPrinting(true);
+    try {
+      const sheet = document.querySelector('.print-sheet');
+      if (sheet) await waitForImages(sheet);
+      await document.fonts?.ready;
+      window.print();
+    } finally {
+      setPrinting(false);
+    }
   }, []);
 
-  // ── Guard: book not found ────────────────────────────────────────
+  const canPrint = Boolean(printMeta?.printable) && !(cloud && (cloudLoading || cloudError));
+  usePrintShortcut(canPrint ? () => void handlePrint() : undefined);
+
   if (!bookId || !data) return <BookNotFound />;
 
-  // ── Guard: non-printable chapter ────────────────────────────────
-  if (kind === 'capitolo') {
-    const chapter = data.chapters.find((c) => c.meta.id === chapterId);
-    if (!chapter) {
-      return <p className="empty-note">Capitolo non trovato.</p>;
-    }
-    if (cloud && cloudLoading) {
-      return <PrintLoadingScreen />;
-    }
-    if (cloud && cloudError) {
-      return <PrintErrorCard message={cloudError} />;
-    }
-    if (!chapter.meta.printable) {
-      return (
-        <PrintUnavailableShell
-          bookTitle={data.config.title}
-          sectionLabel={data.config.sections.smartbook.label}
-          returnUrl={returnUrl}
-        />
-      );
-    }
-  }
+  const bookTitle = data.config.title;
+  const fallbackLabel = data.config.sections.smartbook.label;
 
-  // ── Guard: content not resolved ──────────────────────────────────
-  if (!printMeta || !printContent) {
-    return (
-      <main id="main-content">
-        <p className="empty-note">Contenuto non disponibile per la stampa.</p>
+  const shell = (content: React.ReactNode, toolbar?: Partial<PrintToolbarProps>) => (
+    <div className="print-page-shell">
+      <PrintToolbar
+        bookTitle={bookTitle}
+        sectionLabel={toolbar?.sectionLabel ?? fallbackLabel}
+        documentTitle={toolbar?.documentTitle ?? ''}
+        returnUrl={returnUrl}
+        onPrint={toolbar?.onPrint}
+        printing={printing}
+      />
+      <main id="main-content" className="print-canvas">
+        {content}
       </main>
+    </div>
+  );
+
+  if (kind === 'capitolo' && !data.chapters.some((c) => c.meta.id === chapterId)) {
+    return shell(<PrintMessage>Capitolo non trovato.</PrintMessage>, { documentTitle: 'Capitolo non trovato' });
+  }
+  if (cloud && cloudLoading) {
+    return shell(<PrintMessage>Caricamento del capitolo…</PrintMessage>, { documentTitle: 'Caricamento…' });
+  }
+  if (cloud && cloudError) {
+    return shell(<PrintMessage tone="error">{cloudError}</PrintMessage>, { documentTitle: 'Errore' });
+  }
+  if (!printMeta) {
+    return shell(<PrintMessage>Contenuto non disponibile per la stampa.</PrintMessage>, { documentTitle: 'Non disponibile' });
+  }
+  if (!printMeta.printable) {
+    return shell(
+      <PrintMessage>Questo capitolo non è disponibile in versione stampabile.</PrintMessage>,
+      { documentTitle: printMeta.documentTitle, sectionLabel: printMeta.sectionLabel },
     );
   }
 
-  const { documentTitle, sectionTitle } = printMeta;
-
-  return (
-    <LicenseGate bookId={bookId} access={data.config.access ?? 'public'}>
-      <div className="print-page-shell">
-        {/* ── Branded toolbar ──────────────────────────────────── */}
-        <PrintToolbar
-          bookTitle={data.config.title}
-          sectionLabel={sectionTitle}
-          documentTitle={documentTitle}
-          returnUrl={returnUrl}
-          paginating={paginating}
-          onPrint={() => {
-            const iframe = iframeRef.current;
-            if (iframe) triggerBrowserPrint(iframe);
-          }}
-        />
-
-        {/* ── Canvas: loading feedback + iframe ────────────────── */}
-        <main id="main-content" aria-busy={paginating} className="print-canvas">
-          <div className="print-frame-wrap">
-            {/* Loading overlay */}
-            {paginating && (
-              <PrintLoadingScreen />
-            )}
-
-            {/* Error card */}
-            {error && !paginating && (
-              <PrintErrorCard message={error} />
-            )}
-
-            {/* Hidden status for AT */}
-            {paginating && (
-              <span id="print-status" className="no-print" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>
-                Impaginazione in corso
-              </span>
-            )}
-
-            {/* The actual Paged.js iframe */}
-            <PrintFrame
-              iframeRef={iframeRef}
-              paginationKey={paginationKey}
-              content={printContent}
-              handlerOptions={
-                watermarkLabel ? { watermarkLabel, bookId } : undefined
-              }
-              onPaginatingChange={setPaginating}
-              onError={setError}
-            />
-          </div>
-        </main>
-      </div>
-    </LicenseGate>
+  return shell(
+    <PrintDocument bookTitle={bookTitle} documentTitle={printMeta.documentTitle} watermarkLabel={watermarkLabel}>
+      {printMeta.body}
+    </PrintDocument>,
+    { documentTitle: printMeta.documentTitle, sectionLabel: printMeta.sectionLabel, onPrint: () => void handlePrint() },
   );
 }

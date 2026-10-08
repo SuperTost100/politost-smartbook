@@ -36,9 +36,9 @@ export function InstallBanner() {
   const [revealed, setRevealed] = useState(false);
   const [animated, setAnimated] = useState(false);
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIosHint, setShowIosHint] = useState(false);
 
   const eligible = isMobile && !snoozed && !isStandalone();
+  const showIosHint = eligible && isIos();
 
   useEffect(() => {
     if (!eligible) return;
@@ -49,17 +49,12 @@ export function InstallBanner() {
     };
 
     window.addEventListener('beforeinstallprompt', onInstallPrompt);
-    setShowIosHint(isIos());
 
     return () => window.removeEventListener('beforeinstallprompt', onInstallPrompt);
   }, [eligible]);
 
   useEffect(() => {
-    if (!eligible) {
-      setRevealed(false);
-      setAnimated(false);
-      return;
-    }
+    if (!eligible) return;
 
     let shown = false;
     const reveal = () => {
@@ -81,10 +76,7 @@ export function InstallBanner() {
   }, [eligible]);
 
   useEffect(() => {
-    if (!revealed) {
-      setAnimated(false);
-      return;
-    }
+    if (!revealed) return;
     const frame = window.requestAnimationFrame(() => {
       setAnimated(true);
     });

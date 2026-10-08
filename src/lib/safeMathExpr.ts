@@ -221,7 +221,7 @@ export function evalExprAtX(expr: string, x: number): number {
   }
 }
 
-const FORBIDDEN_JS = /[;{}\[\]`$\\@#&|=<>!?:'"]/;
+const FORBIDDEN_JS = /[;{}[\]`$\\@#&|=<>!?:'"]/;
 const FORBIDDEN_WORDS =
   /\b(function|return|new|this|window|global|import|eval|constructor|prototype|process)\b/i;
 

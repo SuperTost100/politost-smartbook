@@ -3,113 +3,62 @@ import { expect, type Page } from '@playwright/test';
 export interface PrintRoute {
   name: string;
   url: string;
-  minPages: number;
-  /** Assert chapter body: paragraphs + KaTeX in iframe */
+  /** Assert chapter body: paragraphs + KaTeX */
   expectChapterContent?: boolean;
-}
-
-function printPagesRoot(iframe: ReturnType<Page['frameLocator']>) {
-  return iframe.locator('.paged-render-root > .pagedjs_pages');
 }
 
 export const PRINT_ROUTES: PrintRoute[] = [
   {
     name: 'esempio / nel-libro',
     url: '/libro/esempio/stampa/capitolo/nel-libro',
-    minPages: 1,
     expectChapterContent: true,
   },
   {
     name: 'esempio / formulario',
     url: '/libro/esempio/stampa/formulario',
-    minPages: 1,
   },
   {
     name: 'esempio / esercizi',
     url: '/libro/esempio/stampa/esercizi',
-    minPages: 1,
   },
 ];
 
-export async function waitForPrintPagination(page: Page): Promise<void> {
-  // Wait for the shell loading screen to vanish (paginating state = false)
-  await page.waitForFunction(
-    () => !document.querySelector('.print-loading-screen'),
-    { timeout: 30_000 },
-  );
-
-  // Also wait for the iframe to contain the paginated output
-  const iframe = page.frameLocator('.print-preview-frame');
-  await printPagesRoot(iframe).waitFor({ timeout: 30_000 });
-
-  const errorLocator = page.locator('.print-error-card[role="alert"]');
-  if (await errorLocator.count()) {
-    const errorText = await errorLocator.textContent();
-    if (errorText?.trim()) {
-      throw new Error(errorText.trim());
-    }
-  }
-}
-
-async function assertNoSourceLeak(iframe: ReturnType<Page['frameLocator']>): Promise<void> {
-  await expect(iframe.locator('.print-flow')).toHaveCount(0);
-  await expect(iframe.locator('.print-root')).toHaveCount(0);
-}
-
-async function assertUniqueFormulaIds(iframe: ReturnType<Page['frameLocator']>): Promise<void> {
-  const duplicates = await printPagesRoot(iframe).evaluate((pagesRoot) => {
+async function assertUniqueFormulaIds(page: Page): Promise<void> {
+  const duplicates = await page.locator('.print-sheet').evaluate((sheet) => {
     const counts = new Map<string, number>();
-    for (const el of pagesRoot.querySelectorAll('[data-formula-id]')) {
+    for (const el of sheet.querySelectorAll('.numbered-formula[data-formula-id]')) {
       const id = el.getAttribute('data-formula-id');
-      if (!id) continue;
-      counts.set(id, (counts.get(id) ?? 0) + 1);
+      if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
     }
     return [...counts.entries()].filter(([, count]) => count > 1);
   });
   expect(duplicates).toEqual([]);
 }
 
-async function assertPrintDocumentContent(
-  iframe: ReturnType<Page['frameLocator']>,
-  _route: PrintRoute,
-): Promise<void> {
-  await expect(iframe.locator('.print-brand-block').first()).toBeVisible();
-  await expect(iframe.locator('.content-paragraph').first()).toBeVisible();
-  await expect(iframe.locator('.katex').first()).toBeVisible();
-  await assertUniqueFormulaIds(iframe);
-}
-
-export async function assertPrintPreview(page: Page, route: PrintRoute): Promise<number> {
-  await waitForPrintPagination(page);
-
-  const iframe = page.frameLocator('.print-preview-frame');
-  await printPagesRoot(iframe).waitFor({ timeout: 30_000 });
-
-  await expect(printPagesRoot(iframe)).toHaveCount(1);
-  await assertNoSourceLeak(iframe);
-
-  const pageCount = await iframe.locator('.pagedjs_page').count();
-  expect(pageCount).toBeGreaterThanOrEqual(route.minPages);
+/** The preview is the printable sheet itself: opener, body, and KaTeX that renders once. */
+export async function assertPrintPreview(page: Page, route: PrintRoute): Promise<void> {
+  const sheet = page.locator('.print-sheet');
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator('.print-opener-title')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
 
   if (route.expectChapterContent) {
-    await assertPrintDocumentContent(iframe, route);
-  } else {
-    await expect(iframe.locator('.print-brand-block').first()).toBeVisible();
+    await expect(sheet.locator('.content-paragraph').first()).toBeVisible();
+    await expect(sheet.locator('.katex').first()).toBeVisible();
+    // KaTeX ships MathML for screen readers; its CSS must hide it, or every formula prints twice.
+    const mathml = sheet.locator('.katex-mathml').first();
+    if (await mathml.count()) {
+      const box = await mathml.boundingBox();
+      expect(box === null || (box.width <= 1 && box.height <= 1)).toBe(true);
+    }
+    await assertUniqueFormulaIds(page);
   }
-
-  await expect(page.locator('.pagedjs_pages')).toHaveCount(0);
-
-  const leaked = await page.evaluate(
-    () => document.querySelectorAll('[data-pagedjs-inserted-styles]').length,
-  );
-  expect(leaked).toBe(0);
-
-  return pageCount;
 }
 
-export async function assertNoParentStyleLeakage(page: Page): Promise<void> {
-  const leaked = await page.evaluate(
-    () => document.querySelectorAll('[data-pagedjs-inserted-styles]').length,
-  );
-  expect(leaked).toBe(0);
+/** In print media only the sheet is visible. */
+export async function assertPrintMediaHidesChrome(page: Page): Promise<void> {
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.print-toolbar')).toBeHidden();
+  await expect(page.locator('.print-sheet')).toBeVisible();
+  await page.emulateMedia({ media: 'screen' });
 }

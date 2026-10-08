@@ -14,15 +14,14 @@ export function PrintChapter({ chapter, allChapters, resolveAsset }: PrintChapte
 
   return (
     <div data-print-chapter={chapter.meta.id}>
-      {chapter.paragraphs.map((para) => (
+      {chapter.paragraphs.map((para, i) => (
         <section key={para.id} className="paragraph-section">
-          <h3 className="paragraph-title">
-            <span className="para-num">{para.id}</span> {para.title}
-          </h3>
+          <h2 className="paragraph-title">
+            <span className="para-num">{chapter.meta.number}.{i + 1}</span> {para.title}
+          </h2>
           <div className="paragraph-body">
             <ContentFlow
               variant="print"
-              chunkPrefix={para.id}
               content={preprocessContent(para.content)}
               formulaIndex={formulaIndex}
               resolveAsset={resolveAsset}

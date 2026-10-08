@@ -53,7 +53,7 @@ I libri pubblici del catalogo non hanno bisogno di account.
 
 ## Tema, cookie e installazione
 
-Il pulsante del tema passa da chiaro a scuro. La scelta viene ricordata solo se accetti i cookie funzionali. Se li rifiuti, al caricamento successivo il reader segue il tema del sistema. Si gestisce dalla [cookie policy](/cookie).
+Il pulsante del tema passa da chiaro a scuro e la scelta resta su quel browser. Finché non lo usi, il reader segue il tema del sistema. Cosa salviamo nel browser è nella [cookie policy](/cookie).
 
 Sul telefono può comparire l'invito a installare il reader come app. Se lo chiudi, non torna per 14 giorni. Su iPhone l'installazione passa da Condividi e poi «Aggiungi a Home».
 

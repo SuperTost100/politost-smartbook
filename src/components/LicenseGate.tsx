@@ -20,10 +20,7 @@ export function LicenseGate({ bookId, access = 'public', children }: LicenseGate
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (access !== 'licensed' || !drm) {
-      setState('ok');
-      return;
-    }
+    if (access !== 'licensed' || !drm) return;
 
     if (authLoading) return;
 

@@ -29,9 +29,6 @@ export default defineConfig({
           if (id.includes('node_modules/monaco-editor') || id.includes('node_modules/@monaco-editor')) {
             return 'monaco';
           }
-          if (id.includes('node_modules/pagedjs')) {
-            return 'paged';
-          }
         },
       },
     },

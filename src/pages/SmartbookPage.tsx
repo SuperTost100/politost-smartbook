@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
 import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
-import { chapterFromCloudMarkdown, cloudChapterAssets, loadCloudChapterMarkdown } from '../lib/cloudLoader';
+import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
 import { auditChapterOpen } from '../lib/api';
@@ -13,7 +13,7 @@ import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
-import type { SectionKey, Chapter } from '../types/smartbook';
+import type { SectionKey } from '../types/smartbook';
 import type { SmartbookData } from '../lib/loader';
 
 const IdeView = lazy(() => import('../components/IdeView').then((m) => ({ default: m.IdeView })));
@@ -79,41 +79,17 @@ function ChapterContent() {
   const { user } = useAuth();
   const { audit } = useReaderFeatures();
   const cloud = isCloudBook(bookId ?? '');
-  const [cloudChapter, setCloudChapter] = useState<Chapter | null>(null);
-  const [cloudAssets, setCloudAssets] = useState<Record<string, string>>({});
-  const [cloudError, setCloudError] = useState<string | null>(null);
-  const [cloudLoading, setCloudLoading] = useState(cloud);
-  const assets = data?.assets ?? {};
-  const chapterMeta = data?.config.chapters;
+  const {
+    chapter: cloudChapter,
+    assets: cloudAssets,
+    error: cloudError,
+    loading: cloudLoading,
+  } = useCloudChapter(cloud, bookId, chapterId, data?.config.chapters);
+  const assets = data?.assets;
   const resolveAsset = useCallback(
     (src: string) => resolveBookAsset(src, { ...assets, ...cloudAssets }, cloud ? bookId : undefined),
     [assets, cloudAssets, cloud, bookId],
   );
-
-  useEffect(() => {
-    if (!cloud || !bookId || !chapterId || !chapterMeta) return;
-    let cancelled = false;
-    setCloudLoading(true);
-    setCloudError(null);
-    const meta = chapterMeta.find((c) => c.id === chapterId);
-    loadCloudChapterMarkdown(bookId, chapterId)
-      .then((raw) => {
-        if (cancelled || !meta) return;
-        setCloudChapter(chapterFromCloudMarkdown(raw, meta));
-        setCloudAssets(cloudChapterAssets(bookId));
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setCloudError(err instanceof Error ? err.message : 'Impossibile caricare il capitolo');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setCloudLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [bookId, chapterId, cloud, chapterMeta]);
 
   const staticChapter = data?.chapters.find((c) => c.meta.id === chapterId);
   const chapter = cloud ? cloudChapter : staticChapter;
@@ -152,15 +128,16 @@ function FirstChapterRedirect() {
 
 function BookRoutes() {
   const { bookId } = useParams<{ bookId: string }>();
-  const [contentReady, setContentReady] = useState(false);
+  const [readyFor, setReadyFor] = useState<string | null>(null);
+  const contentReady = readyFor === (bookId ?? '');
 
   useEffect(() => {
     let cancelled = false;
-    setContentReady(false);
-    void ensureBookContent(bookId ?? '')
+    const id = bookId ?? '';
+    void ensureBookContent(id)
       .catch(() => undefined)
       .finally(() => {
-        if (!cancelled) setContentReady(true);
+        if (!cancelled) setReadyFor(id);
       });
     return () => {
       cancelled = true;

@@ -17,3 +17,11 @@ export function firstChapterPath(bookId: string, chapters: { id?: string }[]): s
   if (!id) return null;
   return `/libro/${bookId}/capitolo/${id}`;
 }
+
+/** Reader-facing label for an internal ref: "chapter/3#p4" → "§3.4", "formula/1.2" → "(1.2)". */
+export function refLabel(ref: string): string {
+  const chapter = /^chapter\/(\d+)#p(\d+)$/.exec(ref);
+  if (chapter) return `§${chapter[1]}.${chapter[2]}`;
+  const formula = /^formula\/([\d.]+)$/.exec(ref);
+  return formula ? `(${formula[1]})` : ref;
+}

@@ -93,7 +93,7 @@ function LayoutInner({
       chapters={chapters}
       activeChapterId={activeChapterId}
       onPrint={onPrint}
-      footer={<Footer showCatalogLink compact={isMobile} />}
+      footer={<Footer showCatalogLink wide compact={isMobile} />}
     >
       {children}
     </ReaderShell>

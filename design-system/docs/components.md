@@ -113,7 +113,7 @@ The top of a chapter: eyebrow, title, reading facts and the print action.
 **Consumer provides** `number`, `title`, optional `paragraphs`, `minutes`, `onPrint` (only when the chapter is `printable`), `eyebrow` (default "Capitolo").
 
 - Title in `title-1`, eyebrow in `label`. Replaces the old "Cap. 2 — Titolo" toolbar.
-- The print button is `secondary sm`; it opens the Paged.js print preview.
+- The print button is `secondary sm`; it opens the print preview.
 
 ## ParagraphHeading
 
@@ -206,9 +206,12 @@ A lab snippet from `ide.json`: editor, run, output.
 
 ## GraphPanel
 
-A plot from `grafici.json` with its title, graph switcher and legend.
+A plot from `grafici.json` with its title and legend.
 
-**Consumer provides** `title`, optional `tabs` / `activeTab` to switch graphs, `series` (`{label, fn}` for function plots), `domain`, `range`, `points` to mark.
+**Consumer provides** `title`, optional `eyebrow` ("Grafico 2 di 9"), `series` (`{label, fn}` for function plots), `domain`, `range`, `points` to mark.
+
+- A book can hold many graphs with long titles, so the page switches them, not the panel: a numbered list on the left (like the lab's script list) and previous / next buttons under the panel. On phones the list becomes a native select.
+- The panel header carries the title; the plot has no title of its own.
 
 - In the app the plot is Plotly: set `paper_bgcolor`/`plot_bgcolor` to `surface`, grid `chart-grid`, axes `border-control`, font JetBrains Mono 11px `ink-subtle`, series `chart-1`…`chart-3`.
 - The second series is dashed so the legend works without colour.
