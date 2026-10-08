@@ -17,3 +17,8 @@ declare module '*.md?raw' {
 declare module 'monaco-editor/esm/vs/editor/edcore.main.js' {
   export * from 'monaco-editor';
 }
+
+declare module 'plotly.js/dist/plotly-cartesian.min.js' {
+  const Plotly: unknown;
+  export default Plotly;
+}

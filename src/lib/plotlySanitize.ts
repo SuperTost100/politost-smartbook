@@ -1,4 +1,7 @@
-const TRACE_TYPES = new Set(['scatter', 'bar', 'scattergl', 'histogram', 'pie', 'box']);
+const TRACE_TYPES = new Set(['scatter', 'bar', 'histogram', 'pie', 'box']);
+
+/** The reader ships Plotly's cartesian build, which has no WebGL traces; scattergl takes scatter's data as is. */
+const TRACE_ALIASES: Record<string, string> = { scattergl: 'scatter' };
 
 const ALLOWED_KEYS = new Set([
   'type', 'mode', 'name', 'x', 'y', 'text', 'textposition', 'textfont', 'marker',
@@ -52,7 +55,8 @@ export function sanitizePlotlyConfig(
   const traces: object[] = [];
   for (const trace of data) {
     if (!isPlainObject(trace)) return null;
-    const type = typeof trace.type === 'string' ? trace.type : 'scatter';
+    const authored = typeof trace.type === 'string' ? trace.type : 'scatter';
+    const type = TRACE_ALIASES[authored] ?? authored;
     if (!TRACE_TYPES.has(type)) return null;
     const cleaned = sanitizeNode({ ...trace, type });
     if (!isPlainObject(cleaned)) return null;

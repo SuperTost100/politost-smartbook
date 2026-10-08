@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Plot from 'react-plotly.js';
+import { Plot } from '../lib/plotlyComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { GraficoConfig } from '../types/smartbook';
 import { evalExprAtX } from '../lib/safeMathExpr';

@@ -78,7 +78,7 @@ npm run build
 npm run test:e2e        # installs Playwright's Chromium on first run
 ```
 
-CI runs the first four on every push. Auth tests run only with `VITE_PLATFORM_ENABLED=true`.
+CI runs all five on every pull request and on `main`. Auth tests run only with `VITE_PLATFORM_ENABLED=true`.
 
 ## Documentation
 
