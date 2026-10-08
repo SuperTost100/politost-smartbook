@@ -46,6 +46,16 @@ describe('validateChapter', () => {
     assert.equal(r.valid, true);
   });
 
+  it('accepts tag-like words that only start with a generator tag name', () => {
+    const r = validateChapter(`${VALID}\nIl parser <markdown-it> legge i <parameters>.\n`, 1);
+    assert.equal(r.valid, true);
+  });
+
+  it('rejects generator tags with attributes', () => {
+    const r = validateChapter(`${VALID}\n<parameter name="content">\n`, 1);
+    assert.ok(r.errors.some((e) => e.includes('markup del generatore')));
+  });
+
   it('rejects external images', () => {
     const r = validateChapter('## p1 | X\n\n![](https://x.com/a.png)\n', 1);
     assert.equal(r.valid, false);

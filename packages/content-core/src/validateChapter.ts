@@ -21,7 +21,7 @@ const META_HEADING = /(Riepilogo|Sintesi|Sommario|Riassunto)\s+del\s+lavoro\s+sv
 const META_LINE =
   /(Il testo sorgente è stato|Ho riscritto|Sono stati inseriti \d+ blocchi|NON includere)/i;
 /** Tool-call / wrapper tags a generator leaked into the text (e.g. `</markdown>`, `</invoke>`). */
-const TOOL_MARKUP = /<\/?(?:markdown|invoke|parameter|function_calls|antml:[\w-]+|tool_use|tool_result)\b[^>]*>/i;
+const TOOL_MARKUP = /<\/?(?:markdown|invoke|parameter|function_calls|antml:[\w-]+|tool_use|tool_result)(?=[\s/>])[^>]*>/i;
 
 export type ValidateProfile = 'ship' | 'dev';
 

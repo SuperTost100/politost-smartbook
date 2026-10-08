@@ -5,7 +5,7 @@ import type { ContentBlock, InlineSegment } from '../src/renderContent.ts';
 
 before(() => {
   const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-  (globalThis as typeof globalThis & { window: Window }).window = dom.window as unknown as Window;
+  (globalThis as { window: unknown }).window = dom.window;
 });
 
 const load = () => import('../src/renderContent.ts');
@@ -157,6 +157,72 @@ describe('parseContentBlocks', () => {
     const { parseContentBlocks } = await load();
     const blocks = parseContentBlocks('> *Nota*: attenzione.\n\n    testo rientrato');
     assert.deepEqual(blocks.map((b) => b.type), ['quote', 'p']);
+  });
+
+  it('keeps LaTeX and refs in a code block exactly as written', async () => {
+    const { parseContentBlocks } = await load();
+    const source = 'Esempio $\\alpha$ e \\(x\\), poi [[hover:1.2]] e [[link:ref:chapter/1#p2|qui $y$]].';
+    const blocks = parseContentBlocks(`\`\`\`latex\n${source}\n\\[ y = 1 \\]\n\`\`\``);
+    assert.deepEqual(blocks, [{ type: 'code', text: `${source}\n\\[ y = 1 \\]` }]);
+  });
+
+  it('does not let $$ pair across a code fence', async () => {
+    const { parseContentBlocks } = await load();
+    const blocks = parseContentBlocks('Costo $$ alto.\n\n```\nprint("$$")\n```\n\nFine.');
+    assert.deepEqual(blocks.map((b) => b.type), ['p', 'code', 'p']);
+    assert.deepEqual(ofType(blocks, 'code')[0], { type: 'code', text: 'print("$$")' });
+  });
+
+  it('does not let $$ pair across a fence inside a quote or a list item', async () => {
+    const { parseContentBlocks } = await load();
+    for (const [open, close] of [['> ```', '> ```'], ['- ```', '  ```']]) {
+      const blocks = parseContentBlocks(`Costo $$ alto.\n\n${open}\n${close.slice(0, 2)}x = "$$"\n${close}\n\nFine.`);
+      assert.deepEqual(blocks.map((b) => b.type), ['p', open.startsWith('>') ? 'quote' : 'list', 'p'], open);
+      assert.doesNotMatch(JSON.stringify(blocks), /katex/, open);
+    }
+  });
+
+  it('reads triple backticks closed on the same line as inline code, not a fence', async () => {
+    const { parseContentBlocks } = await load();
+    const blocks = parseContentBlocks('- ```plot(x)``` disegna $x^2$.\n\nPoi $y$.');
+    const html = JSON.stringify(blocks);
+    assert.match(html, /<code>plot\(x\)<\/code>/);
+    assert.equal(html.match(/class=\\"katex\\"/g)?.length, 2);
+  });
+
+  it('keeps math in inline code as source and still renders math outside it', async () => {
+    const { parseInlineSegments } = await load();
+    const html = textOf(parseInlineSegments('Scrivi `$\\frac{a}{b}$` per ottenere $\\frac{a}{b}$, o `[[hover:1.1]]`.'));
+    assert.match(html, /<code>\$\\frac\{a\}\{b\}\$<\/code>/);
+    assert.match(html, /<code>\[\[hover:1\.1\]\]<\/code>/);
+    assert.match(html, /class="katex"/);
+  });
+
+  it('keeps inline code inside a link label', async () => {
+    const { parseInlineSegments } = await load();
+    const segments = parseInlineSegments('Usa [[link:ref:chapter/1#p2|`print()` e $x$]] qui.');
+    const link = segments.find((s) => s.type === 'link');
+    assert.ok(link && link.type === 'link', JSON.stringify(segments));
+    assert.equal(link.ref, 'ref:chapter/1#p2');
+    assert.match(textOf(link.children), /<code>print\(\)<\/code>/);
+    assert.match(textOf(link.children), /class="katex"/);
+  });
+
+  it('does not pair a $ in label code with math after it', async () => {
+    const { parseInlineSegments } = await load();
+    const segments = parseInlineSegments('[[link:ref:chapter/1#p2|`echo $HOME` e $x$]]');
+    const link = segments.find((s) => s.type === 'link');
+    assert.ok(link && link.type === 'link');
+    assert.match(textOf(link.children), /<code>echo \$HOME<\/code>/);
+    assert.match(textOf(link.children), /class="katex"/);
+  });
+
+  it('keeps math inside a link label', async () => {
+    const { parseInlineSegments } = await load();
+    const segments = parseInlineSegments('Vedi [[link:ref:formula/1.1|la $x^2$]] e $y$.');
+    const link = segments.find((s) => s.type === 'link');
+    assert.ok(link && 'children' in link);
+    assert.match(textOf(link.children), /class="katex"/);
   });
 
   it('does not make a heading out of text followed by ---', async () => {
