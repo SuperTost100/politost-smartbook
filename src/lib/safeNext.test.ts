@@ -7,6 +7,9 @@ test('safe next accepts an in-app path and rejects protocol-relative URLs', () =
   assert.equal(isSafeNextPath('/redeem'), true);
   assert.equal(isSafeNextPath('//evil.example'), false);
   assert.equal(isSafeNextPath('/\\evil.example'), false);
+  assert.equal(isSafeNextPath('/\t/evil.example'), false);
+  assert.equal(isSafeNextPath('/\n/evil.example'), false);
+  assert.equal(isSafeNextPath('/libro/x?return=%2F%2Fa'), true);
   assert.equal(isSafeNextPath('https://evil.example'), false);
   assert.equal(isSafeNextPath(null), false);
 });

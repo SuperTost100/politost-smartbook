@@ -1,6 +1,16 @@
-/** In-app path only: starts with `/`, not `//` or `/\` (browsers read both as another host). */
+const PROBE_ORIGIN = 'https://reader.invalid';
+
+/**
+ * In-app path only. Starting with `/` is not enough: browsers read `//host`, `/\host`
+ * and `/<tab>/host` as another host, so the path must also resolve on our own origin.
+ */
 export function isSafeNextPath(path: string | null | undefined): path is string {
-  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
+  if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return false;
+  try {
+    return new URL(path, PROBE_ORIGIN).origin === PROBE_ORIGIN;
+  } catch {
+    return false;
+  }
 }
 
 export function withSafeNext(url: string, nextPath?: string | null): string {
