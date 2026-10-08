@@ -4,7 +4,7 @@
 
 Politost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Non usiamo cookie di profilazione o di statistica.
 
-Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto, tenere i libri che importi. Per questo non chiediamo il consenso e non mostriamo un banner.
+Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto e dove eri arrivato, tenere i libri che importi. Per questo non chiediamo il consenso e non mostriamo un banner.
 
 ## Necessari
 
@@ -20,9 +20,11 @@ Non sono cookie e non tracciano la navigazione fra siti.
 
 **`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni. Serve solo a non ripetere l'avviso.
 
+**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto su quel browser salva l'ultimo capitolo e paragrafo letto, con numero e titolo del capitolo, così la home può proporti «Riprendi». Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» e l'uscita dall'account cancellano anche la posizione dei libri che tolgono.
+
 **IndexedDB `politost-smartbook`.** Contiene i file `.ptsb` che importi. Restano su quel browser. «Rimuovi da questo dispositivo» cancella un libro. Uscendo dall'account cancelliamo le copie collegate al tuo utente.
 
-**Cache `smartbook-static-v1`.** Nelle build di produzione un service worker tiene in cache la shell dell'app, icone e manifest, per riaprire la home se la rete manca. Non mette in cache le chiamate a `/api`, `/auth` o `/users`, e non è un profilo di lettura.
+**Cache `smartbook-static-v3`.** Nelle build di produzione un service worker tiene in cache la shell dell'app, icone e manifest, per riaprire la home se la rete manca. Non mette in cache le chiamate a `/api`, `/auth` o `/users`, e non è un profilo di lettura.
 
 ## Analitici
 

@@ -12,12 +12,14 @@ interface BookCardProps {
   uploaded?: boolean;
   cloud?: boolean;
   licensed?: boolean;
+  /** Where the reader left off, from the last chapter opened. */
+  resume?: { href: string; label: string };
   /** Only for imported books. */
   onRemove?: () => void;
 }
 
-/** A book in the library. Only "Apri" and "Rimuovi" act; the card itself is not a link. */
-export function BookCard({ subject, title, meta, href, uploaded, cloud, licensed, onRemove }: BookCardProps) {
+/** A book in the library. Only the buttons act; the card itself is not a link. */
+export function BookCard({ subject, title, meta, href, uploaded, cloud, licensed, resume, onRemove }: BookCardProps) {
   return (
     <article className={`sb-book sb-tone-${subjectTone(subject)}`}>
       <div className="sb-book-cover">
@@ -42,7 +44,18 @@ export function BookCard({ subject, title, meta, href, uploaded, cloud, licensed
       <div className="sb-book-body">
         <h3>{title}</h3>
         {meta && <p className="sb-book-meta">{meta}</p>}
+        {resume && (
+          <p className="sb-book-resume">
+            <span className="sb-eyebrow">Ultima lettura</span>
+            <span className="sb-book-resume-title">{resume.label}</span>
+          </p>
+        )}
         <div className="sb-book-foot">
+          {resume && (
+            <Link to={resume.href} className="sb-btn sb-btn-primary sb-btn-sm" aria-label={`Riprendi ${title}: ${resume.label}`}>
+              Riprendi
+            </Link>
+          )}
           <Link to={href} className="sb-btn sb-btn-secondary sb-btn-sm" aria-label={`Apri ${title}`}>
             Apri
           </Link>

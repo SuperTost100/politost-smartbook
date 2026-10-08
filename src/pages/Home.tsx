@@ -6,6 +6,7 @@ import { getCatalog, initUploadedBooks, isBuiltinBook, registerUploadedBook, unr
 import { whenCloudBooksReady } from '../lib/cloudLoader';
 import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
+import { forgetReadingPosition, getReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
 import { BookCard } from '../components/ds/BookCard';
@@ -107,6 +108,7 @@ export function Home() {
       onOk: async () => {
         await removeUploaded(id);
         unregisterUploadedBook(id);
+        forgetReadingPosition(id);
         refreshCatalog();
         setUploadStatus(null);
         setUploadWarnings([]);
@@ -131,19 +133,26 @@ export function Home() {
         <section className="home-catalog">
           <h2>Smartbook disponibili</h2>
           <div className="book-grid">
-            {catalog.map((book) => (
-              <BookCard
-                key={book.id}
-                subject={book.subject}
-                title={book.title}
-                meta={[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ') || undefined}
-                href={`/libro/${book.id}`}
-                cloud={book.source === 'cloud'}
-                uploaded={book.source === 'uploaded'}
-                licensed={book.access === 'licensed'}
-                onRemove={book.source === 'uploaded' ? () => confirmRemove(book.id, book.title) : undefined}
-              />
-            ))}
+            {catalog.map((book) => {
+              const position = getReadingPosition(book.id);
+              return (
+                <BookCard
+                  key={book.id}
+                  subject={book.subject}
+                  title={book.title}
+                  meta={[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ') || undefined}
+                  href={`/libro/${book.id}`}
+                  cloud={book.source === 'cloud'}
+                  uploaded={book.source === 'uploaded'}
+                  licensed={book.access === 'licensed'}
+                  resume={position && {
+                    href: readingPositionPath(book.id, position),
+                    label: `Capitolo ${position.chapterNumber} · ${position.chapterTitle}`,
+                  }}
+                  onRemove={book.source === 'uploaded' ? () => confirmRemove(book.id, book.title) : undefined}
+                />
+              );
+            })}
           </div>
         </section>
 
