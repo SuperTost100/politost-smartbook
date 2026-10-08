@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useCallback, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
 import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
 import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
+import { buildFormulaIndex } from '../lib/parser';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
@@ -13,6 +14,7 @@ import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
+import { NotFoundPage } from './NotFoundPage';
 import type { SectionKey } from '../types/smartbook';
 import type { SmartbookData } from '../lib/loader';
 
@@ -210,6 +212,8 @@ function BookRoutes() {
         <Route element={<BookShell activeSection="grafici" />}>
           <Route path="grafici" element={<GraficiRoute />} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </LicenseGate>
   );
@@ -238,12 +242,15 @@ function EserciziRoute() {
     (src: string) => resolveBookAsset(src, data?.assets ?? {}, cloud ? bookId : undefined),
     [data?.assets, cloud, bookId],
   );
+  const formulaIndex = useMemo(() => buildFormulaIndex(data?.chapters ?? []), [data?.chapters]);
   if (!data || !bookId) return <BookNotFound />;
   const { esercizi, config } = data;
   return (
     <EserciziView
       bookId={bookId!}
       exercises={esercizi}
+      chapters={config.chapters}
+      formulaIndex={formulaIndex}
       title={config.sections.esercizi.label}
       printSection="esercizi"
       resolveAsset={resolveAsset}
@@ -259,12 +266,15 @@ function EsamiRoute() {
     (src: string) => resolveBookAsset(src, data?.assets ?? {}, cloud ? bookId : undefined),
     [data?.assets, cloud, bookId],
   );
+  const formulaIndex = useMemo(() => buildFormulaIndex(data?.chapters ?? []), [data?.chapters]);
   if (!data || !bookId) return <BookNotFound />;
   const { esami, config } = data;
   return (
     <EserciziView
       bookId={bookId!}
       exercises={esami}
+      chapters={config.chapters}
+      formulaIndex={formulaIndex}
       title={config.sections.esami.label}
       printSection="esami"
       resolveAsset={resolveAsset}

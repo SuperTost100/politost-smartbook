@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import { BrowserRouter, Navigate, Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { AntdProvider } from './context/AntdProvider';
@@ -13,6 +13,7 @@ import { AuthPage } from './pages/AuthPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { AcceptTermsPage } from './pages/AcceptTermsPage';
 import { RedeemPage } from './pages/RedeemPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { getReaderConfig } from './config/readerConfig';
 import { useReaderFeatures } from './context/ReaderConfigContext';
 
@@ -37,11 +38,29 @@ function ConsentGate({ children }: { children: ReactNode }) {
   return <Navigate to={`/auth/accept-terms?next=${next}`} replace />;
 }
 
+/**
+ * A new page opens at the top (the router keeps the old scroll otherwise, so "next chapter"
+ * opened at the bottom). Back/forward and links to an anchor (#p2, #formula-2.1) are left alone.
+ */
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  const navigationType = useNavigationType();
+  const lastPath = useRef(pathname);
+  useEffect(() => {
+    // Only a new path: switching graph rewrites the query and must keep the scroll.
+    if (lastPath.current === pathname) return;
+    lastPath.current = pathname;
+    if (navigationType !== 'POP' && !hash) window.scrollTo(0, 0);
+  }, [pathname, hash, navigationType]);
+  return null;
+}
+
 function AppRoutes() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ConsentGate>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -93,6 +112,7 @@ function AppRoutes() {
             </Suspense>
           }
         />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </ConsentGate>
     </BrowserRouter>

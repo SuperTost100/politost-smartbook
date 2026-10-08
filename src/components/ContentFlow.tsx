@@ -47,7 +47,7 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
               <InlineFlow key={i} segments={seg.children} ctx={ctx} />
             );
           case 'hover': {
-            if (!ctx.formulaIndex) return null;
+            if (!ctx.formulaIndex) return <Fragment key={i}>({seg.formulaId})</Fragment>;
             if (isPrint) {
               const exists = ctx.formulaIndex.has(seg.formulaId);
               return (

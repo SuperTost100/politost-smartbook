@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { isCloudBook, loadSmartbook } from '../lib/loader';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { withLoadedChapter } from '../lib/chapterNav';
+import { buildFormulaIndex } from '../lib/parser';
 import { getReturnUrl } from './routes';
 import { PrintDocument } from './PrintDocument';
 import { PrintChapter } from './bodies/PrintChapter';
@@ -169,6 +170,7 @@ export function PrintPage({ kind }: PrintPageProps) {
           body: (
             <PrintExercises
               exercises={kind === 'esercizi' ? data.esercizi : data.esami}
+              formulaIndex={buildFormulaIndex(data.chapters)}
               resolveAsset={resolveAsset}
             />
           ),

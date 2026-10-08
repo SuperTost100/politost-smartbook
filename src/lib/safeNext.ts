@@ -1,6 +1,6 @@
-/** In-app path only: must start with `/` and must not start with `//`. */
+/** In-app path only: starts with `/`, not `//` or `/\` (browsers read both as another host). */
 export function isSafeNextPath(path: string | null | undefined): path is string {
-  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//');
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
 }
 
 export function withSafeNext(url: string, nextPath?: string | null): string {
