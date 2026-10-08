@@ -163,9 +163,9 @@ politost-smartbook/
 | UI | React 19, TypeScript, Vite 8 |
 | Routing | React Router 7 |
 | Formule | KaTeX |
-| Editor lab | Monaco |
+| Editor lab | Monaco, incluso nel bundle (`src/lib/monacoSetup.ts`) |
 | Grafici | Plotly.js |
-| Python | Pyodide in `public/pyodide/` |
+| Python | Pyodide in `public/pyodide/`, in un worker (`src/workers/pythonWorker.ts`) |
 | MATLAB | `matlabRunner.ts` (interprete didattico) |
 | Unzip `.ptsb` | fflate |
 

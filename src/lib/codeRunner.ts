@@ -1,4 +1,5 @@
 import { runMatlab } from './matlabRunner';
+import type { WorkerMessage } from '../workers/pythonWorker';
 
 export interface RunResult {
   stdout: string;
@@ -7,6 +8,8 @@ export interface RunResult {
 }
 
 const PYTHON_TIMEOUT_MS = 10_000;
+/** First run downloads Pyodide (several MB); give a slow connection time before giving up. */
+const PYTHON_LOAD_TIMEOUT_MS = 90_000;
 
 let pythonWorker: Worker | null = null;
 
@@ -19,29 +22,40 @@ function getPythonWorker(): Worker {
   return pythonWorker;
 }
 
+/** A stuck script keeps the worker busy forever, so a timeout throws the worker away. */
+function discardPythonWorker(worker: Worker) {
+  worker.terminate();
+  if (pythonWorker === worker) pythonWorker = null;
+}
+
 export async function runPython(code: string): Promise<RunResult> {
   const worker = getPythonWorker();
   const id = crypto.randomUUID();
 
   return new Promise((resolve) => {
-    const timer = window.setTimeout(() => {
+    const fail = (error: string) => {
       worker.removeEventListener('message', onMessage);
-      resolve({
-        stdout: '',
-        stderr: '',
-        error: 'Timeout: esecuzione superata (10s)',
-      });
-    }, PYTHON_TIMEOUT_MS);
+      discardPythonWorker(worker);
+      resolve({ stdout: '', stderr: '', error });
+    };
+    let timer = window.setTimeout(
+      () => fail('Python non si è avviato. Controlla la connessione e riprova.'),
+      PYTHON_LOAD_TIMEOUT_MS,
+    );
 
-    function onMessage(event: MessageEvent<{ id: string; stdout: string; stderr: string; error?: string }>) {
-      if (event.data.id !== id) return;
+    function onMessage(event: MessageEvent<WorkerMessage>) {
+      const msg = event.data;
+      if (msg.id !== id) return;
       window.clearTimeout(timer);
+      if (msg.type === 'started') {
+        timer = window.setTimeout(
+          () => fail(`Tempo scaduto: lo script girava da più di ${PYTHON_TIMEOUT_MS / 1000} s ed è stato interrotto.`),
+          PYTHON_TIMEOUT_MS,
+        );
+        return;
+      }
       worker.removeEventListener('message', onMessage);
-      resolve({
-        stdout: event.data.stdout,
-        stderr: event.data.stderr,
-        error: event.data.error,
-      });
+      resolve({ stdout: msg.stdout, stderr: msg.stderr, error: msg.error });
     }
 
     worker.addEventListener('message', onMessage);

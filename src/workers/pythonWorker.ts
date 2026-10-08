@@ -1,80 +1,82 @@
 /// <reference lib="webworker" />
 
-import { freshGlobals } from '../lib/pythonIsolate';
-
 type PyProxy = {
   destroy?: () => void;
-  get: (key: string) => string;
+  toJs: () => unknown;
 };
+
+type PyCallable = PyProxy & ((code: string) => Promise<PyProxy>);
 
 type PyodideInterface = {
-  runPythonAsync: (code: string, options?: { globals?: PyProxy }) => Promise<PyProxy>;
-  globals: { get: (name: string) => PyProxy & (() => PyProxy) };
+  runPython: (code: string, options?: { globals?: PyProxy }) => unknown;
+  globals: { get: (name: string) => PyProxy & (() => PyProxy & { get: (key: string) => PyCallable }) };
 };
 
-let pyodideReady: Promise<PyodideInterface> | null = null;
+/**
+ * Runs the student's code as written (no re-indenting, so string literals stay intact),
+ * in a fresh namespace per run, and returns a traceback that starts at their code.
+ */
+const RUNNER = `
+import ast, inspect, io, linecache, traceback
+from contextlib import redirect_stderr, redirect_stdout
 
-async function getPyodide(): Promise<PyodideInterface> {
-  if (!pyodideReady) {
-    pyodideReady = (async () => {
+FILENAME = "<laboratorio>"
+
+async def run(src):
+    out, err = io.StringIO(), io.StringIO()
+    linecache.cache[FILENAME] = (len(src), None, src.splitlines(True), FILENAME)
+    error = ""
+    with redirect_stdout(out), redirect_stderr(err):
+        try:
+            code = compile(src, FILENAME, "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+            result = eval(code, {"__name__": "__main__"})
+            if inspect.iscoroutine(result):
+                await result
+        except BaseException as exc:
+            tb = exc.__traceback__
+            error = "".join(traceback.format_exception(type(exc), exc, tb.tb_next if tb else None))
+    return out.getvalue(), err.getvalue(), error
+`;
+
+let runnerReady: Promise<PyCallable> | null = null;
+
+function getRunner(): Promise<PyCallable> {
+  if (!runnerReady) {
+    runnerReady = (async () => {
       const { loadPyodide } = await import(
         /* @vite-ignore */ new URL('/pyodide/pyodide.mjs', self.location.origin).href
       ) as { loadPyodide: (opts: { indexURL: string }) => Promise<PyodideInterface> };
-      return loadPyodide({ indexURL: '/pyodide/' });
+      const pyodide = await loadPyodide({ indexURL: '/pyodide/' });
+      const scope = pyodide.globals.get('dict')();
+      pyodide.runPython(RUNNER, { globals: scope });
+      return scope.get('run');
     })();
+    runnerReady.catch(() => {
+      runnerReady = null;
+    });
   }
-  return pyodideReady;
+  return runnerReady;
 }
 
-export interface WorkerRunResult {
-  stdout: string;
-  stderr: string;
-  error?: string;
+export type WorkerMessage =
+  | { id: string; type: 'started' }
+  | { id: string; type: 'done'; stdout: string; stderr: string; error?: string };
+
+function post(message: WorkerMessage) {
+  self.postMessage(message);
 }
 
 self.onmessage = async (event: MessageEvent<{ id: string; code: string }>) => {
   const { id, code } = event.data;
-  let dictCtor: (PyProxy & (() => PyProxy)) | undefined;
-  let globals: PyProxy | undefined;
   try {
-    const pyodide = await getPyodide();
-    const dict = pyodide.globals.get('dict');
-    dictCtor = dict;
-    globals = freshGlobals(() => dict());
-    const wrapped = `
-import sys
-from io import StringIO
-_stdout = StringIO()
-_stderr = StringIO()
-_old_out, _old_err = sys.stdout, sys.stderr
-sys.stdout, sys.stderr = _stdout, _stderr
-_err = None
-try:
-${code.split('\n').map((l) => (l.trim() ? `    ${l}` : '')).join('\n')}
-except Exception as e:
-    _err = e
-finally:
-    sys.stdout, sys.stderr = _old_out, _old_err
-
-{'stdout': _stdout.getvalue(), 'stderr': _stderr.getvalue(), 'error': str(_err) if _err else ''}
-`;
-    const result = await pyodide.runPythonAsync(wrapped, { globals });
-    const payload: WorkerRunResult = {
-      stdout: result.get('stdout') ?? '',
-      stderr: result.get('stderr') ?? '',
-      error: result.get('error') || undefined,
-    };
+    const run = await getRunner();
+    // The page starts its timeout here, so a slow Pyodide download does not count.
+    post({ id, type: 'started' });
+    const result = await run(code);
+    const [stdout, stderr, error] = result.toJs() as [string, string, string];
     result.destroy?.();
-    self.postMessage({ id, ...payload });
+    post({ id, type: 'done', stdout, stderr, error: error || undefined });
   } catch (e) {
-    self.postMessage({
-      id,
-      stdout: '',
-      stderr: '',
-      error: e instanceof Error ? e.message : String(e),
-    });
-  } finally {
-    globals?.destroy?.();
-    dictCtor?.destroy?.();
+    post({ id, type: 'done', stdout: '', stderr: '', error: e instanceof Error ? e.message : String(e) });
   }
 };
