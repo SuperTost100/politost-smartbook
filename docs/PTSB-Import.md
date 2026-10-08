@@ -11,7 +11,7 @@
 
 ## Package contents
 
-```
+```text
 ptsb.json
 smartbook.json
 chapters/*.md
@@ -38,7 +38,7 @@ assets/*
 npm run pack:ptsb -- --dir src/content/esempio --out esempio.ptsb
 ```
 
-For encrypted packs and CLI validation, use **[ptsb-pack](https://github.com/SuperTost100/politost-smartbook-monorepo/tree/main/ptsb-pack)** in the monorepo.
+For encrypted packs and CLI validation, use **[ptsb-pack](https://github.com/SuperTost100/politost-content/tree/main/packages/ptsb-pack)** from politost-content.
 
 ## Security note
 

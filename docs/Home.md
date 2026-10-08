@@ -5,7 +5,8 @@ Open-source **reader** for interactive digital textbooks (Smartbooks).
 | Repo | Role |
 |------|------|
 | [politost-smartbook](https://github.com/SuperTost100/politost-smartbook) | This reader (AGPL-3.0) |
-| [politost-smartbook-monorepo](https://github.com/SuperTost100/politost-smartbook-monorepo) | Private migration history; active development uses standalone repositories |
+| [politost-content](https://github.com/SuperTost100/politost-content) | Content format spec, content-core (bundled in `packages/content-core/`) and the ptsb-pack CLI |
+| [politost-smartbook-builder](https://github.com/SuperTost100/politost-smartbook-builder) | Smart Builder, which writes smartbooks |
 
 ## Quick links
 
