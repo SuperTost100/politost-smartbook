@@ -9,6 +9,7 @@ import { UserWatermark } from './UserWatermark';
 import { Footer } from './Footer';
 import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { usePrintMode } from '../hooks/usePrintMode';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { MOBILE_HIDDEN_SECTIONS, UNROUTED_SECTIONS, sectionPath } from '../lib/sectionRoutes';
 import type { PrintSection } from '../print/routes';
 
@@ -74,6 +75,9 @@ function LayoutInner({
   );
 
   const activeChapter = config.chapters.find((ch) => ch.id === activeChapterId);
+  useDocumentTitle(
+    `${activeChapter ? `${activeChapter.number}. ${activeChapter.title}` : config.sections[activeSection].label} · ${config.title}`,
+  );
   const printSection = PRINT_SECTIONS[activeSection];
   const onPrint =
     activeSection === 'smartbook' && activeChapter?.printable

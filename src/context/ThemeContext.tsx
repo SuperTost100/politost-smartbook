@@ -26,6 +26,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Until the reader picks a theme, follow the system when it switches (e.g. at sunset).
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => {
+      if (!localStorage.getItem(STORAGE_KEY)) setTheme(mq.matches ? 'dark' : 'light');
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   // A preference the reader asked for: storing it needs no consent (no banner).
   const toggleTheme = () => {
     const next = theme === 'light' ? 'dark' : 'light';

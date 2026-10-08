@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
@@ -8,6 +7,7 @@ import { ParagraphHeading } from './ds/ParagraphHeading';
 import { ChapterPager } from './ds/ChapterPager';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
+import { useRefClick } from '../hooks/useRefClick';
 
 interface SmartbookViewProps {
   bookId: string;
@@ -25,7 +25,6 @@ function readingMinutes(chapter: Chapter): number {
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: SmartbookViewProps) {
   const { setParagraphs, setActiveParagraphId } = useReaderProgress();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
-  const navigate = useNavigate();
   const print = usePrintMode();
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
@@ -61,25 +60,8 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
     return () => observer.disconnect();
   }, [chapter, setActiveParagraphId]);
 
-  const handleRefClick = useCallback(
-    (e: React.MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('.smartbook-ref') as HTMLElement | null;
-      if (!target) return;
-      e.preventDefault();
-      const ref = target.dataset.ref;
-      if (!ref) return;
-
-      if (ref.startsWith('formula/')) {
-        navigate(`/libro/${bookId}/formulario#${ref.replace('formula/', '')}`);
-      } else if (ref.startsWith('chapter/')) {
-        const [, rest] = ref.split('chapter/');
-        const [chNum, para] = rest.split('#');
-        const ch = allChapters.find((c) => c.meta.number === Number(chNum));
-        if (ch) navigate(`/libro/${bookId}/capitolo/${ch.meta.id}#${para}`);
-      }
-    },
-    [bookId, allChapters, navigate],
-  );
+  const chapterLinks = useMemo(() => allChapters.map((c) => c.meta), [allChapters]);
+  const handleRefClick = useRefClick(bookId, chapterLinks);
 
   const { prev, next } = useMemo(() => {
     const idx = allChapters.findIndex((c) => c.meta.id === chapter.meta.id);

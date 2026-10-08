@@ -1,5 +1,5 @@
 // ponytail: minimal static cache — bump CACHE when shell assets change
-const CACHE = 'smartbook-static-v2';
+const CACHE = 'smartbook-static-v3';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
@@ -38,7 +38,7 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/') ?? caches.match('/index.html')),
+      fetch(request).catch(async () => (await caches.match('/')) ?? Response.error()),
     );
     return;
   }

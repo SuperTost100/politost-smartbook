@@ -10,11 +10,13 @@ import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
 import { BookCard } from '../components/ds/BookCard';
 import { ImportDropzone } from '../components/ds/ImportDropzone';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export function Home() {
   const { user, isLoading: authLoading } = useAuth();
   const { auth: authEnabled } = useReaderFeatures();
   const { modal } = App.useApp();
+  useDocumentTitle();
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);

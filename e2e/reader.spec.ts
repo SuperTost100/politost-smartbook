@@ -108,6 +108,39 @@ test.describe('Reader', () => {
     await expect(page.locator('.print-sheet')).toBeVisible();
   });
 
+  test('a function graph draws its curve and both graphs show axis titles', async ({ page }) => {
+    await page.goto('/libro/esempio/grafici?grafico=sinusoide');
+    await expect(page.locator('.scatterlayer path.js-line')).toHaveAttribute('d', /^M[\d.]+,[\d.]+L/);
+    await expect(page.locator('.g-xtitle')).toHaveText('x');
+    await page.goto('/libro/esempio/grafici?grafico=confronto');
+    await expect(page.locator('.g-xtitle')).toHaveText('Giorno');
+    await expect(page.locator('.g-ytitle')).toHaveText('Ore');
+  });
+
+  test('a formula reference in an exercise hint shows its number', async ({ page }) => {
+    await page.goto('/libro/esempio/esercizi');
+    const card = page.locator('[id="ex-E3.1"]');
+    await card.getByRole('button', { name: 'Mostra suggerimento' }).click();
+    await expect(card.locator('.sb-reveal-hint')).toContainText('nella formula (3.1)');
+  });
+
+  test('the next chapter opens at the top', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.getByRole('link', { name: /Capitolo successivo/ }).click();
+    await expect(page).toHaveURL(/capitolo\/prova-tu$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(page).toHaveTitle('3. Prova tu · Guida di esempio · Politost Smartbook');
+  });
+
+  test('an unknown address shows a not-found page', async ({ page }) => {
+    for (const path of ['/pagina-che-non-esiste', '/libro/esempio/sezione-che-non-esiste']) {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: 'Pagina non trovata' })).toBeVisible();
+    }
+  });
+
   test('book footer: copyright on the left edge, links on the right', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/libro/esempio/grafici');

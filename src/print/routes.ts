@@ -1,3 +1,5 @@
+import { isSafeNextPath } from '../lib/safeNext';
+
 export type PrintSection = 'capitolo' | 'formulario' | 'esercizi' | 'esami';
 
 export interface PrintTarget {
@@ -36,5 +38,5 @@ export function buildPrintUrl(
 
 export function getReturnUrl(search: string, fallback: string): string {
   const ret = new URLSearchParams(search).get('return');
-  return ret?.startsWith('/') ? ret : fallback;
+  return isSafeNextPath(ret) ? ret : fallback;
 }

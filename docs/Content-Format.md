@@ -135,6 +135,10 @@ Languages: `python` (Pyodide), `matlab` / `octave` / `m` (didactic subset).
 
 Type `function` (expression in `x`) or native `plotly` config.
 
+A `function` expression can use `+ - * / ^`, parentheses, `pi`, `e`, and these functions, bare or as `Math.sin`: `sin cos tan asin acos atan atan2 sinh cosh tanh sqrt abs log log2 log10 exp ceil floor round max min sign pow`. For example `exp(-x/2) * cos(2*pi*x)`. Anything else draws nothing.
+
+Axis titles in a `plotly` layout can be a string (`"title": "Ore"`) or `{ "text": "Ore" }`.
+
 ## Validation
 
 ```bash

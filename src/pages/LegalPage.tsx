@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import versions from '../legal/versions.json';
 import tos from '../legal/tos.it.md?raw';
 import privacy from '../legal/privacy.it.md?raw';
@@ -15,9 +15,7 @@ const DOCS = {
 
 export function LegalPage({ doc }: { doc: keyof typeof DOCS }) {
   const { title, body } = DOCS[doc];
-  useEffect(() => {
-    document.title = `${title} · Politost Smartbook`;
-  }, [title]);
+  useDocumentTitle(title);
 
   return (
     <div className="site-page legal-page">

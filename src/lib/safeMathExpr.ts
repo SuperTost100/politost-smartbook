@@ -1,7 +1,5 @@
 /** Evaluate simple math expressions without `new Function` or `eval`. */
 
-const EXPR_CHARS = /^[0-9x+\-*/().^ \t]+$/;
-
 type Value = number | number[];
 
 const MATH_FNS: Record<string, (...args: number[]) => number> = {
@@ -75,7 +73,8 @@ function tokenize(input: string): Tok[] {
   return out;
 }
 
-function parseArithmetic(input: string, scope: Record<string, Value>): Value {
+/** With `bareFunctions`, `sin(x)` works as well as `Math.sin(x)` (graph expressions). */
+function parseArithmetic(input: string, scope: Record<string, Value>, bareFunctions = false): Value {
   const tokens = tokenize(input);
   let i = 0;
   const peek = () => tokens[i];
@@ -162,10 +161,9 @@ function parseArithmetic(input: string, scope: Record<string, Value>): Value {
 
   function parseIdent(name: string): Value {
     if (name === 'Math') return parseMath();
-    if (!Object.prototype.hasOwnProperty.call(scope, name)) {
-      throw new Error(`Identificatore non consentito: ${name}`);
-    }
-    return scope[name];
+    if (Object.prototype.hasOwnProperty.call(scope, name)) return scope[name];
+    if (bareFunctions && Object.prototype.hasOwnProperty.call(MATH_FNS, name)) return callFn(MATH_FNS[name]);
+    throw new Error(`Identificatore non consentito: ${name}`);
   }
 
   function parseMath(): number {
@@ -178,6 +176,10 @@ function parseArithmetic(input: string, scope: Record<string, Value>): Value {
     if (member.v === 'E') return Math.E;
     const fn = MATH_FNS[member.v];
     if (!fn) throw new Error(`Identificatore non consentito: Math.${member.v}`);
+    return callFn(fn);
+  }
+
+  function callFn(fn: (...args: number[]) => number): number {
     const open = peek();
     if (open.k !== 'op' || open.v !== '(') throw new Error('Chiamata non valida');
     eat();
@@ -208,13 +210,15 @@ function asNumber(value: Value): number {
   return value;
 }
 
+/**
+ * A graph function of x as authors write it: `sin(x)`, `x^2 + 1`, `exp(-x) * cos(2*pi*x)`.
+ * Arithmetic, the functions in MATH_FNS (bare or as `Math.sin`), `pi` and `e` only; anything else is NaN.
+ */
 export function evalExprAtX(expr: string, x: number): number {
   const trimmed = expr.trim();
-  if (!trimmed || !EXPR_CHARS.test(trimmed)) return NaN;
-
-  const js = trimmed.replace(/\^/g, '**').replace(/\bx\b/g, `(${x})`);
+  if (!trimmed) return NaN;
   try {
-    const result = parseArithmetic(js, {});
+    const result = parseArithmetic(trimmed.replace(/\^/g, '**'), { x, pi: Math.PI, PI: Math.PI, e: Math.E }, true);
     return typeof result === 'number' && Number.isFinite(result) ? result : NaN;
   } catch {
     return NaN;

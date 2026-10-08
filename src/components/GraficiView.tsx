@@ -44,6 +44,12 @@ function buildPlotlyFromFunctions(cfg: FunctionCfg, colors: string[]) {
   }));
 }
 
+function axisTitle(title: unknown, colors: { font: string; tick: string }): { title?: Layout } {
+  const t = typeof title === 'string' ? { text: title } : asObject(title);
+  if (typeof t.text !== 'string' || !t.text) return {};
+  return { title: { ...t, font: { family: colors.font, size: 12, color: colors.tick } } };
+}
+
 /**
  * Legend entries from the traces: name, colour and dash. Pie slices are not traces,
  * so a pie keeps Plotly's own legend (undefined here).
@@ -109,6 +115,8 @@ export function GraficiView({ grafici }: GraficiViewProps) {
   const authorLayout = asObject(plot?.layout);
   const axis = (value: unknown) => ({
     ...asObject(value),
+    // Plotly 3 dropped `title: "Ore"`; books still write it, so wrap it as `{ text }`.
+    ...axisTitle(asObject(value).title, colors),
     gridcolor: colors.grid,
     linecolor: colors.axis,
     zerolinecolor: colors.axis,

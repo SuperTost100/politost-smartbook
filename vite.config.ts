@@ -19,6 +19,8 @@ export default defineConfig({
   build: {
     assetsInlineLimit(filePath) {
       if (filePath.endsWith('.svg')) return false;
+      // An inlined font is a data: URL, which the CSP (font-src 'self') blocks.
+      if (/\.(woff2?|ttf)$/.test(filePath)) return false;
     },
     rollupOptions: {
       output: {
