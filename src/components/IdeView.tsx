@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
-import Editor, { type BeforeMount } from '@monaco-editor/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
+import '../lib/monacoSetup';
 import type { IdeSnippet } from '../types/smartbook';
-import { runCode } from '../lib/codeRunner';
+import { runCode, stopPython } from '../lib/codeRunner';
 import { SectionHeader } from './ds/SectionHeader';
 import { CodeCell, type RunStatus } from './ds/CodeCell';
 import { useTheme } from '../context/ThemeContext';
@@ -52,36 +53,55 @@ const defineThemes: BeforeMount = (monaco) => {
 export function IdeView({ snippets }: IdeViewProps) {
   const { theme } = useTheme();
   const [active, setActive] = useState(snippets[0]?.id ?? '');
-  const [code, setCode] = useState(snippets[0]?.code ?? '');
+  // Edits per snippet, so switching script and back keeps what the student typed.
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [output, setOutput] = useState('');
   const [status, setStatus] = useState<RunStatus>('idle');
   const [loading, setLoading] = useState(false);
+  const runId = useRef(0);
 
   const snippet = snippets.find((s) => s.id === active) ?? snippets[0];
+  const code = snippet ? drafts[snippet.id] ?? snippet.code : '';
 
   const select = (s: IdeSnippet) => {
+    // A script still running (maybe stuck) would hold the worker and delay the next one.
+    if (status === 'running') stopPython();
+    runId.current += 1;
     setActive(s.id);
-    setCode(s.code);
     setOutput('');
     setStatus('idle');
+    setLoading(false);
   };
 
-  const handleRun = useCallback(async () => {
-    if (!snippet) return;
+  const handleRun = useCallback(async (source?: string) => {
+    if (!snippet || status === 'running') return;
+    const run = ++runId.current;
     setStatus('running');
     setLoading(true);
     setOutput('Preparazione ambiente...\n');
 
-    const result = await runCode(snippet.language, code);
+    const result = await runCode(snippet.language, source ?? code);
+    // The student switched script while this one ran: its output belongs to the old script.
+    if (run !== runId.current) return;
     setLoading(false);
 
     const lines: string[] = [];
     if (result.stdout) lines.push(result.stdout);
     if (result.stderr) lines.push(result.stderr);
-    if (result.error) lines.push(`\n${result.error}`);
+    if (result.error) lines.push(result.error);
     setOutput(lines.join('\n') || '(nessun output)');
-    setStatus(result.error || result.stderr ? 'error' : 'ok');
-  }, [snippet, code]);
+    // stderr alone is warnings; only an exception or a timeout is an error.
+    setStatus(result.error ? 'error' : 'ok');
+  }, [snippet, code, status]);
+
+  // Ctrl/Cmd+Enter runs what the editor holds, even a keystroke React has not rendered yet.
+  const runRef = useRef(handleRun);
+  useEffect(() => {
+    runRef.current = handleRun;
+  }, [handleRun]);
+  const onMount: OnMount = (editor, monaco) => {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => void runRef.current(editor.getValue()));
+  };
 
   if (!snippet) {
     return <p className="empty-note">Nessuno snippet disponibile.</p>;
@@ -93,7 +113,7 @@ export function IdeView({ snippets }: IdeViewProps) {
     <div className="ide-view sb-page">
       <SectionHeader
         title="Laboratorio"
-        meta={<span>Python eseguito nel browser con Pyodide; MATLAB con un interprete per script didattici semplici.</span>}
+        meta={<span>Python eseguito nel browser con Pyodide; MATLAB con un interprete per script didattici semplici. Ctrl+Invio (⌘+Invio su Mac) esegue lo script.</span>}
       />
 
       <div className="ide-layout">
@@ -122,15 +142,20 @@ export function IdeView({ snippets }: IdeViewProps) {
           status={status}
           output={output}
           runLabel={status === 'running' ? (loading ? 'Caricamento...' : 'Esecuzione...') : 'Esegui'}
-          onRun={handleRun}
-          onReset={() => { setCode(snippet.code); setOutput(''); setStatus('idle'); }}
+          onRun={() => void handleRun()}
+          onReset={() => {
+            setDrafts(({ [snippet.id]: _discarded, ...rest }) => rest);
+            setOutput('');
+            setStatus('idle');
+          }}
         >
           <Editor
             height="360px"
             language={snippet.language === 'matlab' ? 'matlab' : snippet.language}
             value={code}
-            onChange={(v) => setCode(v ?? '')}
+            onChange={(v) => setDrafts((d) => ({ ...d, [snippet.id]: v ?? '' }))}
             beforeMount={defineThemes}
+            onMount={onMount}
             theme={`ptsb-${theme}`}
             options={{
               minimap: { enabled: false },

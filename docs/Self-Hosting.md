@@ -37,7 +37,9 @@ Add folders under `src/content/<book-id>/` before build. Each needs `smartbook.j
 
 ## Headers
 
-`public/_headers` is processed at build for CSP. Regenerated via `scripts/generate-headers.mjs`.
+`scripts/generate-headers.mjs` writes `public/_headers` at build time, including the Content Security Policy. Hosts that read `_headers` (Netlify, Cloudflare Pages) apply it as is. On other hosts, send the same headers yourself.
+
+The lab needs `'wasm-unsafe-eval'` in `script-src`, because Pyodide compiles WebAssembly. Monaco is bundled with the app, so the policy allows no CDN.
 
 ## Platform integration (optional)
 
