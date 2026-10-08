@@ -59,14 +59,22 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     }
   });
 
-  test('hides desktop-only section nav entries', async ({ page }) => {
+  test('hides the lab but keeps graphs in the section nav', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     // on phones the section switcher lives in the drawer next to the chapter index
     await page.getByRole('button', { name: /Apri indice capitoli/ }).click();
     const sectionNav = page.getByRole('navigation', { name: 'Sezioni del libro' });
     await expect(sectionNav.getByRole('link', { name: 'Formulario' })).toBeVisible();
     await expect(sectionNav.getByRole('link', { name: 'Laboratorio' })).toHaveCount(0);
-    await expect(sectionNav.getByRole('link', { name: 'Grafici & Calcoli' })).toHaveCount(0);
+    await sectionNav.getByRole('link', { name: 'Grafici & Calcoli' }).click();
+    await expect(page.locator('.js-plotly-plot')).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    // a finger on the plot scrolls the page until the graph tools are on
+    const dragmode = () => page.locator('.js-plotly-plot').evaluate((el) => (el as unknown as { _fullLayout: { dragmode: unknown } })._fullLayout.dragmode);
+    expect(await dragmode()).toBe(false);
+    await page.getByRole('button', { name: 'Strumenti grafico' }).click();
+    await expect.poll(dragmode).not.toBe(false);
   });
 
   test('serves web app manifest for PWA install', async ({ request }) => {

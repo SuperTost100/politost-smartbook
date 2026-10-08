@@ -52,7 +52,8 @@ Breakpoint contract in `global.css` (`dvh`, `safe-area-inset`). Landscape phones
 |---------|-----------------|
 | Capitoli | Inline chapter picker under section tabs; section nav hides on scroll |
 | Formulario / Esercizi / Esami | Full-width; no horizontal page scroll |
-| Laboratorio / Grafici | Hidden from section nav (desktop-only) |
+| Laboratorio | Hidden from section nav (desktop-only) |
+| Grafici | In the section nav; the graph list becomes a select |
 | Upload `.ptsb` | Large tap target; no drag-and-drop |
 | PWA | `manifest.webmanifest` + minimal service worker; install banner on phone |
 

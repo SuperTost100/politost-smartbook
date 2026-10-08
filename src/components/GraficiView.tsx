@@ -74,6 +74,7 @@ export function GraficiView({ grafici }: GraficiViewProps) {
   const colors = useChartColors();
   // Matches the one-column breakpoint of .grafici-layout in ds.css.
   const compact = useMediaQuery('(max-width: 820px), (max-height: 520px)');
+  const touch = useMediaQuery('(pointer: coarse)');
 
   // The open graph lives in the URL, so a reload or a shared link keeps it.
   const index = Math.max(0, grafici.findIndex((g) => g.id === searchParams.get('grafico')));
@@ -134,6 +135,8 @@ export function GraficiView({ grafici }: GraficiViewProps) {
     yaxis: axis(authorLayout.yaxis),
     // The panel draws the legend under the plot: Plotly's own squeezes the plot when labels are long.
     showlegend: legend ? false : authorLayout.showlegend,
+    // Plotly cancels touchstart while a drag mode is on, so a finger on the plot could not scroll the page.
+    dragmode: touch && !showTools ? false : authorLayout.dragmode,
     legend: { ...asObject(authorLayout.legend), bgcolor: 'rgba(0,0,0,0)' },
     autosize: true,
     margin: { l: 48, r: 16, t: 16, b: 24 },
