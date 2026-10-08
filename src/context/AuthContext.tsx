@@ -11,6 +11,7 @@ import {
 } from '../lib/api';
 import { useReaderFeatures } from './ReaderConfigContext';
 import { unregisterUploadedBook } from '../lib/loader';
+import { forgetReadingPosition } from '../lib/readingPosition';
 import { removeUploadedForUser } from '../lib/ptsbStore';
 import { consentIsCurrent } from '../lib/consentVersion';
 import versions from '../legal/versions.json';
@@ -86,7 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (leavingId) {
       try {
         const ids = await removeUploadedForUser(leavingId);
-        for (const id of ids) unregisterUploadedBook(id);
+        for (const id of ids) {
+          unregisterUploadedBook(id);
+          forgetReadingPosition(id);
+        }
       } catch (err) {
         console.error(err);
       }

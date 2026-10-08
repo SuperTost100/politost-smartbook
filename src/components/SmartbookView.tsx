@@ -8,6 +8,7 @@ import { ChapterPager } from './ds/ChapterPager';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
 import { useRefClick } from '../hooks/useRefClick';
+import { saveReadingPosition } from '../lib/readingPosition';
 
 interface SmartbookViewProps {
   bookId: string;
@@ -23,7 +24,7 @@ function readingMinutes(chapter: Chapter): number {
 }
 
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: SmartbookViewProps) {
-  const { setParagraphs, setActiveParagraphId } = useReaderProgress();
+  const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
   const print = usePrintMode();
 
@@ -59,6 +60,18 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
 
     return () => observer.disconnect();
   }, [chapter, setActiveParagraphId]);
+
+  // Home offers to resume here. The first paragraph counts as the top of the chapter.
+  useEffect(() => {
+    const index = chapter.paragraphs.findIndex((p) => p.id === activeParagraphId);
+    if (index < 0) return;
+    saveReadingPosition(bookId, {
+      chapterId: chapter.meta.id,
+      chapterNumber: chapter.meta.number,
+      chapterTitle: chapter.meta.title,
+      paragraphId: index > 0 ? activeParagraphId : undefined,
+    });
+  }, [bookId, chapter, activeParagraphId]);
 
   const chapterLinks = useMemo(() => allChapters.map((c) => c.meta), [allChapters]);
   const handleRefClick = useRefClick(bookId, chapterLinks);

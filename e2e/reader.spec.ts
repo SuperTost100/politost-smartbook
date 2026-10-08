@@ -78,6 +78,24 @@ test.describe('Reader', () => {
     await expect(page.getByRole('button', { name: /Precedente/ })).toHaveCount(0);
   });
 
+  test('Home offers to resume where the reader left off', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: /^Riprendi/ })).toHaveCount(0);
+
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await page.locator('#p3').scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, -80));
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('politost-last-read'))).toContain('"paragraphId":"p3"');
+
+    await page.locator('.sb-header-brand').click();
+    const resume = page.getByRole('link', { name: 'Riprendi Guida di esempio: Capitolo 2 · Cosa trovi nel libro' });
+    await expect(resume).toBeVisible();
+    await resume.click();
+    await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
+    await expect(page.locator('#p3')).toBeInViewport();
+  });
+
   for (const path of ['/docs', '/libro/esempio/laboratorio']) {
     test(`footer sits at the bottom edge: ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 1600 });

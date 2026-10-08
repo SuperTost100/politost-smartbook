@@ -13,6 +13,8 @@ La home elenca i libri disponibili.
 - **Importato** indica un file `.ptsb` caricato su questo browser.
 - **Richiede accesso** indica un libro con licenza. Senza account e senza licenza il testo protetto non si apre.
 
+Se hai già letto un libro su questo browser, la sua scheda mostra l'ultimo capitolo aperto e il pulsante «Riprendi», che riapre il paragrafo dove eri. «Apri» parte sempre dal primo capitolo.
+
 ## Dentro un libro
 
 In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutte.

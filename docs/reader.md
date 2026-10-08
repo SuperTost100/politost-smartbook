@@ -30,6 +30,7 @@ Pacchetti distribuiti: [ptsb.md](ptsb.md).
 - Elenco smartbook **integrati** (`src/content/`) e **importati** (`.ptsb` da IndexedDB)
 - Upload drag-and-drop di file `.ptsb`
 - Il libro dimostrativo **Guida di esempio** (`/libro/esempio`) è il primo in catalogo
+- «Riprendi» sulla scheda di un libro già aperto riporta all'ultimo capitolo e paragrafo letto (`src/lib/readingPosition.ts`, chiave `politost-last-read` in localStorage)
 
 ### Navigazione libro
 
@@ -79,7 +80,7 @@ npm install
 npm run dev
 ```
 
-→ http://localhost:5173
+→ <http://localhost:5173>
 
 First `npm install` copies Pyodide — wait for `Copied pyodide assets`, then start the dev server.
 
@@ -140,7 +141,7 @@ Dettaglio formato: [ptsb.md](ptsb.md).
 
 ## 4. Architettura
 
-```
+```text
 politost-smartbook/
 ├── src/
 │   ├── content/           # Smartbook integrati
@@ -174,7 +175,7 @@ politost-smartbook/
 
 ## 5. Parsing e rendering
 
-```
+```text
 chapters/*.md
   → parseChapterMarkdown()
   → paragrafi, formule, immagini
@@ -182,7 +183,7 @@ chapters/*.md
   → ContentFlow (schermo o stampa)
 ```
 
-```
+```text
 esercizi.md / esami.md
   → parseExercises()
   → blocchi exercise + hint + solution
@@ -202,7 +203,7 @@ Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), 
 
 - Python via Web Worker + Pyodide (`src/workers/pythonWorker.ts`)
 - MATLAB/Octave: interprete locale limitato
-- Configurazione snippet: `ide.json` — vedi [content-format.md §6](content-format.md#6-laboratorio-idejson)
+- Configurazione snippet: `ide.json`, vedi [Content-Format.md](Content-Format.md#lab-idejson)
 
 ### Grafici
 

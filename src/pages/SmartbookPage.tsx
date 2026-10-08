@@ -36,12 +36,18 @@ function SectionLoading({ children }: { children?: ReactNode }) {
 function useScrollToHash() {
   const { hash } = useLocation();
   useEffect(() => {
-    if (hash) {
-      const id = hash.slice(1);
-      setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-      }, 150);
-    }
+    if (!hash) return;
+    const id = decodeURIComponent(hash.slice(1));
+    // A cloud chapter renders after its download, so keep looking for the target for a few seconds.
+    let tries = 30;
+    let timer: ReturnType<typeof setTimeout>;
+    const attempt = () => {
+      const target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      else if (tries-- > 0) timer = setTimeout(attempt, 100);
+    };
+    timer = setTimeout(attempt, 150);
+    return () => clearTimeout(timer);
   }, [hash]);
 }
 
