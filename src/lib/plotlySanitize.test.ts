@@ -32,3 +32,9 @@ test('plotly config outside the trace allowlist does not render', () => {
   const marker = (dropped?.data[0] as { marker?: { symbol?: unknown } }).marker;
   assert.equal(marker?.symbol, undefined);
 });
+
+test('a scattergl trace draws as scatter, the bundled equivalent', () => {
+  const cleaned = sanitizePlotlyConfig([{ type: 'scattergl', x: [1, 2], y: [3, 4] }], {});
+  assert.ok(cleaned);
+  assert.equal((cleaned.data[0] as { type: string }).type, 'scatter');
+});
