@@ -4,9 +4,11 @@ import { FileText } from 'lucide-react';
 interface FooterProps {
   showCatalogLink?: boolean;
   compact?: boolean;
+  /** Inside a book: copyright on the left edge, links on the right, no centred column. */
+  wide?: boolean;
 }
 
-export function Footer({ showCatalogLink = false, compact = false }: FooterProps) {
+export function Footer({ showCatalogLink = false, compact = false, wide = false }: FooterProps) {
   if (compact) {
     return (
       <footer className="site-footer site-footer--compact no-print">
@@ -17,7 +19,7 @@ export function Footer({ showCatalogLink = false, compact = false }: FooterProps
   }
 
   return (
-    <footer className="site-footer no-print">
+    <footer className={`site-footer no-print${wide ? ' site-footer--wide' : ''}`}>
       <div className="site-footer-inner">
         <span>© Politost Smartbook</span>
         <nav className="site-footer-links" aria-label="Informazioni">

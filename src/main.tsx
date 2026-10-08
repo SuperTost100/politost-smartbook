@@ -11,6 +11,8 @@ import './styles/print.css';
 
 setReaderConfig(import.meta.env.VITE_PLATFORM_ENABLED === 'true' ? platformReaderConfig : defaultReaderConfig);
 registerServiceWorker();
+// Left behind by the cookie banner, removed in October 2026.
+localStorage.removeItem('cc_cookie');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

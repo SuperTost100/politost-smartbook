@@ -1,13 +1,7 @@
 import type { Page } from '@playwright/test';
 
-const CC_COOKIE =
-  '{"categories":["necessary","functional"],"revision":0,"data":null,"consentTimestamp":"2020-01-01T00:00:00.000Z","consentId":"e2e","services":{"necessary":[],"functional":[]},"lastConsentTimestamp":"2020-01-01T00:00:00.000Z","languageCode":"it","expirationTime":4102444800000}';
-
-/** Dismiss cookie banner + stub platform API so preview builds do not hang on /api/*. */
+/** Stub the platform API so preview builds do not hang on /api/*. */
 export async function preparePlatformShell(page: Page): Promise<void> {
-  await page.addInitScript((cookie) => {
-    localStorage.setItem('cc_cookie', cookie);
-  }, CC_COOKIE);
   await page.route('**/api/auth/me', (route) =>
     route.fulfill({ status: 401, contentType: 'application/json', body: '{}' }),
   );

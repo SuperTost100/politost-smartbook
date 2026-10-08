@@ -149,7 +149,7 @@ politost-smartbook/
 │   │   ├── ptsb.ts        # Import pacchetti
 │   │   └── validateChapter.ts
 │   ├── components/        # UI lettura (ContentFlow, esercizi, …)
-│   ├── print/             # Anteprima stampa (Paged.js, routes, bodies)
+│   ├── print/             # Anteprima stampa (foglio A4, routes, bodies)
 │   ├── pages/             # Home, SmartbookPage, Auth, Legal
 │   └── context/AuthContext.tsx
 ├── server/                # FastAPI — auth, licenze, content-key
@@ -225,14 +225,14 @@ Capitoli/esercizi con `printable: true` espongono **Versione stampabile**.
 Implementazione in `src/print/`:
 
 - `PrintPage.tsx` — shell e toolbar
-- `PrintFrame.tsx` — iframe + Paged.js
+- `PrintDocument.tsx` — il foglio A4: intestazioni e numeri di pagina in `@page`, filigrana per le copie con licenza; la stampa è quella del browser (`window.print()`)
 - `bodies/` — capitolo, formulario, esercizi
 - Rendering testuale condiviso: `ContentFlow variant="print"`
 
 In stampa: hint/soluzioni sempre visibili; laboratorio e grafici non stampabili.
 
 ```bash
-npm run test:print   # Playwright: esempio + chimica-organica + formulario/esercizi
+npm run test:print   # Playwright: capitolo, formulario ed esercizi del libro esempio, PDF A4
 npm run test:e2e     # full suite (includes print)
 ```
 

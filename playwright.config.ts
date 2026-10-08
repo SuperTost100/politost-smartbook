@@ -56,11 +56,12 @@ export default defineConfig({
       },
     },
   ],
-  globalSetup: './e2e/global-setup.ts',
+  // Build first: Playwright starts the web server before any global setup runs.
+  // The build inherits VITE_PLATFORM_ENABLED, so the same variable picks the specs that run.
   webServer: {
-    command: `npx vite preview --port ${port} --strictPort --host ${host}`,
+    command: `npm run build && npx vite preview --port ${port} --strictPort --host ${host}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 300_000,
   },
 });

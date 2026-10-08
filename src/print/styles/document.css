@@ -1,272 +1,240 @@
-/* Print document layout inside the Paged.js iframe */
+/* ═══════════════════════════════════════════════════════════════════
+   document.css — the printable sheet (.print-sheet)
+   On screen: an A4-width page inside the preview canvas.
+   In print: the whole document; @page margins come from PrintDocument.
+   The sheet carries data-theme="light", so the design-system tokens
+   stay light in dark mode. Ink on white paper, no fills.
+   ═══════════════════════════════════════════════════════════════════ */
 
 @import './tokens.css';
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+.print-sheet {
+  position: relative;
+  box-sizing: border-box;
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 20mm 18mm 22mm;
+  overflow: hidden;
   background: var(--print-surface);
   color: var(--print-ink);
+  font-family: var(--print-font-serif);
+  font-size: var(--print-size-body);
+  line-height: var(--print-leading-body);
+  border-radius: 2px;
+  box-shadow: var(--shadow-overlay);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-.paged-render-root {
-  position: relative;
-}
-
-.print-flow {
-  font-family: var(--print-font-serif);
-  font-size: var(--print-size-body);
-  line-height: var(--print-leading-body);
+.print-sheet .katex {
   color: var(--print-ink);
 }
 
-/* ── Brand opener ─────────────────────────────────────────────── */
+/* ── Opener ───────────────────────────────────────────────────── */
 
-.print-brand-block {
+.print-opener {
   margin: 0 0 var(--print-space-2xl);
-  padding-bottom: var(--print-space-xl);
+  padding-bottom: var(--print-space-lg);
+  border-bottom: 1.5pt solid var(--print-ink);
   break-after: avoid;
-  page-break-after: avoid;
 }
 
-.print-brand-wordmark {
+.print-opener-brand {
   display: flex;
   align-items: center;
-  gap: 0.5em;
-  margin-bottom: var(--print-space-md);
-}
-
-.print-brand-mark {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-}
-
-.print-brand-name {
+  gap: 0.4em;
+  margin-bottom: var(--print-space-xl);
   font-family: var(--print-font-sans);
-  font-size: var(--print-size-brand);
+  font-size: 10pt;
   font-weight: 700;
   color: var(--print-ink);
-  letter-spacing: -0.01em;
 }
 
-.print-brand-sub {
-  font-family: var(--print-font-sans);
-  font-size: var(--print-size-eyebrow);
-  font-weight: 600;
-  color: var(--print-ink-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-left: 0.25em;
-}
-
-.print-brand-rule {
-  border: none;
-  margin: 0 0 var(--print-space-xl);
-  height: 0;
-  border-top: 1.5pt solid var(--print-ink);
-}
-
-.print-brand-book {
+.print-opener-book {
+  margin: 0 0 var(--print-space-sm);
   font-family: var(--print-font-mono);
   font-size: var(--print-size-eyebrow);
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--print-ink-muted);
-  margin: 0 0 var(--print-space-sm);
 }
 
-.print-brand-title {
+.print-opener-title {
+  margin: 0;
   font-family: var(--print-font-sans);
   font-size: var(--print-size-title);
   font-weight: 600;
   line-height: var(--print-leading-tight);
-  color: var(--print-ink);
-  margin: 0;
   letter-spacing: -0.01em;
+  color: var(--print-ink);
 }
 
-/* ── Paged.js split fixes ─────────────────────────────────────── */
+/* ── Chapter sections ─────────────────────────────────────────── */
 
-[data-split-from] {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
+.print-sheet .paragraph-section {
+  margin: 0 0 var(--print-space-xl);
 }
 
-[data-split-to] {
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* ── Print chunks ─────────────────────────────────────────────── */
-
-.print-flow .print-chunk {
-  break-inside: auto;
-  page-break-inside: auto;
-}
-
-.print-flow .print-chunk:has(.numbered-formula),
-.print-flow .print-chunk:has(.smartbook-figure) {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* ── Chapters ─────────────────────────────────────────────────── */
-
-.print-flow .paragraph-section {
-  break-inside: auto;
-  page-break-inside: auto;
-  margin-bottom: var(--print-space-xl);
-}
-
-.print-flow .paragraph-section + .paragraph-section {
-  padding-top: var(--print-space-md);
-  border-top: 1px solid var(--print-border);
-}
-
-.print-flow .paragraph-title {
+.print-sheet .paragraph-title {
+  margin: var(--print-space-xl) 0 var(--print-space-md);
   font-family: var(--print-font-sans);
   font-size: var(--print-size-heading);
   font-weight: 600;
   line-height: var(--print-leading-tight);
   color: var(--print-ink);
-  margin: 0 0 var(--print-space-md);
   break-after: avoid;
-  page-break-after: avoid;
 }
 
-.print-flow .para-num {
+.print-sheet .paragraph-section:first-child .paragraph-title {
+  margin-top: 0;
+}
+
+.print-sheet .para-num {
+  margin-right: 0.5em;
   font-family: var(--print-font-mono);
   font-size: 0.8em;
-  color: var(--print-ink-muted);
   font-weight: 400;
-  margin-right: 0.35em;
+  color: var(--print-ink-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Content flow ─────────────────────────────────────────────── */
 
-.print-flow .content-flow {
+.print-sheet .content-flow {
+  font-family: var(--print-font-serif);
   font-size: var(--print-size-body);
   line-height: var(--print-leading-body);
 }
 
-.print-flow .content-paragraph {
-  display: block;
-  margin: 0 0 0.85em;
+.print-sheet .content-paragraph {
+  margin: 0 0 0.8em;
+  orphans: 3;
+  widows: 3;
 }
 
-.print-flow .content-paragraph:last-child {
-  margin-bottom: 0;
-}
-
-.print-flow .content-subheading {
+.print-sheet .content-subheading {
+  margin: 1.2em 0 0.4em;
   font-family: var(--print-font-sans);
-  font-size: 1.05em;
+  font-size: 11pt;
   font-weight: 600;
-  margin: 1.1em 0 0.45em;
   color: var(--print-ink);
   break-after: avoid;
-  page-break-after: avoid;
+}
+
+.print-sheet h4.content-subheading {
+  font-size: 10pt;
+}
+
+.print-sheet .content-list {
+  margin: 0 0 0.8em;
+  padding-left: 1.4em;
+}
+
+.print-sheet .content-list li {
+  margin: 0.2em 0;
   break-inside: avoid;
-  page-break-inside: avoid;
 }
 
-.print-flow .content-list {
-  margin: 0.5em 0 1em 1.25em;
-  padding: 0;
+.print-sheet .content-list li > .content-paragraph {
+  margin-bottom: 0.4em;
 }
 
-.print-flow .content-list li {
-  margin-bottom: 0.45em;
+.print-sheet .content-list ::marker {
+  font-family: var(--print-font-sans);
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .content-quote {
+  margin: 0 0 0.8em;
+  padding-left: 1em;
+  border-left: 1.5pt solid var(--print-border-strong);
+  color: var(--print-ink-muted);
+  break-inside: avoid;
+}
+
+.print-sheet .content-code {
+  margin: 0 0 0.8em;
+  padding: var(--print-space-sm) var(--print-space-md);
+  border: 1px solid var(--print-border);
+  border-radius: var(--print-radius);
+  font-family: var(--print-font-mono);
+  font-size: var(--print-size-small);
+  white-space: pre-wrap;
+  break-inside: avoid;
+}
+
+.print-sheet .content-flow code {
+  font-family: var(--print-font-mono);
+  font-size: 0.9em;
+}
+
+.print-sheet .content-rule {
+  margin: 1.2em 0;
+  border: 0;
+  border-top: 1px solid var(--print-border);
+}
+
+.print-sheet .content-math,
+.print-sheet .katex-block {
+  display: block;
+  margin: 0.6em 0;
+  text-align: center;
+  overflow: visible;
+  break-inside: avoid;
 }
 
 /* ── Formulas ─────────────────────────────────────────────────── */
 
-.print-flow .formula-ref {
-  color: var(--print-primary);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.print-flow .formula-missing {
-  color: var(--print-ink-faint);
-  font-style: italic;
-}
-
-.print-flow .numbered-formula {
-  margin: 1.1rem 0;
-  padding: 0.85rem 1rem;
+.print-sheet .numbered-formula {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--print-border);
   border-radius: var(--print-radius);
   break-inside: avoid;
-  page-break-inside: avoid;
 }
 
-.print-flow .formula-header {
+.print-sheet .numbered-formula .katex-display,
+.print-sheet .numbered-formula .katex-block {
+  overflow: visible;
+}
+
+.print-sheet .formula-header {
+  margin-bottom: 0.4rem;
   font-family: var(--print-font-sans);
   font-size: var(--print-size-small);
   color: var(--print-ink-muted);
-  margin-bottom: 0.45rem;
 }
 
-.print-flow .formula-num {
-  font-weight: 700;
+.print-sheet .formula-num,
+.print-sheet .formula-ref {
+  font-family: var(--print-font-mono);
+  font-size: 0.9em;
+  font-weight: 500;
   color: var(--print-primary);
+  white-space: nowrap;
 }
 
-.print-flow .formula-body {
-  overflow-x: auto;
-  text-align: center;
-}
-
-/* ── KaTeX (WebKit + Gecko need MathML hidden after Paged.js clone) */
-
-.print-flow .katex,
-.print-flow .katex-block,
-.pagedjs_page .katex,
-.pagedjs_page .katex-block {
-  break-inside: avoid;
-  page-break-inside: avoid;
-  overflow: visible;
-  color: var(--print-ink);
-}
-
-.print-flow .katex *,
-.pagedjs_page .katex * {
-  color: inherit;
-}
-
-.print-flow .katex-mathml,
-.pagedjs_page .katex-mathml {
-  border: 0 !important;
-  clip: rect(1px, 1px, 1px, 1px) !important;
-  -webkit-clip-path: inset(50%) !important;
-  clip-path: inset(50%) !important;
-  height: 1px !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  position: absolute !important;
-  width: 1px !important;
-  white-space: nowrap !important;
+.print-sheet .formula-missing {
+  font-style: italic;
+  color: var(--print-ink-faint);
 }
 
 /* ── Figures ──────────────────────────────────────────────────── */
 
-.print-flow .smartbook-figure {
-  break-inside: avoid;
-  page-break-inside: avoid;
+.print-sheet .smartbook-figure {
   margin: 1.25rem auto;
   max-width: 100%;
   text-align: center;
+  break-inside: avoid;
 }
 
-.print-flow .smartbook-figure img {
+.print-sheet .smartbook-figure img {
   display: block;
   max-width: 100%;
+  max-height: 150mm;
   height: auto;
   margin: 0 auto;
   border: 1px solid var(--print-border);
@@ -274,216 +242,270 @@ body {
   background: var(--print-surface);
 }
 
-.print-flow .smartbook-figure figcaption {
+.print-sheet .smartbook-figure figcaption {
+  margin-top: 0.4rem;
   font-family: var(--print-font-serif);
   font-style: italic;
   font-size: var(--print-size-caption);
-  color: var(--print-ink-muted);
-  margin-top: 0.45rem;
   line-height: 1.4;
+  color: var(--print-ink-muted);
 }
 
-.print-flow .smartbook-figure-missing .smartbook-figure-placeholder {
+.print-sheet .smartbook-figure-placeholder {
   padding: var(--print-space-lg);
   border: 1px dashed var(--print-border);
   border-radius: var(--print-radius);
-  color: var(--print-ink-muted);
   font-size: var(--print-size-small);
-}
-
-/* ── Cross-refs ───────────────────────────────────────────────── */
-
-.print-flow .smartbook-ref {
-  color: var(--print-primary);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.print-flow .smartbook-ref::after {
-  content: ' (' attr(data-ref) ')';
-  font-size: 0.85em;
-  font-weight: 400;
   color: var(--print-ink-muted);
+}
+
+/* ── Cross-references ─────────────────────────────────────────── */
+
+.print-sheet .smartbook-ref {
+  color: var(--print-ink);
+  text-decoration: none;
+  white-space: normal;
+}
+
+.print-sheet .smartbook-ref-target {
+  font-family: var(--print-font-mono);
+  font-size: 0.8em;
+  color: var(--print-primary);
+  white-space: nowrap;
 }
 
 /* ── Formulario ───────────────────────────────────────────────── */
 
-.print-flow .formulario-chapter {
-  break-inside: auto;
-  page-break-inside: auto;
+.print-sheet .formulario-chapter {
   margin-bottom: var(--print-space-xl);
 }
 
-.print-flow .formulario-chapter h3 {
+.print-sheet .formulario-chapter h3 {
+  margin: 0 0 var(--print-space-md);
+  padding-bottom: var(--print-space-sm);
   font-family: var(--print-font-sans);
   font-size: var(--print-size-heading);
   font-weight: 600;
   color: var(--print-ink);
-  margin: 0 0 var(--print-space-md);
-  padding-bottom: var(--print-space-sm);
   border-bottom: 1pt solid var(--print-border-strong);
   break-after: avoid;
-  page-break-after: avoid;
 }
 
-.print-flow .formula-grid {
+.print-sheet .formula-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--print-space-md);
 }
 
-.print-flow .formulario-card {
-  break-inside: avoid;
-  page-break-inside: avoid;
+.print-sheet .formulario-card {
+  padding: var(--print-space-md);
   border: 1px solid var(--print-border);
   border-radius: var(--print-radius);
-  padding: var(--print-space-md);
+  break-inside: avoid;
 }
 
-.print-flow .formulario-card-header {
+.print-sheet .formulario-card-header {
+  margin-bottom: var(--print-space-xs);
   font-family: var(--print-font-sans);
   font-size: var(--print-size-small);
   color: var(--print-ink-muted);
-  margin-bottom: var(--print-space-xs);
 }
 
-.print-flow .formulario-card-body {
-  text-align: center;
-  overflow-x: auto;
-}
-
-.print-flow .formula-label {
+.print-sheet .formula-label {
   margin-left: 0.35em;
+}
+
+.print-sheet .formulario-card-body {
+  text-align: center;
+  overflow: hidden;
+}
+
+.print-sheet .formulario-card-body .katex {
+  font-size: calc(1.21em * var(--formula-fit, 1));
+}
+
+.print-sheet .formulario-card--wide {
+  grid-column: 1 / -1;
 }
 
 /* ── Exercises ────────────────────────────────────────────────── */
 
-.print-flow .exercise-list {
+.print-sheet .exercise-list {
   margin: 0;
 }
 
-.print-flow .exercise-card {
-  break-inside: auto;
-  page-break-inside: auto;
-  background: var(--print-surface);
+.print-sheet .exercise-card {
+  margin-bottom: var(--print-space-lg);
+  padding: var(--print-space-md) var(--print-space-lg);
   border: 1px solid var(--print-border);
   border-radius: var(--print-radius);
-  margin-bottom: var(--print-space-lg);
-  padding: var(--print-space-md);
 }
 
-.print-flow .exercise-header {
+.print-sheet .exercise-header {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.5em 0.75em;
+  gap: 0.4em 0.75em;
   margin-bottom: var(--print-space-md);
   padding-bottom: var(--print-space-sm);
   border-bottom: 1px solid var(--print-border);
-  break-inside: avoid;
-  page-break-inside: avoid;
+  font-family: var(--print-font-sans);
+  break-after: avoid;
 }
 
-.print-flow .exercise-id {
+.print-sheet .exercise-id {
   font-family: var(--print-font-mono);
   font-weight: 600;
   color: var(--print-ink);
 }
 
-.print-flow .exercise-ch {
-  font-family: var(--print-font-sans);
+.print-sheet .exercise-ch {
   font-size: var(--print-size-small);
   color: var(--print-ink-muted);
 }
 
-.print-flow .difficulty {
-  font-family: var(--print-font-sans);
-  font-size: var(--print-size-small);
-  font-weight: 600;
-  text-transform: capitalize;
-  padding: 0.1em 0.5em;
+.print-sheet .difficulty {
+  padding: 0.05em 0.5em;
+  font-family: var(--print-font-mono);
+  font-size: var(--print-size-eyebrow);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--print-ink-muted);
   border: 1px solid var(--print-border-strong);
   border-radius: 4px;
-  background: var(--print-surface);
 }
 
-.print-flow .exercise-question {
+.print-sheet .exercise-question {
   margin-bottom: var(--print-space-md);
 }
 
-.print-flow .print-reveal-block {
+.print-sheet .print-reveal-block {
   margin-top: var(--print-space-md);
   padding: var(--print-space-md);
   border-radius: var(--print-radius);
-  break-inside: auto;
-  page-break-inside: auto;
 }
 
-.print-flow .print-reveal-block--hint {
+.print-sheet .print-reveal-block--hint {
   border: 1px solid var(--print-border);
 }
 
-.print-flow .print-reveal-block--solution {
+.print-sheet .print-reveal-block--solution {
   border: 1px solid var(--print-border-strong);
 }
 
-.print-flow .print-reveal-header {
+.print-sheet .print-reveal-header {
+  margin-bottom: var(--print-space-sm);
   font-family: var(--print-font-mono);
   font-size: var(--print-size-eyebrow);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--print-ink-muted);
-  margin-bottom: var(--print-space-sm);
+  break-after: avoid;
 }
 
-.print-flow .empty-note {
+.print-sheet .empty-note {
+  margin: var(--print-space-lg) 0;
   font-style: italic;
   color: var(--print-ink-muted);
-  margin: var(--print-space-lg) 0;
 }
 
-/* ── Watermark ────────────────────────────────────────────────── */
+/* ── Watermark (licensed copies) ──────────────────────────────── */
 
-.pagedjs_page .print-watermark {
+.print-watermark {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   z-index: 0;
-  overflow: hidden;
-}
-
-.pagedjs_page .print-watermark-grid {
-  position: absolute;
-  inset: -50%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4rem;
-  transform: rotate(-35deg);
+  align-content: space-around;
+  gap: 5rem 2rem;
+  overflow: hidden;
+  pointer-events: none;
   opacity: 0.07;
-  color: var(--print-ink-muted);
   font-family: var(--print-font-sans);
   font-size: 8pt;
+  color: var(--print-ink);
   white-space: nowrap;
 }
 
-.pagedjs_page .pagedjs_pagebox {
-  position: relative;
+.print-watermark span {
+  transform: rotate(-30deg);
 }
 
-.pagedjs_page .pagedjs_area {
+.print-opener,
+.print-body {
   position: relative;
   z-index: 1;
 }
 
-.paged-render-root:has(.pagedjs_pages) .print-root,
-.paged-render-root:has(.pagedjs_pages) .print-flow {
-  display: none !important;
+/* ── Narrow screens: the sheet becomes a plain page ───────────── */
+
+@media screen and (max-width: 860px) {
+  .print-sheet {
+    width: 100%;
+    min-height: 0;
+    padding: 1.5rem 1.1rem 2rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .print-sheet .formula-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
+/* ── Print ────────────────────────────────────────────────────── */
+
 @media print {
-  .paged-render-root .print-root,
-  .paged-render-root .print-flow {
-    display: none !important;
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .print-sheet {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* position: fixed repeats on every printed page */
+  .print-watermark {
+    position: fixed;
+  }
+}
+
+/* Margin boxes: Chromium honours these; others ignore them. */
+@page {
+  @top-left {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7.5pt;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #50576a;
+    vertical-align: bottom;
+    padding-bottom: 3mm;
+  }
+
+  @top-right {
+    font-family: Figtree, system-ui, sans-serif;
+    font-size: 8pt;
+    color: #50576a;
+    text-align: right;
+    vertical-align: bottom;
+    padding-bottom: 3mm;
+  }
+
+  @bottom-center {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 7.5pt;
+    color: #5f6675;
+    vertical-align: top;
+    padding-top: 3mm;
   }
 }

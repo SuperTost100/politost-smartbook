@@ -6,6 +6,7 @@ import { PanelLeft, Printer } from 'lucide-react';
 import { ptsbLayout, ptsbProLayoutToken } from '../../../design-system/theme/ptsb-theme';
 import { useTheme } from '../../context/ThemeContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { usePrintShortcut } from '../../hooks/usePrintShortcut';
 import { ThemeToggle } from '../ThemeToggle';
 import { Lockup } from './Lockup';
 import { SectionTabs, type SectionItem } from './SectionTabs';
@@ -40,6 +41,7 @@ export function ReaderShell(props: ReaderShellProps) {
   const compactTabs = useMediaQuery(COMPACT_TABS);
   const { paragraphs } = useReaderProgress();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  usePrintShortcut(props.onPrint);
 
   const hasToc = !!props.chapters?.length;
   const siderVisible = isDesktop && hasToc;

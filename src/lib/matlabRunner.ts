@@ -66,19 +66,34 @@ function matlabExprToJs(expr: string): string {
   return js;
 }
 
-function formatPrintf(fmt: string, values: number[]): string {
+type MatlabValue = number | number[] | string;
+
+/** One pass over the format, so arguments are consumed left to right. */
+function formatPrintf(fmt: string, values: MatlabValue[]): string {
   let vi = 0;
+  const next = () => values[vi++];
+  const num = (v: MatlabValue | undefined) => (typeof v === 'number' ? v : Number(v ?? 0));
   return fmt
-    .replace(/%\.(\d+)f/g, (_, dec) => {
-      const val = values[vi++] ?? 0;
-      return val.toFixed(Number(dec));
+    .replace(/%(?:\.(\d+))?([fdseg%])/g, (_, dec: string | undefined, conv: string) => {
+      if (conv === '%') return '%';
+      const v = next();
+      switch (conv) {
+        case 'f': return dec !== undefined ? num(v).toFixed(Number(dec)) : num(v).toFixed(6);
+        case 'd': return String(Math.round(num(v)));
+        case 'e': return num(v).toExponential(dec !== undefined ? Number(dec) : 6);
+        case 'g': return String(num(v));
+        default: return v === undefined ? '' : String(v);
+      }
     })
-    .replace(/%f/g, () => String(values[vi++] ?? 0))
-    .replace(/%d/g, () => String(Math.round(values[vi++] ?? 0)))
-    .replace(/%s/g, () => String(values[vi++] ?? ''))
-    .replace(/%e/g, () => (values[vi++] ?? 0).toExponential())
-    .replace(/%g/g, () => String(values[vi++] ?? 0))
-    .replace(/\\n/g, '\n');
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '\t');
+}
+
+/** 'text' or "text" → the text; anything else → null */
+function stringLiteral(expr: string): string | null {
+  const m = expr.trim().match(/^'((?:[^']|'')*)'$|^"((?:[^"]|"")*)"$/);
+  if (!m) return null;
+  return m[1] !== undefined ? m[1].replace(/''/g, "'") : m[2].replace(/""/g, '"');
 }
 
 /** Rimuove i commenti MATLAB (%) rispettando le stringhe quotate */
@@ -99,7 +114,11 @@ function stripMatlabComment(line: string): string {
 /** Interprete MATLAB didattico (sottoinsieme compatibile Octave) */
 export async function runMatlab(code: string): Promise<RunResult> {
   const scope: Record<string, number | number[]> = {};
-  const output: string[] = [];
+  const strings: Record<string, string> = {};
+  let stdout = '';
+  const printLine = (text: string) => {
+    stdout += `${text}\n`;
+  };
 
   const evalExpr = (expr: string): number | number[] => {
     const js = matlabExprToJs(expr);
@@ -108,17 +127,42 @@ export async function runMatlab(code: string): Promise<RunResult> {
       if (typeof result === 'number' && isNaN(result)) throw new Error('Risultato NaN');
       return result;
     } catch (e) {
-      throw new Error(`Espressione non valida: ${expr} → ${js} (${e instanceof Error ? e.message : e})`);
+      throw new Error(`Espressione non valida: ${expr} → ${js} (${e instanceof Error ? e.message : e})`, { cause: e });
     }
   };
 
-  const parseFprintfArgs = (argsStr: string): number[] => {
+  /** A string literal, a string variable, sprintf(...) or a numeric expression. */
+  const evalValue = (expr: string): MatlabValue => {
+    const literal = stringLiteral(expr);
+    if (literal !== null) return literal;
+    const name = expr.trim();
+    if (name in strings) return strings[name];
+    const sprintfMatch = name.match(/^sprintf\s*\(([\s\S]*)\)$/);
+    if (sprintfMatch) return formatCall(sprintfMatch[1]);
+    return evalExpr(expr);
+  };
+
+  const formatCall = (argsStr: string): string => {
+    const [fmtExpr, ...rest] = splitArgs(argsStr);
+    const fmt = stringLiteral(fmtExpr ?? '');
+    if (fmt === null) throw new Error(`Il formato deve essere una stringa: ${fmtExpr}`);
+    return formatPrintf(fmt, rest.map(evalValue));
+  };
+
+  function splitArgs(argsStr: string): string[] {
     const parts: string[] = [];
     let current = '';
     let depth = 0;
+    let quote: string | null = null;
     for (const ch of argsStr) {
-      if (ch === '(') depth++;
-      if (ch === ')') depth--;
+      if (quote) {
+        if (ch === quote) quote = null;
+        current += ch;
+        continue;
+      }
+      if (ch === "'" || ch === '"') quote = ch;
+      if (ch === '(' || ch === '[') depth++;
+      if (ch === ')' || ch === ']') depth--;
       if (ch === ',' && depth === 0) {
         parts.push(current.trim());
         current = '';
@@ -127,11 +171,8 @@ export async function runMatlab(code: string): Promise<RunResult> {
       }
     }
     if (current.trim()) parts.push(current.trim());
-    return parts.map((p) => {
-      const v = evalExpr(p);
-      return typeof v === 'number' ? v : Number(v);
-    });
-  };
+    return parts;
+  }
 
   const lines = code
     .split('\n')
@@ -140,35 +181,34 @@ export async function runMatlab(code: string): Promise<RunResult> {
 
   try {
     for (const line of lines) {
-      // fprintf('format', arg1, arg2, ...)
-      const fprintfMatch = line.match(/fprintf\s*\(\s*['"]([^'"]*)['"]\s*(?:,\s*(.+))?\)\s*;?$/);
+      // fprintf('format', arg1, arg2, ...) — no implicit newline, as in MATLAB
+      const fprintfMatch = line.match(/^fprintf\s*\(([\s\S]*)\)\s*;?$/);
       if (fprintfMatch) {
-        const [, fmt, argsStr] = fprintfMatch;
-        const values = argsStr ? parseFprintfArgs(argsStr) : [];
-        output.push(formatPrintf(fmt, values));
+        stdout += formatCall(fprintfMatch[1]);
         continue;
       }
 
-      // disp('stringa')
-      const dispStrMatch = line.match(/disp\s*\(\s*['"]([^'"]*)['"]\s*\)\s*;?$/);
-      if (dispStrMatch) {
-        output.push(dispStrMatch[1]);
-        continue;
-      }
-
-      // disp(espressione)
-      const dispMatch = line.match(/disp\s*\(\s*(.+)\s*\)\s*;?$/);
+      // disp(valore)
+      const dispMatch = line.match(/^disp\s*\(\s*(.+)\s*\)\s*;?$/);
       if (dispMatch) {
-        const val = evalExpr(dispMatch[1]);
-        if (Array.isArray(val)) output.push(val.map(String).join('  '));
-        else output.push(String(val));
+        const val = evalValue(dispMatch[1]);
+        printLine(Array.isArray(val) ? val.map(String).join('  ') : String(val));
         continue;
       }
 
-      // assegnamento: variabile = espressione
+      // assegnamento: variabile = espressione o stringa
       const assignMatch = line.match(/^([a-zA-Z_]\w*)\s*=\s*(.+?)\s*;?$/);
       if (assignMatch) {
-        scope[assignMatch[1]] = evalExpr(assignMatch[2]);
+        const [, name, expr] = assignMatch;
+        const val = evalValue(expr);
+        if (typeof val === 'string') {
+          strings[name] = val;
+          delete scope[name];
+        } else {
+          scope[name] = val;
+          delete strings[name];
+        }
+        if (!line.endsWith(';')) printLine(`${name} = ${Array.isArray(val) ? val.join('  ') : val}`);
         continue;
       }
 
@@ -181,10 +221,10 @@ export async function runMatlab(code: string): Promise<RunResult> {
       throw new Error(`Riga non supportata: ${line}`);
     }
 
-    return { stdout: output.join('\n'), stderr: '' };
+    return { stdout: stdout.replace(/\n$/, ''), stderr: '' };
   } catch (e) {
     return {
-      stdout: output.join('\n'),
+      stdout: stdout.replace(/\n$/, ''),
       stderr: '',
       error: e instanceof Error ? e.message : String(e),
     };

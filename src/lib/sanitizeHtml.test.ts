@@ -25,4 +25,20 @@ describe('sanitizeHtml', () => {
     assert.match(clean, /<path[\s>]/);
     assert.match(clean, /mord sqrt/);
   });
+
+  it('keeps the MathML KaTeX emits for screen readers', () => {
+    const tex = String.raw`\mathbb{R} \ni \sum_{k=0}^{n} \hat{x}_k^2 \text{ per } \left( \frac{a}{b} \right)`;
+    const html = katex.renderToString(tex, { throwOnError: false });
+    const clean = sanitizeHtml(html);
+    assert.match(clean, /<msubsup>/);
+    assert.match(clean, /<mtext>/);
+    assert.match(clean, /mathvariant="double-struck"/);
+    assert.match(clean, /<mover accent="true">/);
+    assert.match(clean, /stretchy="false"|fence="true"/);
+  });
+
+  it('still drops scripts and event handlers', () => {
+    const clean = sanitizeHtml('<span onclick="x()">a</span><script>alert(1)</script><math href="javascript:x"><mi>y</mi></math>');
+    assert.doesNotMatch(clean, /onclick|<script|href=/);
+  });
 });

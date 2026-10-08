@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { waitForPrintPagination } from './helpers/print';
 import { preparePlatformShell, PRINT_GOTO_OPTIONS } from './helpers/platform';
 
 test.describe('Accessibility landmarks', () => {
@@ -43,7 +42,7 @@ test.describe('Accessibility landmarks', () => {
   test('print preview has a main landmark', async ({ page }) => {
     await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await expect(page.locator('main#main-content')).toBeVisible();
-    await expect(page.locator('.print-preview-frame')).toBeVisible();
+    await expect(page.locator('main#main-content .print-sheet')).toBeVisible();
   });
 
   test('print preview toolbar has labeled actions', async ({ page }) => {
@@ -54,16 +53,6 @@ test.describe('Accessibility landmarks', () => {
     await expect(page.getByRole('button', { name: 'Attiva tema scuro' })).toBeVisible();
   });
 
-  test('cookie consent banner exposes labeled actions', async ({ page, context }) => {
-    await context.clearCookies();
-    await page.addInitScript(() => {
-      localStorage.removeItem('cc_cookie');
-    });
-    await page.goto('/');
-    await expect(page.locator('#cc-main .cm__title')).toHaveText('Utilizziamo i cookie');
-    await expect(page.getByRole('button', { name: 'Accetta tutti' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Solo necessari' })).toBeVisible();
-  });
 });
 
 test.describe('Dark mode', () => {
@@ -144,11 +133,11 @@ test.describe('Dark mode', () => {
     );
     expect(titleColor).toBe('rgb(232, 234, 239)');
 
-    await waitForPrintPagination(page);
-    const frameShadow = await page.evaluate(() =>
-      getComputedStyle(document.querySelector('.print-preview-frame')!).boxShadow,
-    );
-    // dark: the frame is outlined by the design-system hairline (--border, #292f3a)
-    expect(frameShadow).toContain('rgb(41, 47, 58)');
+    // The sheet is what gets printed, so it stays white and its text dark.
+    const sheet = await page.evaluate(() => {
+      const style = getComputedStyle(document.querySelector('.print-sheet')!);
+      return { background: style.backgroundColor, color: style.color };
+    });
+    expect(sheet).toEqual({ background: 'rgb(255, 255, 255)', color: 'rgb(21, 24, 30)' });
   });
 });

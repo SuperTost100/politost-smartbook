@@ -18,9 +18,9 @@ The default build works without a backend. For a private platform integration, s
 ## Checks
 
 ```bash
+npm run lint
 npm run test:content
-npm run test:security
-npm run test:print:unit
+npm run test:unit
 npm run build
 npm run test:e2e
 ```

@@ -1,8 +1,7 @@
 /* Minimal global print fallback — interactive app uses dedicated /stampa routes */
 
 @media print {
-  .no-print,
-  #cc-main {
+  .no-print {
     display: none !important;
   }
 }

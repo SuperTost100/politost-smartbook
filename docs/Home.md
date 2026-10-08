@@ -21,7 +21,7 @@ Open-source **reader** for interactive digital textbooks (Smartbooks).
 
 - Renders smartbooks from **builtin folders** (`src/content/`) or **uploaded `.ptsb`** files
 - Sections: chapters, formulario, exercises, exams, lab (Python/MATLAB), graphs (Plotly)
-- Print preview via Paged.js (`/libro/:id/stampa/*`)
+- Print preview as an A4 sheet, printed or saved as PDF by the browser (`/libro/:id/stampa/*`)
 - No Politost account required for public/local content
 
 ## What lives elsewhere (commercial platform)

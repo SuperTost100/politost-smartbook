@@ -5,7 +5,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AntdProvider } from './context/AntdProvider';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { CookieConsentInit } from './lib/cookieConsent';
 import { InstallBanner } from './components/InstallBanner';
 import { initBuiltinBooks, initUploadedBooks } from './lib/loader';
 import { initCloudBooks } from './lib/cloudLoader';
@@ -128,7 +127,6 @@ export function App() {
         <ThemeProvider>
           <AntdProvider>
             <AuthProvider>
-              <CookieConsentInit />
               <AppRoutes />
               <InstallBanner />
             </AuthProvider>
