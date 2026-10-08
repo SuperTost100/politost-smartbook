@@ -2,7 +2,7 @@
 
 **Politost Smartbook** — pacchetto portabile di un intero libro. Contiene la stessa struttura descritta in [content-format.md](content-format.md), impacchettata per distribuzione o import nel viewer.
 
-Implementazione: [ptsb-pack](https://github.com/SuperTost100/politost-ptsb-pack) (CLI Python) + script Node [`pack-ptsb.ts`](../scripts/pack-ptsb.ts) + lettura dei pacchetti in chiaro in content-core [`ptsb.ts`](../packages/content-core/src/ptsb.ts) + decifratura e import nel viewer [`ptsb.ts`](../src/lib/ptsb.ts).
+Implementazione: [ptsb-pack](https://github.com/SuperTost100/politost-content-core/tree/main/packages/ptsb-pack) (CLI Python) + script Node [`pack-ptsb.ts`](../scripts/pack-ptsb.ts) + lettura dei pacchetti in chiaro in content-core [`ptsb.ts`](../packages/content-core/src/ptsb.ts) + decifratura e import nel viewer [`ptsb.ts`](../src/lib/ptsb.ts).
 
 ---
 

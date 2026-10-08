@@ -4,7 +4,7 @@ Il **reader** è l’applicazione web con cui studenti e docenti aprono gli smar
 
 Codice: cartella [standalone reader](../).
 
-Formato dei contenuti: [content-format](https://github.com/SuperTost100/politost-content-format).
+Formato dei contenuti: [content-format](https://github.com/SuperTost100/politost-content-core/blob/main/spec/content-format.md).
 Pacchetti distribuiti: [ptsb.md](ptsb.md).
 
 ---

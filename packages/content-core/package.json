@@ -4,14 +4,19 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SuperTost100/politost-content-core.git"
+    "url": "https://github.com/SuperTost100/politost-content-core.git",
+    "directory": "packages/content-core"
   },
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
     "dompurify": "^3.4.13",

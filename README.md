@@ -32,15 +32,15 @@ Auth tests run only with `VITE_PLATFORM_ENABLED=true`. Pyodide assets are genera
 - [Reader guide](docs/guida.md), also available at `/docs`
 - [Reader architecture](docs/reader.md)
 - [Design system](design-system/README.md)
-- [Content format](https://github.com/SuperTost100/politost-content-format)
+- [Content format](https://github.com/SuperTost100/politost-content-core/blob/main/spec/content-format.md)
 - [PTSB format](docs/ptsb.md)
 - [Self-hosting](docs/Self-Hosting.md)
 - [Repository sync](docs/Repository-Sync.md)
 
 ## Related repositories
 
-- [content-core](https://github.com/SuperTost100/politost-content-core): shared parser, validator and PTSB reader, MIT
-- [ptsb-pack](https://github.com/SuperTost100/politost-ptsb-pack): Python packaging CLI
+- [content-core](https://github.com/SuperTost100/politost-content-core/tree/main/packages/content-core): shared parser, validator and PTSB reader, MIT
+- [ptsb-pack](https://github.com/SuperTost100/politost-content-core/tree/main/packages/ptsb-pack): Python packaging CLI
 - [Smart Builder](https://github.com/SuperTost100/politost-smartbook-builder): current authoring app, private
 - [Pyxis](https://github.com/SuperTost100/politost-pyxis): desktop study app
 
