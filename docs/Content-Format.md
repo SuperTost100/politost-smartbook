@@ -4,7 +4,7 @@ Every smartbook is a **folder** (or the inner tree of a `.ptsb` package).
 
 ## Folder layout
 
-```
+```text
 <id>/
 ├── smartbook.json
 ├── chapters/
@@ -130,6 +130,8 @@ Reference in text: `{{formula:2.1}}` (keep spaces around markers).
 ```
 
 Languages: `python` (Pyodide), `matlab` / `octave` / `m` (didactic subset).
+
+Python scripts can import the standard library, `numpy` and `matplotlib`. The first script that imports one of them downloads it, which can take a few seconds. The lab shows every open matplotlib figure under the text output as an image, up to 10 per run, so `plt.show()` is optional.
 
 ## Graphs (`grafici.json`)
 

@@ -34,7 +34,7 @@ A smartbook is a course book written in Markdown with numbered formulas, exercis
 
 **Study from the formula sheet.** It collects every numbered formula from the chapters. Exercises and past exam questions come with hints and step-by-step solutions.
 
-**Run code and plot.** The lab runs Python in the browser through Pyodide, plus a small MATLAB-style interpreter. Graphs are computed on the device. Neither sends code to a server.
+**Run code and plot.** The lab runs Python in the browser through Pyodide, with numpy and matplotlib, plus a small MATLAB-style interpreter. Graphs are computed on the device. Neither sends code to a server.
 
 **Print.** Chapters, the formula sheet, exercises and exams each have a print preview, with hints and solutions shown.
 
