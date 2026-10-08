@@ -200,6 +200,7 @@ Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), 
 ### Laboratorio
 
 - Python via Web Worker + Pyodide (`src/workers/pythonWorker.ts`)
+- numpy e matplotlib si caricano alla prima `import` (wheel copiate in `public/pyodide/` da `scripts/copy-pyodide.mjs`); le figure diventano PNG sotto l'output
 - MATLAB/Octave: interprete locale limitato
 - Configurazione snippet: `ide.json` — vedi [content-format.md §6](content-format.md#6-laboratorio-idejson)
 

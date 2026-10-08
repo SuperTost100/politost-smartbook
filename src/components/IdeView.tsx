@@ -56,6 +56,7 @@ export function IdeView({ snippets }: IdeViewProps) {
   // Edits per snippet, so switching script and back keeps what the student typed.
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [output, setOutput] = useState('');
+  const [figures, setFigures] = useState<string[]>([]);
   const [status, setStatus] = useState<RunStatus>('idle');
   const [loading, setLoading] = useState(false);
   const runId = useRef(0);
@@ -69,6 +70,7 @@ export function IdeView({ snippets }: IdeViewProps) {
     runId.current += 1;
     setActive(s.id);
     setOutput('');
+    setFigures([]);
     setStatus('idle');
     setLoading(false);
   };
@@ -79,8 +81,11 @@ export function IdeView({ snippets }: IdeViewProps) {
     setStatus('running');
     setLoading(true);
     setOutput('Preparazione ambiente...\n');
+    setFigures([]);
 
-    const result = await runCode(snippet.language, source ?? code);
+    const result = await runCode(snippet.language, source ?? code, (packages) => {
+      if (run === runId.current) setOutput(`Carico ${packages.join(' e ')}: la prima volta può richiedere qualche secondo...\n`);
+    });
     // The student switched script while this one ran: its output belongs to the old script.
     if (run !== runId.current) return;
     setLoading(false);
@@ -89,7 +94,9 @@ export function IdeView({ snippets }: IdeViewProps) {
     if (result.stdout) lines.push(result.stdout);
     if (result.stderr) lines.push(result.stderr);
     if (result.error) lines.push(result.error);
-    setOutput(lines.join('\n') || '(nessun output)');
+    const images = result.figures ?? [];
+    setOutput(lines.join('\n') || (images.length > 0 ? '' : '(nessun output)'));
+    setFigures(images);
     // stderr alone is warnings; only an exception or a timeout is an error.
     setStatus(result.error ? 'error' : 'ok');
   }, [snippet, code, status]);
@@ -113,7 +120,7 @@ export function IdeView({ snippets }: IdeViewProps) {
     <div className="ide-view sb-page">
       <SectionHeader
         title="Laboratorio"
-        meta={<span>Python eseguito nel browser con Pyodide; MATLAB con un interprete per script didattici semplici. Ctrl+Invio (⌘+Invio su Mac) esegue lo script.</span>}
+        meta={<span>Python eseguito nel browser con Pyodide, con numpy e matplotlib; MATLAB con un interprete per script didattici semplici. Ctrl+Invio (⌘+Invio su Mac) esegue lo script.</span>}
       />
 
       <div className="ide-layout">
@@ -141,11 +148,13 @@ export function IdeView({ snippets }: IdeViewProps) {
           description={snippet.description}
           status={status}
           output={output}
+          figures={figures}
           runLabel={status === 'running' ? (loading ? 'Caricamento...' : 'Esecuzione...') : 'Esegui'}
           onRun={() => void handleRun()}
           onReset={() => {
             setDrafts(({ [snippet.id]: _discarded, ...rest }) => rest);
             setOutput('');
+            setFigures([]);
             setStatus('idle');
           }}
         >

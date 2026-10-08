@@ -5,10 +5,15 @@ export interface RunResult {
   stdout: string;
   stderr: string;
   error?: string;
+  /** matplotlib figures as base64 PNG. */
+  figures?: string[];
 }
 
+/** Called while the lab downloads packages the script imports, e.g. ['numpy', 'matplotlib']. */
+export type OnLoadingPackages = (packages: string[]) => void;
+
 const PYTHON_TIMEOUT_MS = 10_000;
-/** First run downloads Pyodide (several MB); give a slow connection time before giving up. */
+/** First run downloads Pyodide (several MB), and matplotlib adds about 12 MB: give a slow connection time. */
 const PYTHON_LOAD_TIMEOUT_MS = 90_000;
 
 let pythonWorker: Worker | null = null;
@@ -38,7 +43,7 @@ export function stopPython(): void {
   if (pendingRuns.size > 0) discardPythonWorker('Esecuzione interrotta.');
 }
 
-export async function runPython(code: string): Promise<RunResult> {
+export async function runPython(code: string, onLoadingPackages?: OnLoadingPackages): Promise<RunResult> {
   const worker = getPythonWorker();
   const id = crypto.randomUUID();
 
@@ -59,6 +64,10 @@ export async function runPython(code: string): Promise<RunResult> {
     function onMessage(event: MessageEvent<WorkerMessage>) {
       const msg = event.data;
       if (msg.id !== id) return;
+      if (msg.type === 'loading') {
+        onLoadingPackages?.(msg.packages);
+        return;
+      }
       if (msg.type === 'started') {
         window.clearTimeout(timer);
         timer = window.setTimeout(
@@ -67,7 +76,7 @@ export async function runPython(code: string): Promise<RunResult> {
         );
         return;
       }
-      settle({ stdout: msg.stdout, stderr: msg.stderr, error: msg.error });
+      settle({ stdout: msg.stdout, stderr: msg.stderr, error: msg.error, figures: msg.figures });
     }
 
     pendingRuns.add(abort);
@@ -76,9 +85,9 @@ export async function runPython(code: string): Promise<RunResult> {
   });
 }
 
-export async function runCode(language: string, code: string): Promise<RunResult> {
+export async function runCode(language: string, code: string, onLoadingPackages?: OnLoadingPackages): Promise<RunResult> {
   const lang = language.toLowerCase();
-  if (lang === 'python' || lang === 'py') return runPython(code);
+  if (lang === 'python' || lang === 'py') return runPython(code, onLoadingPackages);
   if (lang === 'matlab' || lang === 'octave' || lang === 'm') return runMatlab(code);
   return {
     stdout: '',

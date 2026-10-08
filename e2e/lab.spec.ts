@@ -59,4 +59,29 @@ test.describe('Lab', () => {
     // Well under the 10 s timeout: the loop was stopped, not waited out.
     await expect(page.locator('.sb-code-out pre')).toContainText('r = 1 m', { timeout: 6_000 });
   });
+
+  test('numpy and matplotlib load from our origin and figures show under the output', async ({ page }) => {
+    const cdn: string[] = [];
+    page.on('request', (req) => {
+      if (!req.url().startsWith('http://127.0.0.1')) cdn.push(req.url());
+    });
+    await page.getByRole('button', { name: /Grafico con numpy/ }).click();
+    await page.getByRole('button', { name: 'Esegui' }).click();
+    await expect(page.locator('.sb-code-out pre')).toContainText('Carico numpy e matplotlib');
+    await expect(page.getByRole('button', { name: 'Esegui' })).toBeEnabled({ timeout: 90_000 });
+    await expect(page.locator('.sb-code-out pre')).toContainText('Ampiezza massima dopo 5 s:');
+    await expect(page.locator('.sb-code-out pre')).not.toContainText('non-interactive');
+    const figure = page.getByRole('img', { name: 'Figura 1 prodotta dallo script' });
+    await expect(figure).toBeVisible();
+    expect(await figure.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(300);
+    expect(cdn).toEqual([]);
+
+    // Loaded once per worker: the next run starts at once, and old figures are gone.
+    await expect(await run(page, 'import numpy as np\nprint(np.arange(4).sum())')).toHaveText('6');
+    await expect(page.locator('.sb-code-figures img')).toHaveCount(0);
+
+    // No indented lines: Monaco would add its own indentation to typed text.
+    await run(page, 'import matplotlib.pyplot as plt\nplt.figure()\nplt.plot([0, 1])\nplt.figure()\nplt.plot([1, 0])\nprint("due")');
+    await expect(page.locator('.sb-code-figures img')).toHaveCount(2);
+  });
 });

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/copy-pyodide.mjs && node scripts/generate-headers.mjs",
+    "prebuild": "node scripts/copy-pyodide.mjs --strict && node scripts/generate-headers.mjs",
     "build": "tsc -b && vite build",
     "postinstall": "node scripts/copy-pyodide.mjs",
     "prepare:e2e": "playwright install chromium",

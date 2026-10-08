@@ -20,7 +20,7 @@ In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutt
 - La prima sezione è il testo dei capitoli. Il nome nel menu dipende dal libro, spesso **Capitoli** o **Smartbook**. Nei capitoli una barra permette di saltare da un paragrafo all'altro.
 - **Formulario.** Elenco delle formule numerate, raccolto dai capitoli. Non è un file a parte.
 - **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include.
-- **Laboratorio.** Frammenti Python, eseguiti nel browser, e un interprete limitato in stile MATLAB. Il codice non viene inviato al server.
+- **Laboratorio.** Frammenti Python, eseguiti nel browser, e un interprete limitato in stile MATLAB. Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib: i grafici compaiono sotto l'output.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
 Su uno schermo stretto, telefono in verticale o in orizzontale, laboratorio e grafici non compaiono nel menu. Capitoli, formulario, esercizi ed esami restano. L'elenco capitoli sta sotto le schede di sezione.
@@ -62,5 +62,5 @@ Sul telefono può comparire l'invito a installare il reader come app. Se lo chiu
 - Libro protetto e nessun account. Entra da **Accedi**, poi riapri il file.
 - Account presente ma libro bloccato. Controlla di aver riscattato il codice di quel libro. Una licenza revocata non si riattiva da sola.
 - File rifiutato perché l'identificativo esiste già. Quel libro è già nel catalogo integrato. Aprilo da lì, non dal file.
-- Laboratorio lento la prima volta. Python viene caricato nel browser. Le volte successive, sullo stesso dispositivo, è più rapido.
+- Laboratorio lento la prima volta. Python viene caricato nel browser, e il primo script con numpy o matplotlib scarica anche quelle librerie. Le volte successive, sullo stesso dispositivo, è più rapido.
 - Dopo «Esci» non vedi più un libro importato. È previsto. Reimporta il file se ti serve ancora, con l'account con cui vuoi leggerlo.

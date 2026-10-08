@@ -14,6 +14,13 @@
     "code": "import math\n\nfor r in [1, 2, 3, 5]:\n    area = math.pi * r ** 2\n    print(f\"r = {r} m  →  area = {area:.2f} m²\")"
   },
   {
+    "id": "grafico-numpy",
+    "title": "Grafico con numpy",
+    "language": "python",
+    "description": "Oscillazione smorzata con numpy e matplotlib. La prima esecuzione scarica le due librerie.",
+    "code": "import numpy as np\nimport matplotlib.pyplot as plt\n\nt = np.linspace(0, 10, 500)\nx = np.exp(-0.3 * t) * np.cos(2 * np.pi * t)\n\nplt.plot(t, x, label=\"x(t)\")\nplt.xlabel(\"t [s]\")\nplt.ylabel(\"x [m]\")\nplt.title(\"Oscillazione smorzata\")\nplt.grid(True)\nplt.legend()\nplt.show()\n\nprint(f\"Ampiezza massima dopo 5 s: {np.abs(x[t > 5]).max():.3f} m\")"
+  },
+  {
     "id": "ciao-matlab",
     "title": "Stesso saluto in MATLAB",
     "language": "matlab",

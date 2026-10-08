@@ -11,6 +11,8 @@ interface CodeCellProps {
   children: ReactNode;
   status: RunStatus;
   output: string;
+  /** matplotlib figures as base64 PNG, shown under the text output. */
+  figures?: string[];
   runLabel?: string;
   onRun: () => void;
   onReset: () => void;
@@ -24,7 +26,7 @@ const STATUS = {
 } as const;
 
 /** A lab snippet: header with run and reset, editor, and an output panel that states its status in words. */
-export function CodeCell({ title, language, description, children, status, output, runLabel, onRun, onReset }: CodeCellProps) {
+export function CodeCell({ title, language, description, children, status, output, figures = [], runLabel, onRun, onReset }: CodeCellProps) {
   const st = STATUS[status];
   const running = status === 'running';
   return (
@@ -55,7 +57,14 @@ export function CodeCell({ title, language, description, children, status, outpu
             </span>
           )}
         </div>
-        <pre>{output || 'Premi "Esegui" per vedere il risultato.'}</pre>
+        {(output || figures.length === 0) && <pre>{output || 'Premi "Esegui" per vedere il risultato.'}</pre>}
+        {figures.length > 0 && (
+          <div className="sb-code-figures">
+            {figures.map((png, i) => (
+              <img key={i} src={`data:image/png;base64,${png}`} alt={`Figura ${i + 1} prodotta dallo script`} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
