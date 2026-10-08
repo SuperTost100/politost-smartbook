@@ -23,7 +23,7 @@ In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutt
 - **Laboratorio.** Frammenti Python, eseguiti nel browser, e un interprete limitato in stile MATLAB. Il codice non viene inviato al server.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
-Su uno schermo stretto, telefono in verticale o in orizzontale, laboratorio e grafici non compaiono nel menu. Capitoli, formulario, esercizi ed esami restano. L'elenco capitoli sta sotto le schede di sezione.
+Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano. L'elenco capitoli sta sotto le schede di sezione.
 
 Un riferimento a una formula, nel testo, ne mostra il contenuto al passaggio o al tocco.
 
