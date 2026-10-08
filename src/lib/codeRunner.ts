@@ -12,6 +12,8 @@ const PYTHON_TIMEOUT_MS = 10_000;
 const PYTHON_LOAD_TIMEOUT_MS = 90_000;
 
 let pythonWorker: Worker | null = null;
+/** Runs waiting on the current worker; each settles with the given error if the worker is thrown away. */
+const pendingRuns = new Set<(error: string) => void>();
 
 function getPythonWorker(): Worker {
   if (!pythonWorker) {
@@ -22,10 +24,18 @@ function getPythonWorker(): Worker {
   return pythonWorker;
 }
 
-/** A stuck script keeps the worker busy forever, so a timeout throws the worker away. */
-function discardPythonWorker(worker: Worker) {
-  worker.terminate();
-  if (pythonWorker === worker) pythonWorker = null;
+/** A stuck script keeps the worker busy forever, so it is thrown away along with every run queued on it. */
+function discardPythonWorker(error: string) {
+  pythonWorker?.terminate();
+  pythonWorker = null;
+  const runs = [...pendingRuns];
+  pendingRuns.clear();
+  for (const settle of runs) settle(error);
+}
+
+/** Stops the running script, e.g. when the student switches to another one. */
+export function stopPython(): void {
+  if (pendingRuns.size > 0) discardPythonWorker('Esecuzione interrotta.');
 }
 
 export async function runPython(code: string): Promise<RunResult> {
@@ -33,31 +43,34 @@ export async function runPython(code: string): Promise<RunResult> {
   const id = crypto.randomUUID();
 
   return new Promise((resolve) => {
-    const fail = (error: string) => {
+    let timer = 0;
+    const settle = (result: RunResult) => {
+      window.clearTimeout(timer);
       worker.removeEventListener('message', onMessage);
-      discardPythonWorker(worker);
-      resolve({ stdout: '', stderr: '', error });
+      pendingRuns.delete(abort);
+      resolve(result);
     };
-    let timer = window.setTimeout(
-      () => fail('Python non si è avviato. Controlla la connessione e riprova.'),
+    const abort = (error: string) => settle({ stdout: '', stderr: '', error });
+    timer = window.setTimeout(
+      () => discardPythonWorker('Python non si è avviato. Controlla la connessione e riprova.'),
       PYTHON_LOAD_TIMEOUT_MS,
     );
 
     function onMessage(event: MessageEvent<WorkerMessage>) {
       const msg = event.data;
       if (msg.id !== id) return;
-      window.clearTimeout(timer);
       if (msg.type === 'started') {
+        window.clearTimeout(timer);
         timer = window.setTimeout(
-          () => fail(`Tempo scaduto: lo script girava da più di ${PYTHON_TIMEOUT_MS / 1000} s ed è stato interrotto.`),
+          () => discardPythonWorker(`Tempo scaduto: lo script girava da più di ${PYTHON_TIMEOUT_MS / 1000} s ed è stato interrotto.`),
           PYTHON_TIMEOUT_MS,
         );
         return;
       }
-      worker.removeEventListener('message', onMessage);
-      resolve({ stdout: msg.stdout, stderr: msg.stderr, error: msg.error });
+      settle({ stdout: msg.stdout, stderr: msg.stderr, error: msg.error });
     }
 
+    pendingRuns.add(abort);
     worker.addEventListener('message', onMessage);
     worker.postMessage({ id, code });
   });

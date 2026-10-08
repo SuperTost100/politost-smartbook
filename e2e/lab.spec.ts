@@ -49,4 +49,14 @@ test.describe('Lab', () => {
     await expect(await run(page, 'while True:\n    pass')).toContainText('Tempo scaduto');
     await expect(await run(page, 'print("di nuovo")')).toHaveText('di nuovo');
   });
+
+  test('switching script stops a running one, so the next run does not wait behind it', async ({ page }) => {
+    await run(page, 'print("pronto")');
+    await typeCode(page, 'while True:\n    pass');
+    await page.getByRole('button', { name: 'Esegui' }).click();
+    await page.getByRole('button', { name: /Area del cerchio/ }).click();
+    await page.getByRole('button', { name: 'Esegui' }).click();
+    // Well under the 10 s timeout: the loop was stopped, not waited out.
+    await expect(page.locator('.sb-code-out pre')).toContainText('r = 1 m', { timeout: 6_000 });
+  });
 });

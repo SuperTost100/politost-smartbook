@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import '../lib/monacoSetup';
 import type { IdeSnippet } from '../types/smartbook';
-import { runCode } from '../lib/codeRunner';
+import { runCode, stopPython } from '../lib/codeRunner';
 import { SectionHeader } from './ds/SectionHeader';
 import { CodeCell, type RunStatus } from './ds/CodeCell';
 import { useTheme } from '../context/ThemeContext';
@@ -64,6 +64,8 @@ export function IdeView({ snippets }: IdeViewProps) {
   const code = snippet ? drafts[snippet.id] ?? snippet.code : '';
 
   const select = (s: IdeSnippet) => {
+    // A script still running (maybe stuck) would hold the worker and delay the next one.
+    if (status === 'running') stopPython();
     runId.current += 1;
     setActive(s.id);
     setOutput('');
