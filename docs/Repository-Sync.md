@@ -5,7 +5,7 @@ Updated 2026-10-08. Continue implementation in the standalone repositories below
 | Repository | Canonical responsibility | Sync result |
 |------------|--------------------------|-------------|
 | [politost-smartbook](https://github.com/SuperTost100/politost-smartbook) | Reader UI and print | Imported redesign plus saved main-branch fixes |
-| [politost-content-core](https://github.com/SuperTost100/politost-content-core) | Content spec (`spec/`), parser, renderer, validators, PTSB reader (`packages/content-core`), Python pack CLI (`packages/ptsb-pack`) | content-core 0.3.0, format 1.2, ptsb-pack 1.1.0. Merged with content-format and ptsb-pack on 2026-10-08 |
+| [politost-content-core](https://github.com/SuperTost100/politost-content-core) | Content spec (`spec/`), parser, renderer, validators, PTSB reader (`packages/content-core`), Python pack CLI (`packages/ptsb-pack`) | content-core 0.3.1, format 1.2, ptsb-pack 1.1.0. Merged with content-format and ptsb-pack on 2026-10-08 |
 | [politost-platform](https://github.com/SuperTost100/politost-platform) | Commercial backend and course books | Extracted into a private repository |
 | [politost-smartbook-builder](https://github.com/SuperTost100/politost-smartbook-builder) | Current authoring app | Newer independent implementation; preserved |
 | [politost-pyxis](https://github.com/SuperTost100/politost-pyxis) | Desktop study app | Newer independent implementation; preserved |
@@ -27,6 +27,6 @@ The public reader contains no commercial backend or private course books. Those 
 
 The reader includes `packages/content-core/` so a fresh clone can build without the old monorepo. Make parser changes in the content repository, then copy its `packages/content-core` here and run the reader checks. The copy skips the test that compares `CONTENT_FORMAT_VERSION` with `spec/VERSION`, since the spec is not here. The Python platform includes its packaging dependency under `packages/ptsb-pack/`; update that from the content repository's `packages/ptsb-pack`.
 
-content-core releases are tags `content-core-vX.Y.Z` with the npm tarball attached. Smart Builder pins v0.2.1 and Pyxis vendors 0.2.0; both have issues open to move to 0.3.0 (politost-smartbook-builder#3, politost-pyxis#35).
+content-core releases are tags `content-core-vX.Y.Z` with the npm tarball attached. Smart Builder pins v0.2.1 and Pyxis vendors 0.2.0; both have issues open to move to 0.3.x (politost-smartbook-builder#3, politost-pyxis#35).
 
 Future reader UI work belongs here, rather than in the monorepo design branch. Content-format changes require coordinated parser, reader and builder updates.
