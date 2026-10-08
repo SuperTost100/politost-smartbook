@@ -5,7 +5,7 @@ Updated 2026-10-08. Continue implementation in the standalone repositories below
 | Repository | Canonical responsibility | Sync result |
 |------------|--------------------------|-------------|
 | [politost-smartbook](https://github.com/SuperTost100/politost-smartbook) | Reader UI and print | Imported redesign plus saved main-branch fixes |
-| [politost-content](https://github.com/SuperTost100/politost-content) | Content spec (`spec/`), parser, renderer, validators, PTSB reader (`packages/content-core`), Python pack CLI (`packages/ptsb-pack`) | content-core 0.3.1, format 1.2, ptsb-pack 1.1.0. Merged with content-format and ptsb-pack on 2026-10-08, then renamed from `politost-content-core` |
+| [politost-content](https://github.com/SuperTost100/politost-content) | Content spec (`spec/`), parser, renderer, validators, PTSB reader (`packages/content-core`), Python pack CLI (`packages/ptsb-pack`) | content-core 0.4.0, format 1.2, ptsb-pack 1.2.0. Merged with content-format and ptsb-pack on 2026-10-08, then renamed from `politost-content-core` |
 | [politost-platform](https://github.com/SuperTost100/politost-platform) | Commercial backend and course books | Extracted into a private repository |
 | [politost-smartbook-builder](https://github.com/SuperTost100/politost-smartbook-builder) | Current authoring app | Newer independent implementation; preserved |
 | [politost-pyxis](https://github.com/SuperTost100/politost-pyxis) | Desktop study app | Newer independent implementation; preserved |
