@@ -82,19 +82,19 @@ CI runs the first four on every push. Auth tests run only with `VITE_PLATFORM_EN
 
 ## Documentation
 
-| Read this                                                                                                | To learn                                                  |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| [Reader guide](docs/guida.md)                                                                            | How to use the reader, in Italian. Also served at `/docs` |
-| [Reader architecture](docs/reader.md)                                                                    | Routes, components and how a book loads                   |
-| [Design system](design-system/README.md)                                                                 | Tokens, type, icons and the logo                          |
-| [PTSB format](docs/ptsb.md)                                                                              | What a `.ptsb` file contains                              |
-| [Content format](https://github.com/SuperTost100/politost-content-core/blob/main/spec/content-format.md) | The Markdown syntax books are written in                  |
-| [Self-hosting](docs/Self-Hosting.md)                                                                     | Building and serving the static site                      |
-| [Repository sync](docs/Repository-Sync.md)                                                               | Which repository owns what since the monorepo split       |
+| Read this                                                                                           | To learn                                                  |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| [Reader guide](docs/guida.md)                                                                       | How to use the reader, in Italian. Also served at `/docs` |
+| [Reader architecture](docs/reader.md)                                                               | Routes, components and how a book loads                   |
+| [Design system](design-system/README.md)                                                            | Tokens, type, icons and the logo                          |
+| [PTSB format](docs/ptsb.md)                                                                         | What a `.ptsb` file contains                              |
+| [Content format](https://github.com/SuperTost100/politost-content/blob/main/spec/content-format.md) | The Markdown syntax books are written in                  |
+| [Self-hosting](docs/Self-Hosting.md)                                                                | Building and serving the static site                      |
+| [Repository sync](docs/Repository-Sync.md)                                                          | Which repository owns what since the monorepo split       |
 
 ## Related repositories
 
-- [politost-content-core](https://github.com/SuperTost100/politost-content-core): the content format spec, content-core (the parser, validator and PTSB reader bundled in `packages/content-core/`, MIT) and ptsb-pack (Python CLI that packs books into `.ptsb` files).
+- [politost-content](https://github.com/SuperTost100/politost-content): the content format spec, content-core (the parser, validator and PTSB reader bundled in `packages/content-core/`, MIT) and ptsb-pack (Python CLI that packs books into `.ptsb` files).
 - [Smart Builder](https://github.com/SuperTost100/politost-smartbook-builder): turns lecture notes, textbooks and past exams into a smartbook. AGPL-3.0.
 - [Pyxis](https://github.com/SuperTost100/politost-pyxis): a desktop study tutor that also opens `.ptsb` files.
 
