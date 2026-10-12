@@ -84,15 +84,17 @@ interface Runner {
   loaded: Set<string>;
 }
 
+const PYODIDE_PATH = `${import.meta.env.BASE_URL}pyodide/`;
+
 let runnerReady: Promise<Runner> | null = null;
 
 function getRunner(): Promise<Runner> {
   if (!runnerReady) {
     runnerReady = (async () => {
       const { loadPyodide } = await import(
-        /* @vite-ignore */ new URL('/pyodide/pyodide.mjs', self.location.origin).href
+        /* @vite-ignore */ new URL(`${PYODIDE_PATH}pyodide.mjs`, self.location.origin).href
       ) as { loadPyodide: (opts: { indexURL: string }) => Promise<PyodideInterface> };
-      const pyodide = await loadPyodide({ indexURL: '/pyodide/' });
+      const pyodide = await loadPyodide({ indexURL: PYODIDE_PATH });
       const scope = pyodide.globals.get('dict')();
       pyodide.runPython(RUNNER, { globals: scope });
       return { pyodide, run: scope.get('run'), imports: scope.get('imports'), loaded: new Set<string>() };

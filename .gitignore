@@ -43,3 +43,9 @@ playwright/.cache/
 
 # Generated from the pinned npm Pyodide package at install/build time
 /public/pyodide/
+
+# Written by scripts/generate-headers.mjs before every build
+/public/_headers
+
+# Assembled by scripts/deploy-politost.sh
+/deploy/politost/site/

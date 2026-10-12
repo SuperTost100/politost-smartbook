@@ -1,45 +1,33 @@
 # Cookie policy
 
-**Versione:** 2026-10-08
+**Versione:** 2026-10-12
 
-Politost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Non usiamo cookie di profilazione o di statistica.
+Il reader non imposta cookie. Usa solo la memoria del tuo browser, per servizi che chiedi tu: ricordare il tema, dove eri arrivato e i libri che hai aperto o importato. Per questo non chiediamo il consenso e non mostriamo un banner.
 
-Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto e dove eri arrivato, tenere i libri che importi. Per questo non chiediamo il consenso e non mostriamo un banner.
+## Memoria del browser
 
-## Necessari
+Nessuna di queste chiavi arriva al server o traccia la navigazione fra siti.
 
-Senza questi elementi il login non funziona.
+**`politost-theme`.** Chiave in localStorage, valore `light` o `dark`. La scriviamo solo quando usi il pulsante del tema. Finché non lo usi, il reader segue il tema del sistema.
 
-**`politost_auth`.** Cookie httpOnly, SameSite Lax. Contiene il token di sessione. Se il sito è in HTTPS il cookie è marcato Secure. Dura quanto impostato sul server. In sviluppo il valore predefinito è 7 giorni. In produzione la durata è più breve di 7 giorni. Si cancella anche con «Esci».
+**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto salva l'ultimo capitolo e paragrafo letto, con numero e titolo del capitolo, così la home può proporti «Riprendi». «Rimuovi da questo dispositivo» cancella anche la posizione di quel libro.
 
-## Preferenze e memoria del browser
+**`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni.
 
-Non sono cookie e non tracciano la navigazione fra siti.
+**IndexedDB `politost-smartbook`.** Contiene due cose. I file `.ptsb` che importi, che restano finché usi «Rimuovi da questo dispositivo». Le copie dei libri del catalogo che hai aperto, una per libro, così si riaprono senza rete. Quando esce una versione nuova di un libro, la copia vecchia viene sostituita.
 
-**`politost-theme`.** Chiave in localStorage, valore `light` o `dark`. La scriviamo solo quando usi il pulsante del tema, per riaprire il reader con la stessa scelta. Finché non lo usi, il reader segue il tema del sistema.
-
-**`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni. Serve solo a non ripetere l'avviso.
-
-**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto su quel browser salva l'ultimo capitolo e paragrafo letto, con numero e titolo del capitolo, così la home può proporti «Riprendi». Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» e l'uscita dall'account cancellano anche la posizione dei libri che tolgono.
-
-**IndexedDB `politost-smartbook`.** Contiene i file `.ptsb` che importi. Restano su quel browser. «Rimuovi da questo dispositivo» cancella un libro. Uscendo dall'account cancelliamo le copie collegate al tuo utente.
-
-**Cache `smartbook-static-v3`.** Nelle build di produzione un service worker tiene in cache la shell dell'app, icone e manifest, per riaprire la home se la rete manca. Non mette in cache le chiamate a `/api`, `/auth` o `/users`, e non è un profilo di lettura.
+**Cache `smartbook-static-v4`.** Un service worker tiene in cache la struttura dell'app, le icone e il manifest, per aprire il reader anche senza rete.
 
 ## Analitici
 
-Nessuno. In questa versione non carichiamo Matomo, Google Analytics o altri strumenti di statistica. Se un giorno li aggiungessimo, chiederemmo prima il consenso.
+Nessuno. Non carichiamo Google Analytics, Matomo, Cloudflare Web Analytics o altri strumenti di statistica. Se un giorno li aggiungessimo, chiederemmo prima il consenso.
 
-## Terze parti
+## Cloudflare
 
-Il cookie di sessione e la memoria locale sono di questo sito. Non impostiamo cookie di Google, Cloudflare o altri per pubblicità o statistica.
+Cloudflare, che ospita il sito, può impostare un cookie tecnico come `__cf_bm` o `cf_clearance` se deve distinguere persone e traffico automatico, per esempio durante un attacco. Serve solo alla sicurezza del sito e non lo usiamo noi. I dettagli sono nella [cookie policy di Cloudflare](https://www.cloudflare.com/cookie-policy/).
 
-Se usi «Accedi con Google», il passaggio avviene sul dominio di Google, che può impostare cookie propri secondo la sua [informativa](https://policies.google.com/privacy). Al ritorno su Politost Smartbook vale di nuovo questa pagina.
+## Come cancellare
 
-## Come cambiare scelta
+Per togliere un solo libro usa «Rimuovi da questo dispositivo» sulla sua scheda. Per togliere tutto, cancella i dati del sito dalle impostazioni del browser: spariscono anche i libri importati.
 
-Per tornare al tema del sistema, o togliere ogni dato locale, cancella i dati del sito dalle impostazioni del browser. Cancellare i dati del sito toglie anche i libri importati su quel browser.
-
-Per chiudere la sessione usa «Esci». Quello cancella `politost_auth`. Non cancella da solo i libri importati di altri account sullo stesso browser. I libri del tuo utente sì, all'uscita.
-
-L'informativa sui dati che escono dal browser è la [privacy](/privacy).
+Il resto dell'informativa è nella pagina [privacy](/privacy).

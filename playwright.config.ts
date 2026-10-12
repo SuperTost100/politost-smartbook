@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+import { BOOKS_URL } from './e2e/helpers/books';
 
 const host = '127.0.0.1';
 const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
@@ -63,5 +64,7 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,
+    // remote-books.spec.ts answers for this origin with page.route; other specs see it fail.
+    env: { VITE_BOOKS_URL: BOOKS_URL },
   },
 });

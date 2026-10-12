@@ -4,6 +4,7 @@ import { buildAssetUrlMap, revokeAssetUrls } from './assetResolver';
 import { parseChapterMarkdown, parseExercises } from './parser';
 import { cachedByBundle } from './bundleCache';
 import { listUploaded } from './ptsbStore';
+import { booksBaseUrl, fetchRemoteBook, fetchRemoteCatalog, type RemoteCatalogEntry } from './remoteCatalog';
 
 export interface SmartbookData {
   config: SmartbookConfig;
@@ -19,7 +20,7 @@ export interface CatalogEntry {
   id: string;
   title: string;
   subject: string;
-  source: 'builtin' | 'uploaded' | 'cloud';
+  source: 'builtin' | 'uploaded' | 'remote' | 'cloud';
   access?: 'public' | 'licensed';
   authors?: string[];
   version?: string;
@@ -148,16 +149,37 @@ export function initBuiltinBooks(): Promise<void> {
 
 const contentLoads = new Map<string, Promise<void>>();
 
-/** Chapter markdown and assets for one builtin book, when that book opens. */
+/**
+ * Chapter markdown and assets for one book, when that book opens: the remote package when the
+ * books site lists it, otherwise the builtin files. Remote wins over builtin, uploaded over both.
+ */
 export function ensureBookContent(id: string): Promise<void> {
   const pending = contentLoads.get(id);
   if (pending) return pending;
-  const job = loadBuiltinContent(id).catch((err) => {
+  const job = loadContent(id).catch((err) => {
     contentLoads.delete(id);
     throw err;
   });
   contentLoads.set(id, job);
   return job;
+}
+
+async function loadContent(id: string): Promise<void> {
+  await remoteReady;
+  const remote = remoteRegistry.get(id);
+  if (remote && !remote.bundle && !uploadedRegistry.has(id) && !cloudRegistry.has(id)) {
+    try {
+      const stored = await fetchRemoteBook(remote.entry);
+      remote.bundle = storedToBundle(stored, remoteAssetUrls, 'remote');
+      dataCache.delete(id);
+      return;
+    } catch (err) {
+      // The builtin copy, if any, is the offline fallback.
+      if (!builtinRegistry.has(id)) throw err;
+      console.warn(`Libro ${id} dal catalogo remoto non disponibile, uso la copia inclusa:`, err);
+    }
+  }
+  await loadBuiltinContent(id);
 }
 
 async function loadBuiltinContent(id: string): Promise<void> {
@@ -187,13 +209,18 @@ let uploadedRegistry = new Map<string, BookBundle>();
 const cloudRegistry = new Map<string, BookBundle>();
 const dataCache = new Map<string, { bundle: object; data: SmartbookData }>();
 const uploadedAssetUrls = new Map<string, Record<string, string>>();
+const remoteAssetUrls = new Map<string, Record<string, string>>();
 
-function storedToBundle(stored: StoredBookBundle): BookBundle {
+function storedToBundle(
+  stored: StoredBookBundle,
+  urlMaps: Map<string, Record<string, string>> = uploadedAssetUrls,
+  kind: 'uploaded' | 'remote' = 'uploaded',
+): BookBundle {
   const assetUrls = buildAssetUrlMap(stored.assets ?? {});
-  uploadedAssetUrls.set(stored.config.id, assetUrls);
+  urlMaps.set(stored.config.id, assetUrls);
   return {
     config: stored.config,
-    folder: `uploaded:${stored.config.id}`,
+    folder: `${kind}:${stored.config.id}`,
     chapterFiles: stored.chapterFiles,
     eserciziRaw: stored.eserciziRaw,
     esamiRaw: stored.esamiRaw,
@@ -223,10 +250,34 @@ export function unregisterUploadedBook(id: string): void {
   if (urls) revokeAssetUrls(urls);
   uploadedAssetUrls.delete(id);
   uploadedRegistry.delete(id);
+  // The remote copy, if any, has not been fetched while the upload shadowed it.
+  contentLoads.delete(id);
 }
 
-export function isBuiltinBook(id: string): boolean {
-  return builtinRegistry.has(id);
+const remoteRegistry = new Map<string, { entry: RemoteCatalogEntry; bundle?: BookBundle }>();
+let remoteReady: Promise<void> = Promise.resolve();
+
+/**
+ * List the books of the books site (`VITE_BOOKS_URL`). Packages download when a book opens.
+ * A failed fetch leaves the builtin and uploaded books, so the home page is never empty.
+ */
+export function initRemoteBooks(): Promise<void> {
+  const base = booksBaseUrl();
+  if (!base) return remoteReady;
+  remoteReady = fetchRemoteCatalog(base).then(
+    (entries) => {
+      for (const urls of remoteAssetUrls.values()) revokeAssetUrls(urls);
+      remoteAssetUrls.clear();
+      remoteRegistry.clear();
+      for (const entry of entries) remoteRegistry.set(entry.id, { entry });
+    },
+    (err) => console.warn('Catalogo remoto non disponibile:', err),
+  );
+  return remoteReady;
+}
+
+export function whenRemoteBooksReady(): Promise<void> {
+  return remoteReady;
 }
 
 export function isCloudBook(id: string): boolean {
@@ -253,7 +304,7 @@ export function clearCloudBooks(): void {
 }
 
 function loadBundle(id: string): BookBundle | undefined {
-  return cloudRegistry.get(id) ?? uploadedRegistry.get(id) ?? builtinRegistry.get(id);
+  return cloudRegistry.get(id) ?? uploadedRegistry.get(id) ?? remoteRegistry.get(id)?.bundle ?? builtinRegistry.get(id);
 }
 
 function bundleToData(bundle: BookBundle): SmartbookData {
@@ -276,7 +327,7 @@ function bundleToData(bundle: BookBundle): SmartbookData {
 }
 
 export function smartbookExists(id: string): boolean {
-  return loadBundle(id) !== undefined;
+  return loadBundle(id) !== undefined || remoteRegistry.has(id);
 }
 
 export function loadSmartbook(id: string): SmartbookData | null {
@@ -286,48 +337,33 @@ export function loadSmartbook(id: string): SmartbookData | null {
 }
 
 export function getCatalog(): CatalogEntry[] {
-  const seen = new Set<string>();
-  const entries: CatalogEntry[] = [];
+  const fromConfig = (config: SmartbookConfig, source: CatalogEntry['source']): CatalogEntry => ({
+    id: config.id,
+    title: config.title,
+    subject: config.subject,
+    source,
+    access: config.access ?? (source === 'cloud' ? 'licensed' : 'public'),
+    authors: config.authors,
+    version: config.version,
+  });
 
-  for (const { config } of builtinRegistry.values()) {
-    seen.add(config.id);
-    entries.push({
-      id: config.id,
-      title: config.title,
-      subject: config.subject,
-      source: 'builtin',
-      access: config.access ?? 'public',
-      authors: config.authors,
-      version: config.version,
+  // One card per book, from the copy that opens: cloud, then uploaded, then remote, then builtin.
+  const byId = new Map<string, CatalogEntry>();
+  for (const { config } of builtinRegistry.values()) byId.set(config.id, fromConfig(config, 'builtin'));
+  for (const { entry, bundle } of remoteRegistry.values()) {
+    byId.set(entry.id, bundle ? fromConfig(bundle.config, 'remote') : {
+      id: entry.id,
+      title: entry.title,
+      subject: entry.subject,
+      source: 'remote',
+      access: 'public',
+      authors: entry.authors,
+      version: entry.version,
     });
   }
-
-  for (const { config } of uploadedRegistry.values()) {
-    if (seen.has(config.id)) continue;
-    entries.push({
-      id: config.id,
-      title: config.title,
-      subject: config.subject,
-      source: 'uploaded',
-      access: config.access ?? 'public',
-      authors: config.authors,
-      version: config.version,
-    });
-  }
-
-  for (const { config } of cloudRegistry.values()) {
-    if (seen.has(config.id)) continue;
-    seen.add(config.id);
-    entries.push({
-      id: config.id,
-      title: config.title,
-      subject: config.subject,
-      source: 'cloud',
-      access: config.access ?? 'licensed',
-      authors: config.authors,
-      version: config.version,
-    });
-  }
+  for (const { config } of uploadedRegistry.values()) byId.set(config.id, fromConfig(config, 'uploaded'));
+  for (const { config } of cloudRegistry.values()) byId.set(config.id, fromConfig(config, 'cloud'));
+  const entries = [...byId.values()];
 
   entries.sort((a, b) => a.title.localeCompare(b.title, 'it'));
   const demoIdx = entries.findIndex((e) => e.id === 'esempio');

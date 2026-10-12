@@ -3,6 +3,8 @@
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
   readonly VITE_PLATFORM_ENABLED?: string;
+  readonly VITE_BASE_PATH?: string;
+  readonly VITE_BOOKS_URL?: string;
 }
 
 interface ImportMeta {

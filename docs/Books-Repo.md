@@ -1,6 +1,6 @@
 # Books repo
 
-Status: proposal. Nothing here is built yet.
+Status: built in October 2026. The repo is [politost-books](https://github.com/SuperTost100/politost-books) and publishes to `https://books.politost.it`. Two things differ from the plan below, see [What changed from the plan](#what-changed-from-the-plan).
 
 Public smartbooks move out of this repo into `SuperTost100/politost-books`. Anyone can open a PR there to add or fix a book. CI validates and packs each book, and on merge publishes the packages plus a `catalog.json`. The reader fetches that catalog at runtime, so a new book never needs a reader deploy.
 
@@ -236,7 +236,15 @@ All in this repo.
 
 `initCloudBooks` and the `cloud` source stay as they are. They belong to the licensed platform path.
 
+## What changed from the plan
+
+- **Publishing.** Cloudflare Pages builds `main` through its GitHub integration, instead of a `publish.yml` with `wrangler-action`. GitHub then holds no Cloudflare token. GitHub Actions still runs the checks (`check.yml`) on every pull request and on `main`.
+- **Stable bytes.** `packBook` in content-core 0.5.0 writes the same bytes for the same files and `createdAt`, and `build.ts` sets `createdAt` to the last commit that touched the book. A rebuild never changes a published `id@version.ptsb`, which matters because readers cache it for a year and check its sha256.
+- **Uploads over builtin.** The reader used to refuse a `.ptsb` whose `id` matched a builtin book. It now accepts it, so authors can preview changes to `esempio` too.
+
 ## Order of work
+
+All five steps are done except the last, which waits for regular external PRs.
 
 1. Move packing into content-core (`packBook`) in politost-content, release `content-core-v0.5.0`, and copy it into `packages/content-core/` here as [Repository sync](Repository-Sync.md) describes.
 2. Create `politost-books` with `esempio` copied in, `check.ts`, `build.ts` and both workflows. Deploy to Pages.

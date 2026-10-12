@@ -113,7 +113,7 @@ export function InstallBanner() {
       aria-label="Installa l'app"
     >
       <div className="install-banner-body">
-        <img src="/logo.svg" alt="" className="install-banner-icon" width={44} height={44} />
+        <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" className="install-banner-icon" width={44} height={44} />
         <div className="install-banner-copy">
           <p className="install-banner-kicker">Sul telefono</p>
           <h2 className="install-banner-title">Tieni Smartbook a portata di mano</h2>

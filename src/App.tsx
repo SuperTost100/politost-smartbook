@@ -6,7 +6,7 @@ import { AntdProvider } from './context/AntdProvider';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { InstallBanner } from './components/InstallBanner';
-import { initBuiltinBooks, initUploadedBooks } from './lib/loader';
+import { initBuiltinBooks, initRemoteBooks, initUploadedBooks } from './lib/loader';
 import { initCloudBooks } from './lib/cloudLoader';
 import { Home } from './pages/Home';
 import { AuthPage } from './pages/AuthPage';
@@ -59,7 +59,7 @@ function AppRoutes() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <ScrollToTop />
       <ConsentGate>
       <Routes>
@@ -128,6 +128,8 @@ export function App() {
       initBuiltinBooks().catch(console.error),
       initUploadedBooks(null).catch(console.error),
     ];
+    // Not awaited: the home page shows builtin books at once and adds the remote ones when they arrive.
+    void initRemoteBooks();
     if (cloudEnabled) jobs.push(initCloudBooks().catch(console.error));
     void Promise.all(jobs).finally(() => setReady(true));
   }, []);

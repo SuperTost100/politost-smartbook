@@ -1,11 +1,18 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
+/** `VITE_BASE_PATH=/reader` serves the app from a subfolder. Vite wants a leading and trailing slash. */
+function basePath(value: string | undefined): string {
+  const trimmed = (value ?? '').trim().replace(/^\/+|\/+$/g, '');
+  return trimmed ? `/${trimmed}/` : '/';
+}
+
+export default defineConfig(({ mode }) => ({
+  base: basePath(loadEnv(mode, rootDir, 'VITE_').VITE_BASE_PATH),
   plugins: [react()],
   resolve: {
     alias: {
@@ -45,4 +52,4 @@ export default defineConfig({
       '/auth/google': 'http://localhost:8001',
     },
   },
-});
+}));

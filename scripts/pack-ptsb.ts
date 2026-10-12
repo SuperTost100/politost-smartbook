@@ -6,9 +6,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { parseArgs } from 'node:util';
-import { zipSync } from 'fflate';
-import { validateBundle } from '../src/lib/validateChapter.ts';
-import type { SmartbookConfig } from '../src/types/smartbook.ts';
+import { packBook } from '@politost/content-core';
 
 function collectFiles(dir: string, base = dir): Record<string, Uint8Array> {
   const out: Record<string, Uint8Array> = {};
@@ -40,45 +38,16 @@ function main(): void {
     process.exit(2);
   }
 
-  const config = JSON.parse(readFileSync(join(dir, 'smartbook.json'), 'utf-8')) as SmartbookConfig;
-  const files = collectFiles(dir);
-  const chapterFiles: Record<string, string> = {};
-  for (const [path, bytes] of Object.entries(files)) {
-    if (path.startsWith('chapters/') && path.endsWith('.md')) {
-      chapterFiles[path.slice('chapters/'.length)] = new TextDecoder().decode(bytes);
-    }
-  }
-  const assets: Record<string, Uint8Array> = {};
-  for (const [path, bytes] of Object.entries(files)) {
-    if (path.startsWith('assets/')) assets[path] = bytes;
-  }
-
-  const validation = validateBundle(config, chapterFiles, assets, {
-    eserciziRaw: files['esercizi.md'] ? new TextDecoder().decode(files['esercizi.md']) : '',
-    esamiRaw: files['esami.md'] ? new TextDecoder().decode(files['esami.md']) : '',
-  });
-  if (!validation.valid) {
-    console.error(validation.errors.join('\n'));
+  let packed: ReturnType<typeof packBook>;
+  try {
+    packed = packBook(collectFiles(dir), { producer: 'pack-ptsb.ts' });
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
     process.exit(1);
   }
-
-  const manifest = {
-    formatVersion: 1,
-    packageType: 'smartbook',
-    encrypted: false,
-    access: config.access ?? 'public',
-    createdAt: new Date().toISOString(),
-    producer: 'pack-ptsb.ts',
-  };
-
-  const zipEntries: Record<string, Uint8Array> = {
-    'ptsb.json': new TextEncoder().encode(JSON.stringify(manifest, null, 2)),
-    ...files,
-  };
-
-  const zip = zipSync(zipEntries);
-  writeFileSync(out, zip);
-  console.log(`Creato ${out} (${zip.length} bytes)`);
+  for (const warning of packed.bundle.warnings) console.warn(warning);
+  writeFileSync(out, packed.bytes);
+  console.log(`Creato ${out} (${packed.bytes.length} bytes)`);
 }
 
 main();
