@@ -38,6 +38,9 @@ Add folders under `src/content/<book-id>/` before build. Each needs `smartbook.j
 | _(none)_ | OSS self-host, plain books + upload only |
 | `VITE_PLATFORM_ENABLED=true` | Explicitly enable the private platform integration |
 | `VITE_API_URL` | Platform API base URL |
+| `VITE_BOOKS_URL` | Base URL of a books site that serves `catalog.json`. Planned, see [Books repo](Books-Repo.md) |
+
+The public Politost site sets `VITE_BOOKS_URL` and nothing else. See [Roadmap](Roadmap.md#public-launch).
 
 ## Headers
 
