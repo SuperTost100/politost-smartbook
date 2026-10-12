@@ -86,6 +86,11 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     expect(manifest.name).toBe('Politost Smartbook');
     expect(manifest.display).toBe('standalone');
     expect(manifest.icons?.length).toBeGreaterThan(0);
-    expect(manifest.start_url).toBe('/');
+    // Relative to the manifest, so the app also installs from a subfolder such as /reader/.
+    expect(new URL(manifest.start_url, res.url()).pathname).toBe('/');
+    expect(new URL(manifest.scope, res.url()).pathname).toBe('/');
+    for (const icon of manifest.icons as { src: string }[]) {
+      expect((await request.get(new URL(icon.src, res.url()).href)).ok(), icon.src).toBeTruthy();
+    }
   });
 });

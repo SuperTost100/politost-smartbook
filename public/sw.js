@@ -1,16 +1,18 @@
 // ponytail: minimal static cache — bump CACHE when shell assets change
-const CACHE = 'smartbook-static-v3';
+const CACHE = 'smartbook-static-v4';
+// The app can live in a subfolder (/reader/), so every path is relative to the worker's scope.
+const BASE = new URL(self.registration.scope).pathname;
 const PRECACHE = [
-  '/',
-  '/manifest.webmanifest',
-  '/logo.svg',
-  '/favicon.svg',
-  '/apple-touch-icon.png',
-  '/favicon-32x32.png',
-  '/favicon-16x16.png',
-  '/icon-192.png',
-  '/icon-512.png',
-];
+  '',
+  'manifest.webmanifest',
+  'logo.svg',
+  'favicon.svg',
+  'apple-touch-icon.png',
+  'favicon-32x32.png',
+  'favicon-16x16.png',
+  'icon-192.png',
+  'icon-512.png',
+].map((path) => BASE + path);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
@@ -31,21 +33,22 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api') || url.pathname.startsWith('/users') || url.pathname.startsWith('/auth')) {
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
+  const path = url.pathname.slice(BASE.length);
+  if (path.startsWith('api') || path.startsWith('users') || path.startsWith('auth')) {
     return;
   }
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(async () => (await caches.match('/')) ?? Response.error()),
+      fetch(request).catch(async () => (await caches.match(BASE)) ?? Response.error()),
     );
     return;
   }
 
   const cacheable =
     PRECACHE.includes(url.pathname)
-    || url.pathname.startsWith('/assets/');
+    || path.startsWith('assets/');
 
   if (!cacheable) return;
 

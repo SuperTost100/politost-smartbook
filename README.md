@@ -40,7 +40,7 @@ A smartbook is a course book written in Markdown with numbered formulas, exercis
 
 **Import a book.** Drop a `.ptsb` file on the home page. It stays in that browser and isn't uploaded anywhere.
 
-The interface is in Italian, with light and dark themes. This repository ships only the example book ("Guida di esempio").
+The interface is in Italian, with light and dark themes. This repository ships only the example book ("Guida di esempio"). The public copy at [politost.it/reader](https://politost.it/reader) also lists the free books from [politost-books](https://github.com/SuperTost100/politost-books).
 
 ## Start
 
@@ -59,14 +59,16 @@ The default build needs no backend, account or database. `npm run build` writes 
 
 ## Configuration
 
-Copy `.env.example` to `.env.local` only if you connect the reader to the private Politost platform:
+All settings are optional. Set them in the environment or copy `.env.example` to `.env.local`:
 
-| Variable                | Default | What it does                                              |
-| ----------------------- | ------- | --------------------------------------------------------- |
-| `VITE_PLATFORM_ENABLED` | `false` | Turns on sign-in, licenses and cloud books                |
-| `VITE_API_URL`          | empty   | Platform API address, required when the platform is on    |
+| Variable                | Default | What it does                                                               |
+| ----------------------- | ------- | -------------------------------------------------------------------------- |
+| `VITE_BASE_PATH`        | `/`     | Serves the app from a subfolder, such as `/reader`                         |
+| `VITE_BOOKS_URL`        | empty   | Books site with a `catalog.json`. The home page lists its books            |
+| `VITE_PLATFORM_ENABLED` | `false` | Turns on sign-in, licenses and cloud books                                 |
+| `VITE_API_URL`          | empty   | Platform API address, required when the platform is on                     |
 
-Both are read at build time. The platform API and its course books live in a separate private repository.
+All four are read at build time. The platform API and its course books live in a separate private repository.
 
 ## Checks
 

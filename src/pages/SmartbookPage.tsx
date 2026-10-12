@@ -137,13 +137,19 @@ function FirstChapterRedirect() {
 function BookRoutes() {
   const { bookId } = useParams<{ bookId: string }>();
   const [readyFor, setReadyFor] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ id: string; message: string } | null>(null);
   const contentReady = readyFor === (bookId ?? '');
 
   useEffect(() => {
     let cancelled = false;
     const id = bookId ?? '';
     void ensureBookContent(id)
-      .catch(() => undefined)
+      .then(
+        () => setLoadError(null),
+        (err: unknown) => {
+          if (!cancelled) setLoadError({ id, message: err instanceof Error ? err.message : String(err) });
+        },
+      )
       .finally(() => {
         if (!cancelled) setReadyFor(id);
       });
@@ -156,6 +162,9 @@ function BookRoutes() {
 
   const data = loadSmartbook(bookId ?? '');
 
+  if (!data && loadError && loadError.id === bookId) {
+    return <p className="empty-note" role="alert">Non riesco ad aprire il libro. {loadError.message}</p>;
+  }
   if (!data) return <BookNotFound />;
 
   return (

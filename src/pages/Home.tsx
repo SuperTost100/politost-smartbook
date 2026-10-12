@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { App } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
-import { getCatalog, initUploadedBooks, isBuiltinBook, registerUploadedBook, unregisterUploadedBook } from '../lib/loader';
+import { getCatalog, initUploadedBooks, registerUploadedBook, unregisterUploadedBook, whenRemoteBooksReady } from '../lib/loader';
 import { whenCloudBooksReady } from '../lib/cloudLoader';
 import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
@@ -30,7 +30,7 @@ export function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    void whenCloudBooksReady().then(
+    void Promise.all([whenCloudBooksReady(), whenRemoteBooksReady()]).then(
       () => {
         if (!cancelled) refreshCatalog();
       },
@@ -75,10 +75,6 @@ export function Home() {
       }
       setUploadStatus('Validazione…');
       const bundle = await parsePtsbFile(file);
-      if (isBuiltinBook(bundle.config.id)) {
-        setUploadError(`Lo smartbook "${bundle.config.id}" è già incluso nella piattaforma.`);
-        return;
-      }
       if (bundle.config.access === 'licensed' && !user && authEnabled) {
         setUploadError('Accedi per caricare smartbook con licenza.');
         return;
