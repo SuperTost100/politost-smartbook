@@ -17,6 +17,7 @@ Open-source **reader** for interactive digital textbooks (Smartbooks).
 - [Self-Hosting](Self-Hosting.md)
 - [Architecture](Architecture.md)
 - [Roadmap](Roadmap.md)
+- [Books repo (proposal)](Books-Repo.md)
 
 ## What the reader does
 
