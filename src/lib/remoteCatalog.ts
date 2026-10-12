@@ -95,8 +95,11 @@ export function parseRemoteCatalog(json: unknown, baseUrl: string): RemoteCatalo
   return entries;
 }
 
+/** Every book page waits for the catalog, so a hung request must not hold up the builtin books. */
+const CATALOG_TIMEOUT_MS = 10_000;
+
 export async function fetchRemoteCatalog(baseUrl: string): Promise<RemoteCatalogEntry[]> {
-  const res = await fetch(`${baseUrl}/catalog.json`);
+  const res = await fetch(`${baseUrl}/catalog.json`, { signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`catalog.json: HTTP ${res.status}`);
   return parseRemoteCatalog(await res.json(), baseUrl);
 }
