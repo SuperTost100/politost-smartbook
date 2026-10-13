@@ -138,7 +138,7 @@ export function App() {
     return (
       <div className="app-loading">
         <div className="app-loading-spinner" aria-hidden />
-        <p>Caricamento Politost Smartbook…</p>
+        <p>Caricamento PoliTost Smartbook…</p>
       </div>
     );
   }

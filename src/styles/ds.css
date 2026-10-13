@@ -132,6 +132,13 @@ html .ant-pro-layout .ant-pro-layout-content > .site-footer { margin-inline: cal
 /* Page scaffolding inside the reader */
 .sb-page { width: 100%; }
 .sb-page-reading, .smartbook-view { max-width: var(--reading-width); margin-inline: auto; }
+/* The page as the Worker sends it, before the app starts (deploy/politost/worker.js). Crawlers read this. */
+.ssr-page { padding: var(--space-8) var(--space-5) var(--space-12); }
+.ssr-page h1 { margin-block: var(--space-4) var(--space-6); }
+.ssr-page .paragraph-section, .ssr-exercise { margin-block: var(--space-8); }
+.ssr-crumbs, .ssr-meta { font-size: .875rem; color: var(--ink-muted); }
+.ssr-pager { display: flex; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--border); }
+.ssr-book-nav { margin-top: var(--space-8); }
 .sb-stack { display: flex; flex-direction: column; gap: var(--space-6); }
 .empty-note { margin: 0; color: var(--ink-muted); font-style: italic; }
 

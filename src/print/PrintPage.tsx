@@ -59,7 +59,7 @@ interface PrintToolbarProps {
 function PrintToolbar({ bookTitle, sectionLabel, documentTitle, returnUrl, onPrint, printing }: PrintToolbarProps) {
   return (
     <header className="print-toolbar no-print" aria-label="Barra strumenti anteprima di stampa">
-      <Link to="/" className="print-toolbar-brand" aria-label="Catalogo Politost Smartbook">
+      <Link to="/" className="print-toolbar-brand" aria-label="Catalogo PoliTost Smartbook">
         <Lockup />
       </Link>
 

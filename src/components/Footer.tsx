@@ -13,7 +13,7 @@ export function Footer({ showCatalogLink = false, compact = false, wide = false 
     return (
       <footer className="site-footer site-footer--compact no-print">
         {showCatalogLink && <Link to="/" className="site-footer-compact-catalog">← Catalogo</Link>}
-        <span className="site-footer-compact-copy">© Politost</span>
+        <span className="site-footer-compact-copy">© PoliTost</span>
       </footer>
     );
   }
@@ -21,7 +21,7 @@ export function Footer({ showCatalogLink = false, compact = false, wide = false 
   return (
     <footer className={`site-footer no-print${wide ? ' site-footer--wide' : ''}`}>
       <div className="site-footer-inner">
-        <span>© Politost Smartbook</span>
+        <span>© PoliTost Smartbook</span>
         <nav className="site-footer-links" aria-label="Informazioni">
           {showCatalogLink && <Link to="/">← Catalogo</Link>}
           <Link to="/docs" className="site-footer-link-with-icon">

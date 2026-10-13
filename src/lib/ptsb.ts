@@ -16,7 +16,7 @@ async function decryptLicensedFile(
   header: PtsbEncryptedHeader,
 ): Promise<Uint8Array> {
   if (!getReaderConfig().features?.drm) {
-    throw new Error('Libro protetto: richiede la piattaforma Politost.');
+    throw new Error('Libro protetto: richiede la piattaforma PoliTost.');
   }
   const { header: parsed, ciphertext, headerBytes } = parseEncryptedHeader(data);
   const payloadIv = b64decode(parsed.iv);

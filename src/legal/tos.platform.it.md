@@ -2,11 +2,11 @@
 
 **Versione:** 2026-09-23
 
-Questi termini regolano l'uso di Politost Smartbook, il reader dei libri digitali. Creando un account li accetti insieme all'[informativa privacy](/privacy). Se la versione cambia, un account già aperto deve accettarla di nuovo prima di continuare.
+Questi termini regolano l'uso di PoliTost Smartbook, il reader dei libri digitali. Creando un account li accetti insieme all'[informativa privacy](/privacy). Se la versione cambia, un account già aperto deve accettarla di nuovo prima di continuare.
 
 ## Il servizio
 
-Politost Smartbook serve a leggere smartbook: capitoli, formulario, esercizi, prove d'esame, laboratorio, grafici e, dove previsto, una versione stampabile.
+PoliTost Smartbook serve a leggere smartbook: capitoli, formulario, esercizi, prove d'esame, laboratorio, grafici e, dove previsto, una versione stampabile.
 
 Alcuni libri sono nel catalogo e si aprono senza account. I libri con licenza e i file protetti richiedono un account e una licenza valida. La [guida](/docs) descrive l'uso del reader.
 
@@ -55,7 +55,7 @@ Sui libri aperti con un account il reader può mostrare email, un identificativo
 
 Testi, figure, formule, esercizi e codice didattico restano degli autori o di chi ha concesso la licenza. Questi termini non ti trasferiscono alcuna proprietà. Ti danno solo il diritto di usare il reader e i libri per cui hai accesso, nei limiti scritti qui.
 
-Il software del reader e il marchio Politost restano dei rispettivi titolari.
+Il software del reader e il marchio PoliTost restano dei rispettivi titolari.
 
 ## Disponibilità e contenuti didattici
 
@@ -67,7 +67,7 @@ Laboratorio e grafici girano nel tuo browser. Un calcolo che non torna, o un ese
 
 ## Responsabilità
 
-Nei limiti consentiti dalla legge italiana, Politost Smartbook è fornito nello stato in cui si trova. Non rispondiamo di perdite di dati sul dispositivo, di interruzioni, o di un voto, un esame o un uso professionale che tu faccia dei contenuti.
+Nei limiti consentiti dalla legge italiana, PoliTost Smartbook è fornito nello stato in cui si trova. Non rispondiamo di perdite di dati sul dispositivo, di interruzioni, o di un voto, un esame o un uso professionale che tu faccia dei contenuti.
 
 Niente in questi termini limita la responsabilità che la legge non permette di escludere, in particolare per dolo o colpa grave, o i diritti che il Codice del consumo riconosce a chi agisce come consumatore.
 

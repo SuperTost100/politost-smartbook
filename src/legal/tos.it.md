@@ -2,7 +2,7 @@
 
 **Versione:** 2026-10-12
 
-Questi termini regolano l'uso del reader Politost Smartbook su politost.it/reader e dei libri pubblicati su books.politost.it. Usando il sito li accetti. Il trattamento dei dati è nell'[informativa privacy](/privacy).
+Questi termini regolano l'uso del reader PoliTost Smartbook su politost.it/reader e dei libri pubblicati su books.politost.it. Usando il sito li accetti. Il trattamento dei dati è nell'[informativa privacy](/privacy).
 
 ## Il servizio
 
@@ -12,11 +12,11 @@ Il reader serve a leggere smartbook: capitoli, formulario, esercizi, prove d'esa
 
 I libri del catalogo sono scritti da autori diversi e pubblicati con una pull request sul repository pubblico [politost-books](https://github.com/SuperTost100/politost-books). Salvo indicazione diversa nel libro, sono distribuiti con licenza [Creative Commons Attribuzione-Condividi allo stesso modo 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.it). Puoi copiarli, condividerli e modificarli, anche per scopi commerciali, se citi gli autori e distribuisci le modifiche con la stessa licenza.
 
-Il software del reader è distribuito con licenza AGPL-3.0. Il nome e il logo Politost non rientrano in queste licenze.
+Il software del reader è distribuito con licenza AGPL-3.0. Il nome e il logo PoliTost non rientrano in queste licenze.
 
 ## File che importi
 
-Un file `.ptsb` che importi dalla home resta nel tuo browser e non viene caricato su un server. Importa solo file che hai il diritto di usare. Il reader apre solo libri non cifrati: i libri protetti richiedono la piattaforma Politost, che su questo sito non è attiva.
+Un file `.ptsb` che importi dalla home resta nel tuo browser e non viene caricato su un server. Importa solo file che hai il diritto di usare. Il reader apre solo libri non cifrati: i libri protetti richiedono la piattaforma PoliTost, che su questo sito non è attiva.
 
 ## Uso consentito
 

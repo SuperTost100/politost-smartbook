@@ -2,11 +2,11 @@
 
 **Versione:** 2026-09-23
 
-Questa informativa descrive i dati personali trattati da Politost Smartbook, il reader con cui si aprono gli smartbook. Vale per il sito che stai usando e per l'API collegata a questa copia.
+Questa informativa descrive i dati personali trattati da PoliTost Smartbook, il reader con cui si aprono gli smartbook. Vale per il sito che stai usando e per l'API collegata a questa copia.
 
 ## Titolare
 
-Il titolare del trattamento è chi pubblica questa copia di Politost Smartbook. Nel reader il servizio è indicato come Politost.
+Il titolare del trattamento è chi pubblica questa copia di PoliTost Smartbook. Nel reader il servizio è indicato come PoliTost.
 
 Non è designato un responsabile della protezione dei dati.
 

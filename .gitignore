@@ -49,3 +49,4 @@ playwright/.cache/
 
 # Assembled by scripts/deploy-politost.sh
 /deploy/politost/site/
+.wrangler

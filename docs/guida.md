@@ -1,6 +1,6 @@
 # Guida al reader
 
-Politost Smartbook è il programma con cui leggi gli smartbook. Da qui apri un libro, importi un file che ti hanno dato e usi formulario, esercizi, laboratorio e stampa.
+PoliTost Smartbook è il programma con cui leggi gli smartbook. Da qui apri un libro, importi un file che ti hanno dato e usi formulario, esercizi, laboratorio e stampa.
 
 Per account, licenze e dati personali vedi i [Termini](/termini), l'[informativa privacy](/privacy) e la [cookie policy](/cookie).
 

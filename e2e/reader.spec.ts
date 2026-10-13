@@ -149,7 +149,7 @@ test.describe('Reader', () => {
     await page.getByRole('link', { name: /Capitolo successivo/ }).click();
     await expect(page).toHaveURL(/capitolo\/prova-tu$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-    await expect(page).toHaveTitle('3. Prova tu · Guida di esempio · Politost Smartbook');
+    await expect(page).toHaveTitle('3. Prova tu · Guida di esempio · PoliTost Smartbook');
   });
 
   test('an unknown address shows a not-found page', async ({ page }) => {

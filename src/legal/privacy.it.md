@@ -2,7 +2,7 @@
 
 **Versione:** 2026-10-12
 
-Questa informativa vale per il reader Politost Smartbook su politost.it/reader e per il sito dei libri books.politost.it, da cui il reader scarica gli smartbook pubblici.
+Questa informativa vale per il reader PoliTost Smartbook su politost.it/reader e per il sito dei libri books.politost.it, da cui il reader scarica gli smartbook pubblici.
 
 In breve: non ci sono account, non chiediamo dati e non usiamo statistiche. Quello che salvi resta nel tuo browser. Gli unici dati personali che arrivano a un server sono quelli tecnici di ogni visita a un sito web, come l'indirizzo IP.
 

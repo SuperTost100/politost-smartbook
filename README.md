@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="design-system/logo/ptsb-lockup-dark.svg">
-    <img alt="Politost Smartbook" src="design-system/logo/ptsb-lockup-light.svg" height="56">
+    <img alt="PoliTost Smartbook" src="design-system/logo/ptsb-lockup-light.svg" height="56">
   </picture>
 </p>
 
@@ -81,6 +81,22 @@ npm run test:e2e        # installs Playwright's Chromium on first run
 ```
 
 CI runs all five on every pull request and on `main`. Auth tests run only with `VITE_PLATFORM_ENABLED=true`.
+
+## Search engines
+
+The app renders in the browser, so a crawler that doesn't run JavaScript would see an empty page. On politost.it the Worker in `deploy/politost/worker.js` fixes that. For the library, each chapter, the formulario, the exercises and the exams, it sends the app's `index.html` with the page already in it: title, description, canonical, JSON-LD and the text. politost-books renders that text at build time and publishes it under `books.politost.it/pages/`, so a merged book change shows up without a reader deploy. In the browser the app replaces it with its own view.
+
+| Path under `/reader` | What the Worker sends |
+| --- | --- |
+| `/` | The library, with every published book and its chapters |
+| `/libro/<id>` | A 301 to the first chapter |
+| `/libro/<id>/capitolo/<chapter>`, `formulario`, `esercizi`, `esami` | The page, ready to index. A chapter also answers `Accept: text/markdown` with its Markdown |
+| `/libro/<id>/laboratorio`, `grafici`, `stampa/...` | The app with `noindex` |
+| `/libro/<id>` for a book that isn't published, such as an upload | The app with `noindex` |
+| `/sitemap.xml` | Every indexable page, built from the catalog |
+| Any other unknown path | The app with status 404 |
+
+When `books.politost.it` doesn't answer, the Worker sends the plain app, which loads its books the usual way.
 
 ## Documentation
 
