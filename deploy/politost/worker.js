@@ -14,8 +14,8 @@ const SIGNAL = 'search=yes, ai-input=yes, ai-train=no';
 const ORGANIZATION = { '@type': 'Organization', '@id': `${ORIGIN}/#organization`, name: 'PoliTost', url: `${ORIGIN}/` };
 const LIBRARY_DESCRIPTION =
   "I libri di testo interattivi di PoliTost: capitoli, formulario, esercizi con soluzione e prove d'esame. Gratis, nel browser, senza account.";
-// The app's own routes outside /libro. Anything else under /reader is a 404.
-const APP_ROUTES = new Set(['termini', 'privacy', 'cookie', 'docs', 'auth', 'redeem']);
+// The app's own routes outside /libro (src/App.tsx). Anything else under /reader is a 404.
+const APP_ROUTES = new Set(['/termini', '/privacy', '/cookie', '/docs', '/auth', '/auth/callback', '/auth/accept-terms', '/redeem']);
 // Book routes the app has but that are not worth indexing: interactive, little text.
 const UNINDEXED = /^(laboratorio|grafici|stampa(\/.*)?)$/;
 
@@ -41,12 +41,13 @@ async function books(env, path, ttl, as = 'json') {
   return as === 'json' ? response.json() : response.text();
 }
 
-/** The catalog and the page index of every book that has one. Throws when the books site is down. */
+/**
+ * Every published book with its pages, from the one file the books build writes, so a request
+ * costs one subrequest however many books there are. Throws when the books site is down.
+ */
 async function library(env) {
-  const catalog = await books(env, 'catalog.json', 300);
-  const entries = (catalog.books ?? []).filter((entry) => typeof entry.pages === 'string');
-  const metas = await Promise.all(entries.map((entry) => books(env, `${entry.pages}meta.json`, 86400).catch(() => null)));
-  return entries.map((entry, i) => ({ entry, meta: metas[i] })).filter((book) => book.meta);
+  const data = await books(env, 'library.json', 300);
+  return (data.books ?? []).filter((meta) => typeof meta.folder === 'string' && Array.isArray(meta.chapters));
 }
 
 const bookUrl = (meta, route) => `${ORIGIN}${READER}/libro/${meta.id}/${route}`;
@@ -138,9 +139,9 @@ async function libraryPage(request, env) {
     return shell(request, env);
   }
   const items = list
-    .map(({ entry, meta }) => {
+    .map((meta) => {
       const chapters = meta.chapters.map((c) => `<li><a href="${escape(bookUrl(meta, `capitolo/${c.id}`))}">${c.number}. ${escape(c.title)}</a></li>`).join('');
-      return `<li><h2><a href="${escape(firstChapter(meta))}">${escape(meta.title)}</a></h2><p>${escape(entry.subject)} · ${meta.chapters.length} capitoli</p><ol>${chapters}</ol></li>`;
+      return `<li><h2><a href="${escape(firstChapter(meta))}">${escape(meta.title)}</a></h2><p>${escape(meta.subject)} · ${meta.chapters.length} capitoli</p><ol>${chapters}</ol></li>`;
     })
     .join('\n');
   const canonical = `${ORIGIN}${READER}/`;
@@ -157,18 +158,15 @@ async function libraryPage(request, env) {
       inLanguage: 'it',
       description: LIBRARY_DESCRIPTION,
       isPartOf: { '@type': 'WebSite', '@id': `${ORIGIN}/#website`, name: 'PoliTost', url: `${ORIGIN}/` },
-      mainEntity: { '@type': 'ItemList', itemListElement: list.map(({ meta }, i) => ({ '@type': 'ListItem', position: i + 1, url: firstChapter(meta), name: meta.title })) },
+      mainEntity: { '@type': 'ItemList', itemListElement: list.map((meta, i) => ({ '@type': 'ListItem', position: i + 1, url: firstChapter(meta), name: meta.title })) },
     },
   });
 }
 
 async function bookPage(request, env, id, route) {
-  let entry;
   let meta;
   try {
-    const catalog = await books(env, 'catalog.json', 300);
-    entry = (catalog.books ?? []).find((book) => book.id === id);
-    if (typeof entry?.pages === 'string') meta = await books(env, `${entry.pages}meta.json`, 86400);
+    meta = (await library(env)).find((book) => book.id === id);
   } catch {
     return shell(request, env);
   }
@@ -185,7 +183,7 @@ async function bookPage(request, env, id, route) {
   const canonical = bookUrl(meta, route);
   const isChapter = route.startsWith('capitolo/');
   if (isChapter && wantsMarkdown(request.headers.get('Accept'))) {
-    const text = await books(env, `${entry.pages}${route}.md`, 86400, 'text').catch(() => null);
+    const text = await books(env, `${meta.folder}${route}.md`, 86400, 'text').catch(() => null);
     if (text !== null) {
       return new Response(request.method === 'HEAD' ? null : text, {
         headers: {
@@ -200,7 +198,7 @@ async function bookPage(request, env, id, route) {
 
   let body;
   try {
-    body = await books(env, `${entry.pages}${route}.html`, 86400, 'text');
+    body = await books(env, `${meta.folder}${route}.html`, 86400, 'text');
   } catch {
     return shell(request, env);
   }
@@ -209,7 +207,7 @@ async function bookPage(request, env, id, route) {
     description: page.description,
     canonical,
     article: isChapter,
-    markdown: isChapter ? `${env.BOOKS_URL}/${entry.pages}${route}.md` : undefined,
+    markdown: isChapter ? `${env.BOOKS_URL}/${meta.folder}${route}.md` : undefined,
     body,
     ld: pageLd(meta, route, page),
   });
@@ -224,7 +222,7 @@ async function sitemap(env) {
   }
   const url = (loc, lastmod) => `  <url><loc>${escape(loc)}</loc>${lastmod ? `<lastmod>${lastmod.slice(0, 10)}</lastmod>` : ''}</url>`;
   const urls = [url(`${ORIGIN}${READER}/`)];
-  for (const { meta } of list) for (const route of Object.keys(meta.pages)) urls.push(url(bookUrl(meta, route), meta.updated));
+  for (const meta of list) for (const route of Object.keys(meta.pages)) urls.push(url(bookUrl(meta, route), meta.updated));
   return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`, {
     headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
   });
@@ -240,10 +238,17 @@ export default {
     if (path === '/sitemap.xml') return sitemap(env);
     if (path === '/') return libraryPage(request, env);
     const book = /^\/libro\/([^/]+)\/?(.*?)\/?$/.exec(path);
-    if (book) return bookPage(request, env, decodeURIComponent(book[1]), book[2]);
+    if (book) {
+      let id;
+      try {
+        id = decodeURIComponent(book[1]);
+      } catch {
+        return notFound();
+      }
+      return bookPage(request, env, id, book[2]);
+    }
     // A missing file, such as a stale script chunk: a 404, not the app.
     if (/\.[a-z0-9]+$/i.test(path)) return notFound();
-    const top = path.split('/')[1];
-    return APP_ROUTES.has(top) ? shell(request, env) : shell(request, env, { noindex: true, status: 404 });
+    return APP_ROUTES.has(path.replace(/\/$/, '')) ? shell(request, env) : shell(request, env, { noindex: true, status: 404 });
   },
 };
