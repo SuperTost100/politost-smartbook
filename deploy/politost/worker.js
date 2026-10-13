@@ -38,6 +38,7 @@ function wantsMarkdown(accept) {
 async function books(env, path, ttl, as = 'json') {
   const response = await fetch(`${env.BOOKS_URL}/${path}`, { cf: { cacheTtl: ttl, cacheEverything: true } });
   if (!response.ok) throw new Error(`${path}: ${response.status}`);
+  if (as === 'response') return response;
   return as === 'json' ? response.json() : response.text();
 }
 
@@ -92,8 +93,15 @@ function pageLd(meta, route, page) {
   };
 }
 
-/** The app's index.html with this page's head and text in it. */
-async function shell(request, env, page = {}) {
+const BODY_MARK = '<!--page-->';
+const encode = (text) => new TextEncoder().encode(text);
+
+/**
+ * The app's index.html with this page's head and text in it. `page.body` is HTML, either a string
+ * or the stream of a rendered page. A stream goes straight into the response without being read,
+ * so a 2 MB exam page costs no more CPU than a short one.
+ */
+async function shell(request, env, ctx, page = {}) {
   const asset = await env.ASSETS.fetch(new Request(new URL(`${READER}/`, request.url)));
   const head = [];
   if (page.canonical) head.push(`<link rel="canonical" href="${escape(page.canonical)}">`);
@@ -120,23 +128,43 @@ async function shell(request, env, page = {}) {
   if (page.description) {
     rewriter = rewriter.on('meta[name="description"]', { element: (e) => e.setAttribute('content', page.description) });
   }
-  if (page.body) rewriter = rewriter.on('div#root', { element: (e) => e.setInnerContent(page.body, { html: true }) });
+  if (page.body) rewriter = rewriter.on('div#root', { element: (e) => e.setInnerContent(BODY_MARK, { html: true }) });
 
   const headers = new Headers(asset.headers);
   headers.delete('ETag');
   headers.delete('Content-Length');
   headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
   headers.append('Vary', 'Accept');
-  const body = request.method === 'HEAD' ? null : rewriter.transform(asset).body;
-  return new Response(body, { status: page.status ?? 200, headers });
+  const init = { status: page.status ?? 200, headers };
+  if (request.method === 'HEAD') {
+    if (page.body instanceof ReadableStream) ctx.waitUntil(page.body.cancel());
+    return new Response(null, init);
+  }
+  if (!page.body) return new Response(rewriter.transform(asset).body, init);
+
+  const [before, after = ''] = (await rewriter.transform(asset).text()).split(BODY_MARK);
+  if (typeof page.body === 'string') return new Response(before + page.body + after, init);
+  const { readable, writable } = new TransformStream();
+  ctx.waitUntil(
+    (async () => {
+      const writer = writable.getWriter();
+      await writer.write(encode(before));
+      writer.releaseLock();
+      await page.body.pipeTo(writable, { preventClose: true });
+      const last = writable.getWriter();
+      await last.write(encode(after));
+      await last.close();
+    })(),
+  );
+  return new Response(readable, init);
 }
 
-async function libraryPage(request, env) {
+async function libraryPage(request, env, ctx) {
   let list;
   try {
     list = await library(env);
   } catch {
-    return shell(request, env);
+    return shell(request, env, ctx);
   }
   const items = list
     .map((meta) => {
@@ -145,7 +173,7 @@ async function libraryPage(request, env) {
     })
     .join('\n');
   const canonical = `${ORIGIN}${READER}/`;
-  return shell(request, env, {
+  return shell(request, env, ctx, {
     title: `Biblioteca · ${APP_TITLE}`,
     description: LIBRARY_DESCRIPTION,
     canonical,
@@ -163,22 +191,22 @@ async function libraryPage(request, env) {
   });
 }
 
-async function bookPage(request, env, id, route) {
+async function bookPage(request, env, ctx, id, route) {
   let meta;
   try {
     meta = (await library(env)).find((book) => book.id === id);
   } catch {
-    return shell(request, env);
+    return shell(request, env, ctx);
   }
   // A book that isn't published, such as one a student uploaded: the app opens it, nobody indexes it.
-  if (!meta) return shell(request, env, { noindex: true });
+  if (!meta) return shell(request, env, ctx, { noindex: true });
   // The app sends /libro/<id> to the first chapter; do it here, so a crawler sees one URL per page.
   if (route === '' && meta.chapters.length) {
     return Response.redirect(new URL(`${READER}/libro/${meta.id}/capitolo/${meta.chapters[0].id}`, request.url).toString(), 301);
   }
 
   const page = meta.pages[route];
-  if (!page) return shell(request, env, { noindex: true, status: UNINDEXED.test(route) ? 200 : 404 });
+  if (!page) return shell(request, env, ctx, { noindex: true, status: UNINDEXED.test(route) ? 200 : 404 });
 
   const canonical = bookUrl(meta, route);
   const isChapter = route.startsWith('capitolo/');
@@ -199,11 +227,11 @@ async function bookPage(request, env, id, route) {
   let body;
   try {
     // Cloudflare Pages serves <route>.html at <route> and answers the .html URL with a 308.
-    body = await books(env, `${meta.folder}${route}`, 86400, 'text');
+    body = (await books(env, `${meta.folder}${route}`, 86400, 'response')).body;
   } catch {
-    return shell(request, env);
+    return shell(request, env, ctx);
   }
-  return shell(request, env, {
+  return shell(request, env, ctx, {
     title: `${page.title} · ${meta.title} · ${APP_TITLE}`,
     description: page.description,
     canonical,
@@ -232,12 +260,12 @@ async function sitemap(env) {
 const notFound = () => new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method !== 'GET' && request.method !== 'HEAD') return notFound();
     const path = new URL(request.url).pathname.slice(READER.length);
 
     if (path === '/sitemap.xml') return sitemap(env);
-    if (path === '/') return libraryPage(request, env);
+    if (path === '/') return libraryPage(request, env, ctx);
     const book = /^\/libro\/([^/]+)\/?(.*?)\/?$/.exec(path);
     if (book) {
       let id;
@@ -246,10 +274,10 @@ export default {
       } catch {
         return notFound();
       }
-      return bookPage(request, env, id, book[2]);
+      return bookPage(request, env, ctx, id, book[2]);
     }
     // A missing file, such as a stale script chunk: a 404, not the app.
     if (/\.[a-z0-9]+$/i.test(path)) return notFound();
-    return APP_ROUTES.has(path.replace(/\/$/, '')) ? shell(request, env) : shell(request, env, { noindex: true, status: 404 });
+    return APP_ROUTES.has(path.replace(/\/$/, '')) ? shell(request, env, ctx) : shell(request, env, ctx, { noindex: true, status: 404 });
   },
 };
