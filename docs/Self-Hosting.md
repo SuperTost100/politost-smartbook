@@ -43,7 +43,7 @@ Add folders under `src/content/<book-id>/` before build. Each needs `smartbook.j
 | `VITE_PLATFORM_ENABLED=true` | Explicitly enable the private platform integration |
 | `VITE_API_URL` | Platform API base URL |
 
-The build reads them from the environment and from `.env` files such as `.env.local`. The public Politost site sets `VITE_BASE_PATH` and `VITE_BOOKS_URL` and nothing else. See [Roadmap](Roadmap.md#public-launch).
+The build reads them from the environment and from `.env` files such as `.env.local`. The public PoliTost site sets `VITE_BASE_PATH` and `VITE_BOOKS_URL` and nothing else. See [Roadmap](Roadmap.md#public-launch).
 
 ### Subfolder
 
@@ -61,9 +61,9 @@ The same `id` can come from several places. The reader opens the imported copy f
 
 The lab needs `'wasm-unsafe-eval'` in `script-src`, because Pyodide compiles WebAssembly. Monaco, Pyodide and the numpy and matplotlib wheels all come from the site itself, so the policy allows no CDN.
 
-## The public Politost site
+## The public PoliTost site
 
-`npm run deploy:politost` builds with `VITE_BASE_PATH=/reader` and `VITE_BOOKS_URL=https://books.politost.it`, then deploys the Cloudflare Worker `politost-reader` from [`deploy/politost/`](../deploy/politost/wrangler.jsonc). wrangler must be logged in to the Politost Cloudflare account.
+`npm run deploy:politost` builds with `VITE_BASE_PATH=/reader` and `VITE_BOOKS_URL=https://books.politost.it`, then deploys the Cloudflare Worker `politost-reader` from [`deploy/politost/`](../deploy/politost/wrangler.jsonc). wrangler must be logged in to the PoliTost Cloudflare account.
 
 - The Worker owns only the routes `politost.it/reader` and `politost.it/reader/*`. The landing page at `politost.it/` is a separate project. Routes take precedence over custom domains on the same host, so the landing page can't shadow the reader.
 - Files are static assets under `/reader/`, served without running the Worker. The Worker only answers paths with no file: HTML requests get the app's `index.html`, anything else a 404.
@@ -71,6 +71,6 @@ The lab needs `'wasm-unsafe-eval'` in `script-src`, because Pyodide compiles Web
 
 ## Platform integration (optional)
 
-Hosted Politost product adds auth, cloud catalog, and license keys on top of this reader. That stack is **not** AGPL reader scope.
+Hosted PoliTost product adds auth, cloud catalog, and license keys on top of this reader. That stack is **not** AGPL reader scope.
 
 For full platform deploy (API + DB + OAuth), see the private platform documentation.

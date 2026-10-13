@@ -45,7 +45,7 @@ Formulario aggregates numbered formulas from all chapters automatically.
 |------------------|----------|
 | `@politost/content-core` | parser, render, validate |
 | `src/print/` | Print preview (inlined in reader) |
-| Politost platform (private) | auth, licenses, cloud, keys |
+| PoliTost platform (private) | auth, licenses, cloud, keys |
 
 Reader accepts `ReaderConfig` for optional platform features:
 

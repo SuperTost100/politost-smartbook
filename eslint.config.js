@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
   // public/pyodide is copied from node_modules by scripts/copy-pyodide.mjs
-  globalIgnores(['dist', 'public/pyodide']),
+  globalIgnores(['dist', 'public/pyodide', 'deploy/politost/site']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

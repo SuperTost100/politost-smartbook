@@ -17,7 +17,7 @@ export function Home() {
   const { user, isLoading: authLoading } = useAuth();
   const { auth: authEnabled } = useReaderFeatures();
   const { modal } = App.useApp();
-  useDocumentTitle();
+  useDocumentTitle('Biblioteca');
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export function Home() {
         setUploadError(
           authEnabled
             ? 'Questo libro è protetto. Accedi con il tuo account per aprirlo.'
-            : 'Questo libro è protetto e richiede la piattaforma Politost.',
+            : 'Questo libro è protetto e richiede la piattaforma PoliTost.',
         );
         return;
       }

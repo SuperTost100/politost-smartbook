@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build the reader for politost.it/reader and deploy it as the Worker politost-reader.
-# Needs wrangler logged in to the Politost Cloudflare account (or CLOUDFLARE_API_TOKEN).
+# Needs wrangler logged in to the PoliTost Cloudflare account (or CLOUDFLARE_API_TOKEN).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

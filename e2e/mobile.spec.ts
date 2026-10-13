@@ -83,7 +83,7 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     expect(res.headers()['content-type']).toMatch(/manifest|json/);
 
     const manifest = await res.json();
-    expect(manifest.name).toBe('Politost Smartbook');
+    expect(manifest.name).toBe('PoliTost Smartbook');
     expect(manifest.display).toBe('standalone');
     expect(manifest.icons?.length).toBeGreaterThan(0);
     // Relative to the manifest, so the app also installs from a subfolder such as /reader/.

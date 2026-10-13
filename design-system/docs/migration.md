@@ -30,7 +30,7 @@ Also: remove the `.book-card-accent--*` subject colours and the hard-coded `.dif
 
 ## 2. Logo and favicons
 
-Replace `public/logo.svg`, `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` with the files in `logo/` (`ptsb-app-icon-small.svg` for the favicon, the PNGs for the rest). The header uses the lockup, not "Politost / Smartbook" text.
+Replace `public/logo.svg`, `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` with the files in `logo/` (`ptsb-app-icon-small.svg` for the favicon, the PNGs for the rest). The header uses the lockup, not "PoliTost / Smartbook" text.
 
 ## 3. Shell
 
