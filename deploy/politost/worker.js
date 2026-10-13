@@ -198,7 +198,8 @@ async function bookPage(request, env, id, route) {
 
   let body;
   try {
-    body = await books(env, `${meta.folder}${route}.html`, 86400, 'text');
+    // Cloudflare Pages serves <route>.html at <route> and answers the .html URL with a 308.
+    body = await books(env, `${meta.folder}${route}`, 86400, 'text');
   } catch {
     return shell(request, env);
   }
