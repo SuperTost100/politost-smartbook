@@ -2,7 +2,7 @@
 
 **Versione:** 2026-10-08
 
-Politost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Non usiamo cookie di profilazione o di statistica.
+PoliTost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Non usiamo cookie di profilazione o di statistica.
 
 Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto e dove eri arrivato, tenere i libri che importi. Per questo non chiediamo il consenso e non mostriamo un banner.
 
@@ -34,7 +34,7 @@ Nessuno. In questa versione non carichiamo Matomo, Google Analytics o altri stru
 
 Il cookie di sessione e la memoria locale sono di questo sito. Non impostiamo cookie di Google, Cloudflare o altri per pubblicità o statistica.
 
-Se usi «Accedi con Google», il passaggio avviene sul dominio di Google, che può impostare cookie propri secondo la sua [informativa](https://policies.google.com/privacy). Al ritorno su Politost Smartbook vale di nuovo questa pagina.
+Se usi «Accedi con Google», il passaggio avviene sul dominio di Google, che può impostare cookie propri secondo la sua [informativa](https://policies.google.com/privacy). Al ritorno su PoliTost Smartbook vale di nuovo questa pagina.
 
 ## Come cambiare scelta
 
