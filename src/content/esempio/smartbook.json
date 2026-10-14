@@ -2,6 +2,8 @@
   "id": "esempio",
   "title": "Guida di esempio",
   "subject": "Esempio",
+  "authors": ["PoliTost"],
+  "version": "1.0.1",
   "specVersion": "1.1",
   "sections": {
     "smartbook": { "enabled": true, "label": "Capitoli" },
