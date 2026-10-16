@@ -16,6 +16,7 @@
 </p>
 
 <p align="center">
+  <a href="#start">Start</a> ·
   <a href="docs/guida.md">Reader guide</a> ·
   <a href="docs/Self-Hosting.md">Self-hosting</a> ·
   <a href="docs/reader.md">Architecture</a>
@@ -56,6 +57,24 @@ npm run dev     # opens on http://localhost:5173
 Choose "Guida di esempio" to open the example book.
 
 The default build needs no backend, account or database. `npm run build` writes a static site to `dist/`, which you can host anywhere with an SPA fallback. [Self-hosting](docs/Self-Hosting.md) has the details.
+
+## Your data
+
+Everything the reader keeps lives in your browser, under the site's origin:
+
+- **Imported books.** Uploaded `.ptsb` files and the copies of catalog books you opened are in the IndexedDB database `politost-smartbook`.
+- **Preferences.** The theme, the last chapter and paragraph read in each book, and the 14-day snooze of the phone install banner are in localStorage (`politost-theme`, `politost-last-read`, `pwa-install-snooze-until`).
+- **App shell.** Production builds cache the app's own files in the Cache Storage entry `smartbook-static-v4`.
+
+There is no export. To back up an imported book, keep its `.ptsb` file and import it again when you need it. "Rimuovi da questo dispositivo" on an imported book's card deletes the book and its reading position. To clear everything, including catalog copies, delete the site's data in your browser settings.
+
+Importing a book, running code in the lab and plotting graphs send nothing anywhere. The Pyodide runtime is served from the app's own origin. These are the actions that do talk to a server:
+
+- **Opening the library on a build with `VITE_BOOKS_URL`.** The reader fetches `catalog.json` from that site. politost.it points it at `books.politost.it`, and a build without it makes no such request.
+- **Opening a catalog book.** The reader downloads its `.ptsb` from the same site once, checks its size and sha256, and keeps a copy in IndexedDB. Later visits open it from that copy, offline.
+- **Using the platform (`VITE_PLATFORM_ENABLED=true`).** Sign-in, registration, terms consent, license keys, book access checks and the opening of a licensed chapter go to the API at `VITE_API_URL`. It is off by default and the public reader doesn't use it.
+
+The reader has no analytics or telemetry.
 
 ## Configuration
 
