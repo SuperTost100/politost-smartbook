@@ -1,10 +1,10 @@
 # Informativa privacy
 
-**Versione:** 2026-10-12
+**Versione:** 2026-10-19
 
 Questa informativa vale per il reader PoliTost Smartbook su politost.it/reader e per il sito dei libri books.politost.it, da cui il reader scarica gli smartbook pubblici.
 
-In breve: non ci sono account, non chiediamo dati e non usiamo statistiche. Quello che salvi resta nel tuo browser. Gli unici dati personali che arrivano a un server sono quelli tecnici di ogni visita a un sito web, come l'indirizzo IP.
+Non ci sono account. I libri importati e le preferenze di lettura restano nel browser. Nei libri mostriamo promozioni di PoliTost. Se attivati su questa copia, Google Analytics e gli annunci Google richiedono le scelte descritte qui sotto.
 
 ## Titolare
 
@@ -33,9 +33,21 @@ Il codice che scrivi nel laboratorio Python e i calcoli dei grafici girano nel b
 
 I dettagli, con il nome di ogni chiave, sono nella [cookie policy](/cookie). Per cancellare tutto basta cancellare i dati del sito dalle impostazioni del browser.
 
+## Promozioni, annunci e statistiche facoltative
+
+Nei libri, compresi quelli importati, mostriamo una barra chiudibile. Quando non sono disponibili annunci Google, propone Pyxis, la community Telegram o il profilo TikTok @politost. Queste promozioni sono parte del reader, non incorporano contenuti delle piattaforme e non le contattano prima che tu apra il link. Non compaiono nel catalogo o nelle versioni stampabili.
+
+Google Analytics 4, se configurato, parte solo dopo il consenso alle statistiche. Misura le visite al catalogo e ai libri pubblici, il raggiungimento della fine dei capitoli e i clic sulle promozioni. Non inviamo parametri di ricerca, frammenti dell'indirizzo, dati dell'account o dati dei libri importati. Google riceve dati tecnici della connessione e identificativi dei cookie. I segnali pubblicitari Google sono disattivati per le statistiche.
+
+Gli annunci AdSense, se configurati, usano un messaggio di consenso certificato di Google. Il gestore del consenso contatta Google per presentare e ricordare le scelte prima che si carichino gli annunci. Il reader carica il codice pubblicitario solo quando il messaggio comunica il consenso richiesto. Se il messaggio non si carica o il consenso manca, restano le promozioni di PoliTost. Il codice pubblicitario può leggere l'indirizzo della pagina e il contesto del libro aperto, anche se importato. Non carichiamo il file `.ptsb` su Google.
+
+Le basi giuridiche per statistiche e archiviazione pubblicitaria sono il consenso, articolo 6.1.a del GDPR. Le altre finalità pubblicitarie e le rispettive basi sono indicate nel messaggio Google. Il rifiuto non limita la lettura. Puoi cambiare la scelta sulle statistiche con "Preferenze privacy" e quella sugli annunci dal pulsante dedicato nelle preferenze, dentro un libro.
+
+Google Ireland Limited e le altre società Google coinvolte possono trattare dati anche fuori dallo Spazio economico europeo, secondo i meccanismi di trasferimento applicabili, comprese le clausole contrattuali standard e le decisioni di adeguatezza. Vedi l'[informativa Google](https://policies.google.com/privacy) e [come Google usa i dati dei siti partner](https://policies.google.com/technologies/partner-sites). La conservazione dei dati evento di Analytics va impostata dall'operatore a 2 mesi. Le durate dei cookie e delle scelte sono nella [Cookie policy](/cookie).
+
 ## Cosa non facciamo
 
-Non chiediamo nome, email o altri dati. Non vendiamo dati, non facciamo pubblicità e non usiamo strumenti di statistica o di tracciamento. Non costruiamo un profilo di cosa leggi. Il reader non carica caratteri, script o immagini da altri siti.
+Non chiediamo nome o email e non vendiamo dati. Non inviamo a Google Analytics il testo dei libri, i titoli o gli identificativi dei libri importati, né il codice del laboratorio. I caratteri sono ospitati dal reader.
 
 ## Fornitori e trasferimenti
 

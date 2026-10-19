@@ -1,10 +1,10 @@
 # Cookie policy
 
-**Versione:** 2026-10-08
+**Versione:** 2026-10-19
 
-PoliTost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Non usiamo cookie di profilazione o di statistica.
+PoliTost Smartbook usa un cookie di sessione e, sul tuo browser, alcune chiavi di memoria locale. Se configurati, Google Analytics e gli annunci Google richiedono le scelte di consenso descritte sotto.
 
-Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto e dove eri arrivato, tenere i libri che importi. Per questo non chiediamo il consenso e non mostriamo un banner.
+Tutto quello che segue serve a un servizio che chiedi tu: accedere, ricordare il tema che hai scelto e dove eri arrivato, tenere i libri che importi. Questi elementi tecnici non richiedono il consenso per statistiche o pubblicità.
 
 ## Necessari
 
@@ -26,13 +26,21 @@ Non sono cookie e non tracciano la navigazione fra siti.
 
 **Cache `smartbook-static-v4`.** Nelle build di produzione un service worker tiene in cache la shell dell'app, icone e manifest, per riaprire la home se la rete manca. Non mette in cache le chiamate a `/api`, `/auth` o `/users`, e non è un profilo di lettura.
 
-## Analitici
+## Statistiche e pubblicità
 
-Nessuno. In questa versione non carichiamo Matomo, Google Analytics o altri strumenti di statistica. Se un giorno li aggiungessimo, chiederemmo prima il consenso.
+Se Google Analytics è configurato, chiediamo il consenso prima di caricare il suo script. La scelta viene salvata per 180 giorni in `politost-privacy-v1`, in localStorage. `politost_reader_ga` e `politost_reader_ga_<identificativo>` distinguono i browser e le sessioni. Impostiamo una durata massima di 180 giorni senza rinnovo automatico. I cookie sono limitati all’host e al percorso di questa copia del reader. La revoca elimina i cookie Analytics accessibili su questo sito e ricarica la pagina per fermare lo script.
+
+Se AdSense è configurato, il suo gestore del consenso certificato contatta Google per mostrare e ricordare le scelte. Può usare cookie come `FCCDCF` e `FCNEC`. Dopo il consenso richiesto, gli annunci possono usare ulteriori cookie, come `__gads`, `__gpi` e `IDE`, con le durate e finalità indicate da Google. Non tentiamo di cancellare cookie di altri domini. Vedi la [descrizione dei cookie Google](https://policies.google.com/technologies/cookies).
+
+Puoi rifiutare le statistiche e gli annunci e continuare a leggere. "Preferenze privacy" riapre la scelta sulle statistiche. Dentro un libro, il pulsante sul consenso pubblicitario riapre il messaggio Google. Se Google è bloccato, gli annunci non partono e compare una promozione di PoliTost.
+
+## Preferenze della barra
+
+In sessionStorage, `politost-support-dismissed` ricorda la chiusura della promozione per la sessione della scheda. `politost-support-book`, `politost-support-current` e `politost-support-next` mantengono la promozione stabile nel libro e alternano Pyxis, Telegram e TikTok all'apertura successiva. Non sono identificativi pubblicitari e non li inviamo al server.
 
 ## Terze parti
 
-Il cookie di sessione e la memoria locale sono di questo sito. Non impostiamo cookie di Google, Cloudflare o altri per pubblicità o statistica.
+Il cookie di sessione e le preferenze tecniche sono di questo sito. I servizi Google facoltativi sono descritti sopra.
 
 Se usi «Accedi con Google», il passaggio avviene sul dominio di Google, che può impostare cookie propri secondo la sua [informativa](https://policies.google.com/privacy). Al ritorno su PoliTost Smartbook vale di nuovo questa pagina.
 
