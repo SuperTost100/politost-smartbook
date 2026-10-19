@@ -230,13 +230,17 @@ function storedToBundle(
   };
 }
 
+let uploadedInitGeneration = 0;
+
 export async function initUploadedBooks(userId: string | null): Promise<void> {
-  for (const urls of uploadedAssetUrls.values()) {
-    revokeAssetUrls(urls);
-  }
-  uploadedAssetUrls.clear();
+  const generation = ++uploadedInitGeneration;
   const items = await listUploaded(userId);
+  // A newer user's load owns the registry. Do not create blob URLs for stale results.
+  if (generation !== uploadedInitGeneration) return;
+  for (const urls of uploadedAssetUrls.values()) revokeAssetUrls(urls);
+  uploadedAssetUrls.clear();
   uploadedRegistry = new Map(items.map((s) => [s.config.id, storedToBundle(s)]));
+  dataCache.clear();
 }
 
 export function registerUploadedBook(stored: StoredBookBundle): void {
@@ -333,6 +337,9 @@ export function smartbookExists(id: string): boolean {
 export function loadSmartbook(id: string): SmartbookData | null {
   const bundle = loadBundle(id);
   if (!bundle) return null;
+  for (const cachedId of dataCache.keys()) {
+    if (cachedId !== id) dataCache.delete(cachedId);
+  }
   return cachedByBundle(dataCache, id, bundle, () => bundleToData(bundle));
 }
 

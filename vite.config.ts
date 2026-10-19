@@ -29,18 +29,9 @@ export default defineConfig(({ mode }) => ({
       // An inlined font is a data: URL, which the CSP (font-src 'self') blocks.
       if (/\.(woff2?|ttf)$/.test(filePath)) return false;
     },
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/plotly.js') || id.includes('node_modules/react-plotly.js')) {
-            return 'plotly';
-          }
-          if (id.includes('node_modules/monaco-editor') || id.includes('node_modules/@monaco-editor')) {
-            return 'monaco';
-          }
-        },
-      },
-    },
+    // No manualChunks. Monaco and Plotly are already behind dynamic imports
+    // (the lab and the graphs). A named chunk absorbs a module the entry also
+    // needs, so the library downloads that chunk before it can render.
   },
   server: {
     proxy: {

@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import type { FormulaRef } from '../../types/smartbook';
 import { renderFormulaLatex } from '../../lib/formulaRender';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
 
 /** A numbered display formula: math centred, number chip right, label below. */
 export function Formula({ formula }: { formula: FormulaRef }) {
+  const html = useMemo(() => sanitizeHtml(renderFormulaLatex(formula.latex)), [formula.latex]);
   return (
     <div className="sb-formula" id={`formula-${formula.id}`} data-formula-id={formula.id}>
       <div
@@ -12,7 +14,7 @@ export function Formula({ formula }: { formula: FormulaRef }) {
         tabIndex={0}
         role="group"
         aria-label={`Formula ${formula.id}: ${formula.label}`}
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(formula.latex)) }}
+        dangerouslySetInnerHTML={{ __html: html }}
       />
       <span className="sb-formula-num">({formula.id})</span>
       <div className="sb-formula-label">{formula.label}</div>

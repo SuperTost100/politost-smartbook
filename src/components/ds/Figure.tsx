@@ -19,7 +19,7 @@ export function Figure({ src, alt, caption, resolveAsset }: FigureProps) {
     <figure className="sb-figure">
       <div className="sb-figure-frame">
         {url ? (
-          <img src={url} alt={alt} loading="eager" decoding="async" />
+          <img src={url} alt={alt} loading="lazy" decoding="async" />
         ) : (
           <div className="sb-figure-missing" role="img" aria-label={alt}>
             <ImageOff size={16} strokeWidth={1.75} aria-hidden />

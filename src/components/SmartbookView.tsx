@@ -8,6 +8,7 @@ import { ChapterPager } from './ds/ChapterPager';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
 import { useRefClick } from '../hooks/useRefClick';
+import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 
 interface SmartbookViewProps {
@@ -42,12 +43,16 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
     // header (64px) + breathing room
     const topOffset = 64 + 24;
 
+    const intersections = new Map<Element, IntersectionObserverEntry>();
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setActiveParagraphId(e.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
-          }
+        for (const entry of entries) {
+          if (entry.isIntersecting) intersections.set(entry.target, entry);
+          else intersections.delete(entry.target);
+        }
+        const closest = closestIntersectingParagraph([...intersections.values()]);
+        if (closest) {
+          setActiveParagraphId(closest.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
         }
       },
       { rootMargin: `-${topOffset}px 0px -60% 0px`, threshold: 0 },

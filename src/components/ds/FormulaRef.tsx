@@ -19,7 +19,7 @@ export function FormulaRef({ formulaId, formulas }: FormulaRefProps) {
 
   if (!formula) return <span className="formula-missing">({formulaId})</span>;
 
-  const content = (
+  const content = open ? (
     <div className="sb-fref-pop">
       <div className="sb-fref-pop-head">
         <b>({formula.id})</b>
@@ -41,7 +41,7 @@ export function FormulaRef({ formulaId, formulas }: FormulaRefProps) {
         </div>
       )}
     </div>
-  );
+  ) : null;
 
   return (
     <Popover

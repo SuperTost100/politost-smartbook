@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import '../lib/monacoSetup';
 import type { IdeSnippet } from '../types/smartbook';
-import { runCode, stopPython } from '../lib/codeRunner';
+import { disposePython, runCode, stopPython } from '../lib/codeRunner';
 import { SectionHeader } from './ds/SectionHeader';
 import { CodeCell, type RunStatus } from './ds/CodeCell';
 import { useTheme } from '../context/ThemeContext';
@@ -60,6 +60,11 @@ export function IdeView({ snippets }: IdeViewProps) {
   const [status, setStatus] = useState<RunStatus>('idle');
   const [loading, setLoading] = useState(false);
   const runId = useRef(0);
+
+  useEffect(() => () => {
+    runId.current += 1;
+    disposePython();
+  }, []);
 
   const snippet = snippets.find((s) => s.id === active) ?? snippets[0];
   const code = snippet ? drafts[snippet.id] ?? snippet.code : '';

@@ -120,7 +120,7 @@ async function shell(request, env, page = {}) {
   if (page.description) {
     rewriter = rewriter.on('meta[name="description"]', { element: (e) => e.setAttribute('content', page.description) });
   }
-  if (page.body) rewriter = rewriter.on('div#root', { element: (e) => e.setInnerContent(page.body, { html: true }) });
+  if (page.body) rewriter = rewriter.on('div#root', { element: (e) => e.after(`<div id="crawler-content">${page.body}</div>`, { html: true }) });
 
   const headers = new Headers(asset.headers);
   headers.delete('ETag');

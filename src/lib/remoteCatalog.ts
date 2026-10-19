@@ -118,7 +118,7 @@ export async function fetchRemoteBook(entry: RemoteCatalogEntry): Promise<Stored
   const cached = await getRemoteCached(key).catch(() => undefined);
   if (cached) return cached;
 
-  const res = await fetch(entry.packageUrl);
+  const res = await fetch(entry.packageUrl, { signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`Download del libro non riuscito (HTTP ${res.status})`);
   const bytes = new Uint8Array(await res.arrayBuffer());
   if (bytes.byteLength !== entry.bytes || (await sha256Hex(bytes)) !== entry.sha256) {
