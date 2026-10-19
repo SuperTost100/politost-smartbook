@@ -6,6 +6,8 @@ import { ReaderProgressProvider } from '../context/ReaderProgressContext';
 import { ReaderShell } from './shell/ReaderShell';
 import type { SectionItem } from './shell/SectionTabs';
 import { UserWatermark } from './UserWatermark';
+import { BookAdvertising } from './GoogleAdvertising';
+import { ReaderSupport } from './ReaderSupport';
 import { Footer } from './Footer';
 import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { usePrintMode } from '../hooks/usePrintMode';
@@ -101,6 +103,8 @@ function LayoutInner({
     >
       {children}
     </ReaderShell>
+    {(activeSection !== 'smartbook' || activeChapter) && <BookAdvertising />}
+    <ReaderSupport key={bookId} bookId={bookId} />
     <UserWatermark bookId={bookId} licensed={config.access === 'licensed'} />
     </>
   );

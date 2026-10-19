@@ -1,6 +1,6 @@
 # Informativa privacy
 
-**Versione:** 2026-09-23
+**Versione:** 2026-10-19
 
 Questa informativa descrive i dati personali trattati da PoliTost Smartbook, il reader con cui si aprono gli smartbook. Vale per il sito che stai usando e per l'API collegata a questa copia.
 
@@ -78,9 +78,21 @@ Trattiamo anche:
 
 Base giuridica: legittimo interesse alla sicurezza del servizio, articolo 6.1.f del GDPR.
 
+## Promozioni, annunci e statistiche facoltative
+
+Nei libri, compresi quelli importati, mostriamo una barra chiudibile. Quando non sono disponibili annunci Google, propone Pyxis, la community Telegram o il profilo TikTok @politost. Queste promozioni sono parte del reader, non incorporano contenuti delle piattaforme e non le contattano prima che tu apra il link. Non compaiono nel catalogo o nelle versioni stampabili.
+
+Google Analytics 4, se configurato, parte solo dopo il consenso alle statistiche. Misura le visite al catalogo e ai libri pubblici, il raggiungimento della fine dei capitoli e i clic sulle promozioni. Non inviamo parametri di ricerca, frammenti dell'indirizzo, dati dell'account o dati dei libri importati. Google riceve dati tecnici della connessione e identificativi dei cookie. I segnali pubblicitari Google sono disattivati per le statistiche.
+
+Gli annunci AdSense, se configurati, usano un messaggio di consenso certificato di Google. Il gestore del consenso contatta Google per presentare e ricordare le scelte prima che si carichino gli annunci. Il reader carica il codice pubblicitario solo quando il messaggio comunica il consenso richiesto. Se il messaggio non si carica o il consenso manca, restano le promozioni di PoliTost. Il codice pubblicitario può leggere l'indirizzo della pagina e il contesto del libro aperto, anche se importato. Non carichiamo il file `.ptsb` su Google.
+
+Le basi giuridiche per statistiche e archiviazione pubblicitaria sono il consenso, articolo 6.1.a del GDPR. Le altre finalità pubblicitarie e le rispettive basi sono indicate nel messaggio Google. Il rifiuto non limita la lettura. Puoi cambiare la scelta sulle statistiche con "Preferenze privacy" e quella sugli annunci dal pulsante dedicato nelle preferenze, dentro un libro.
+
+Google Ireland Limited e le altre società Google coinvolte possono trattare dati anche fuori dallo Spazio economico europeo, secondo i meccanismi di trasferimento applicabili, comprese le clausole contrattuali standard e le decisioni di adeguatezza. Vedi l'[informativa Google](https://policies.google.com/privacy) e [come Google usa i dati dei siti partner](https://policies.google.com/technologies/partner-sites). La conservazione dei dati evento di Analytics va impostata dall'operatore a 2 mesi. Le durate dei cookie e delle scelte sono nella [Cookie policy](/cookie).
+
 ## Cosa non facciamo
 
-Non vendiamo dati. Non facciamo pubblicità comportamentale. Non usiamo strumenti di statistica di terze parti. Non prendiamo decisioni automatizzate che producano effetti giuridici o che ti riguardino in modo analogo, articolo 22 del GDPR. Non costruiamo un profilo del tuo studio.
+Non vendiamo dati. Le statistiche e gli annunci Google, quando attivati, dipendono dalle scelte descritte qui sotto. Non prendiamo decisioni automatizzate che producano effetti giuridici o che ti riguardino in modo analogo, articolo 22 del GDPR. Non costruiamo un profilo del tuo studio.
 
 ## Destinatari
 
@@ -102,7 +114,7 @@ Account, accettazione, licenze, riscatti, token Google e registro di apertura de
 
 La cancellazione dell'account elimina anche le righe collegate: accettazione, licenze, riscatti, registro di apertura e token Google.
 
-I file importati restano nel browser finché li togli, esci dall'account, o cancelli i dati del sito. Il cookie di sessione scade secondo la durata impostata sul server, oppure quando esci. In sviluppo la durata predefinita è 7 giorni. In produzione il server non accetta una durata di 7 giorni o più, quindi l'operatore ne imposta una più breve. Le preferenze cookie nel browser durano circa 6 mesi.
+I file importati restano nel browser finché li togli, esci dall'account, o cancelli i dati del sito. Il cookie di sessione scade secondo la durata impostata sul server, oppure quando esci. In sviluppo la durata predefinita è 7 giorni. In produzione il server non accetta una durata di 7 giorni o più, quindi l'operatore ne imposta una più breve. La scelta sulle statistiche nel browser dura 180 giorni. Le scelte pubblicitarie seguono la durata indicata dal gestore del consenso Google.
 
 I log dell'hosting seguono i tempi del fornitore.
 

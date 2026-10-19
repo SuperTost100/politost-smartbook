@@ -29,6 +29,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       # Builds and serves the app itself (webServer in playwright.config.ts).
       - run: npx playwright test
+      - run: npx playwright test --config=playwright.google.config.ts
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

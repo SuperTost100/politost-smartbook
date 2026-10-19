@@ -5,6 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_PLATFORM_ENABLED?: string;
   readonly VITE_BASE_PATH?: string;
   readonly VITE_BOOKS_URL?: string;
+  readonly VITE_GA4_ID?: string;
+  readonly VITE_ADSENSE_CLIENT?: string;
+  readonly VITE_GOOGLE_CMP_ENABLED?: string;
 }
 
 interface ImportMeta {

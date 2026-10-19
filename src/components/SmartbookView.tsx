@@ -9,6 +9,10 @@ import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
 import { useRefClick } from '../hooks/useRefClick';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
+import { analyticsEvent } from '../lib/googleServices';
+import { analyticsPage } from '../lib/monetization';
+import { getCatalog } from '../lib/loader';
+import { parseAnalyticsChoice, privacySnapshot } from '../lib/privacyPreferences';
 import { saveReadingPosition } from '../lib/readingPosition';
 
 interface SmartbookViewProps {
@@ -28,6 +32,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
   const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
   const print = usePrintMode();
+  const endMarker = useRef<HTMLDivElement>(null);
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
 
@@ -85,6 +90,20 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
     });
   }, [bookId, chapter, activeParagraphId]);
 
+  useEffect(() => {
+    if (!endMarker.current) return;
+    let sent = false;
+    const observer = new IntersectionObserver((entries) => {
+      if (sent || !entries.some((entry) => entry.isIntersecting) || parseAnalyticsChoice(privacySnapshot()) !== true) return;
+      const page = analyticsPage(`/libro/${encodeURIComponent(bookId)}/capitolo/${chapter.meta.id}`, getCatalog());
+      if (!page || !document.getElementById('politost-ga4')) return;
+      sent = true;
+      analyticsEvent('chapter_complete', { page_path: page.page_path });
+    }, { threshold: 0 });
+    observer.observe(endMarker.current);
+    return () => observer.disconnect();
+  }, [bookId, chapter.meta.id]);
+
   const chapterLinks = useMemo(() => allChapters.map((c) => c.meta), [allChapters]);
   const handleRefClick = useRefClick(bookId, chapterLinks);
 
@@ -133,6 +152,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         ))}
       </article>
 
+      <div ref={endMarker} aria-hidden style={{ height: 1 }} />
       <ChapterPager prev={prev} next={next} />
     </div>
   );
