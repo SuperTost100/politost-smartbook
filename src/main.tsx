@@ -14,6 +14,8 @@ registerServiceWorker();
 // Left behind by the cookie banner, removed in October 2026.
 localStorage.removeItem('cc_cookie');
 
+document.getElementById('crawler-content')?.remove();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

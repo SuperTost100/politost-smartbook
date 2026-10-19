@@ -105,42 +105,45 @@ export function GraficiView({ grafici }: GraficiViewProps) {
     };
   }, [grafico, colors.series]);
 
+  const legend = useMemo(() => plot ? legendItems(plot.data, colors.series) : undefined, [plot, colors.series]);
+  const layout = useMemo(() => {
+    // Book layouts are authored for a white page: keep the author's ranges and labels,
+    // take colours, size and legend placement from the reader. The panel shows the title.
+    const authorLayout = asObject(plot?.layout);
+    const axis = (value: unknown) => ({
+      ...asObject(value),
+      // Plotly 3 dropped `title: "Ore"`; books still write it, so wrap it as `{ text }`.
+      ...axisTitle(asObject(value).title, colors),
+      gridcolor: colors.grid,
+      linecolor: colors.axis,
+      zerolinecolor: colors.axis,
+      tickfont: { family: colors.font, size: 11, color: colors.tick },
+      automargin: true,
+    });
+    const { title: _title, width: _width, height: _height, ...layoutRest } = authorLayout;
+    return {
+      ...layoutRest,
+      colorway: colors.series,
+      paper_bgcolor: colors.surface,
+      plot_bgcolor: colors.surface,
+      font: { family: colors.font, size: 11, color: colors.tick },
+      xaxis: axis(authorLayout.xaxis),
+      yaxis: axis(authorLayout.yaxis),
+      // The panel draws the legend under the plot: Plotly's own squeezes the plot when labels are long.
+      showlegend: legend ? false : authorLayout.showlegend,
+      // Plotly cancels touchstart while a drag mode is on, so a finger on the plot could not scroll the page.
+      dragmode: touch && !showTools ? false : authorLayout.dragmode,
+      legend: { ...asObject(authorLayout.legend), bgcolor: 'rgba(0,0,0,0)' },
+      autosize: true,
+      margin: { l: 48, r: 16, t: 16, b: 24 },
+    };
+  }, [plot, colors, legend, touch, showTools]);
+
+  const plotConfig = useMemo(() => ({ displayModeBar: showTools, responsive: true, displaylogo: false }), [showTools]);
+
   if (!grafico) {
     return <p className="empty-note">Nessun grafico disponibile.</p>;
   }
-
-  const legend = plot ? legendItems(plot.data, colors.series) : undefined;
-
-  // Book layouts are authored for a white page: keep the author's ranges and labels,
-  // take colours, size and legend placement from the reader. The panel shows the title.
-  const authorLayout = asObject(plot?.layout);
-  const axis = (value: unknown) => ({
-    ...asObject(value),
-    // Plotly 3 dropped `title: "Ore"`; books still write it, so wrap it as `{ text }`.
-    ...axisTitle(asObject(value).title, colors),
-    gridcolor: colors.grid,
-    linecolor: colors.axis,
-    zerolinecolor: colors.axis,
-    tickfont: { family: colors.font, size: 11, color: colors.tick },
-    automargin: true,
-  });
-  const { title: _title, width: _width, height: _height, ...layoutRest } = authorLayout;
-  const layout = {
-    ...layoutRest,
-    colorway: colors.series,
-    paper_bgcolor: colors.surface,
-    plot_bgcolor: colors.surface,
-    font: { family: colors.font, size: 11, color: colors.tick },
-    xaxis: axis(authorLayout.xaxis),
-    yaxis: axis(authorLayout.yaxis),
-    // The panel draws the legend under the plot: Plotly's own squeezes the plot when labels are long.
-    showlegend: legend ? false : authorLayout.showlegend,
-    // Plotly cancels touchstart while a drag mode is on, so a finger on the plot could not scroll the page.
-    dragmode: touch && !showTools ? false : authorLayout.dragmode,
-    legend: { ...asObject(authorLayout.legend), bgcolor: 'rgba(0,0,0,0)' },
-    autosize: true,
-    margin: { l: 48, r: 16, t: 16, b: 24 },
-  };
 
   return (
     <div className="grafici-view sb-page">
@@ -195,7 +198,7 @@ export function GraficiView({ grafici }: GraficiViewProps) {
                 layout={layout}
                 useResizeHandler
                 style={{ width: '100%', height: compact ? '320px' : '420px' }}
-                config={{ displayModeBar: showTools, responsive: true, displaylogo: false }}
+                config={plotConfig}
               />
             ) : (
               <p className="empty-note">Questo grafico non può essere visualizzato.</p>

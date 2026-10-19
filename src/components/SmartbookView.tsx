@@ -8,6 +8,7 @@ import { ChapterPager } from './ds/ChapterPager';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { usePrintMode } from '../hooks/usePrintMode';
 import { useRefClick } from '../hooks/useRefClick';
+import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 
 interface SmartbookViewProps {
@@ -39,18 +40,29 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
   }, [chapter, setParagraphs, setActiveParagraphId]);
 
   useEffect(() => {
-    // header (64px) + breathing room
-    const topOffset = 64 + 24;
+    // header (64px) + breathing room. The band runs to 55% of the viewport:
+    // scrolling a heading clear of the header can land it just below 40%.
+    const bandTop = 64 + 24;
+    const bandBottomCut = 45;
+    const bandBottomShare = (100 - bandBottomCut) / 100;
 
+    const intersections = new Map<Element, IntersectionObserverEntry>();
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setActiveParagraphId(e.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
-          }
+        for (const entry of entries) {
+          if (entry.isIntersecting) intersections.set(entry.target, entry);
+          else intersections.delete(entry.target);
+        }
+        const closest = closestIntersectingParagraph(
+          [...intersections.values()],
+          bandTop,
+          window.innerHeight * bandBottomShare,
+        );
+        if (closest) {
+          setActiveParagraphId(closest.target.getAttribute('data-para-id') ?? chapter.paragraphs[0]?.id ?? '');
         }
       },
-      { rootMargin: `-${topOffset}px 0px -60% 0px`, threshold: 0 },
+      { rootMargin: `-${bandTop}px 0px -${bandBottomCut}% 0px`, threshold: 0 },
     );
 
     chapter.paragraphs.forEach((p) => {

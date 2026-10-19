@@ -50,3 +50,23 @@ test('leaves out entries the reader must not fetch or cannot read', () => {
   );
   assert.deepEqual(entries.map((e) => [e.id, e.title]), [['analisi-1', 'Analisi 1']]);
 });
+
+test('package timeout rejects even when response headers arrive but the body hangs', async (t) => {
+  const { fetchRemoteBook } = await import('./remoteCatalog.ts');
+  const [entry] = parseRemoteCatalog(catalog(book()), BASE);
+  const controller = new AbortController();
+  t.mock.method(AbortSignal, 'timeout', (milliseconds: number) => {
+    assert.equal(milliseconds, 10_000);
+    return controller.signal;
+  });
+  t.mock.method(globalThis, 'fetch', async (_url: unknown, options?: RequestInit) => {
+    assert.equal(options?.signal, controller.signal);
+    return new Response(new ReadableStream({
+      start(stream) {
+        controller.signal.addEventListener('abort', () => stream.error(controller.signal.reason));
+        queueMicrotask(() => controller.abort(new DOMException('Timed out', 'TimeoutError')));
+      },
+    }));
+  });
+  await assert.rejects(fetchRemoteBook(entry), { name: 'TimeoutError' });
+});

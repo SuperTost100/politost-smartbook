@@ -12,7 +12,7 @@ import { Lockup } from './Lockup';
 import { SectionTabs, type SectionItem } from './SectionTabs';
 import { ChapterToc, type TocChapter } from './ChapterToc';
 import { ParagraphRail } from './ParagraphRail';
-import { useReaderProgress } from '../../context/ReaderProgressContext';
+import { useReaderParagraphs } from '../../context/ReaderProgressContext';
 import type { SectionKey } from '../../types/smartbook';
 
 interface ReaderShellProps {
@@ -39,7 +39,7 @@ export function ReaderShell(props: ReaderShellProps) {
   const isDesktop = useMediaQuery(DESKTOP);
   const showRailWidth = useMediaQuery(RAIL);
   const compactTabs = useMediaQuery(COMPACT_TABS);
-  const { paragraphs } = useReaderProgress();
+  const paragraphs = useReaderParagraphs();
   const [drawerOpen, setDrawerOpen] = useState(false);
   usePrintShortcut(props.onPrint);
 

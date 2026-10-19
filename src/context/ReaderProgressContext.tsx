@@ -17,6 +17,7 @@ interface ReaderProgress {
   jumpTo: (id: string) => void;
 }
 
+const ReaderParagraphsContext = createContext<ParagraphItem[] | null>(null);
 const ReaderProgressContext = createContext<ReaderProgress | null>(null);
 
 /** Shares the current chapter's paragraphs and reading position between the shell (TOC, rail) and the chapter view. */
@@ -35,7 +36,11 @@ export function ReaderProgressProvider({ children }: { children: ReactNode }) {
     return { paragraphs, setParagraphs, activeParagraphId, setActiveParagraphId, progress, jumpTo };
   }, [paragraphs, activeParagraphId, jumpTo]);
 
-  return <ReaderProgressContext.Provider value={value}>{children}</ReaderProgressContext.Provider>;
+  return (
+    <ReaderParagraphsContext.Provider value={paragraphs}>
+      <ReaderProgressContext.Provider value={value}>{children}</ReaderProgressContext.Provider>
+    </ReaderParagraphsContext.Provider>
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -43,4 +48,11 @@ export function useReaderProgress(): ReaderProgress {
   const ctx = useContext(ReaderProgressContext);
   if (!ctx) throw new Error('useReaderProgress must be used within ReaderProgressProvider');
   return ctx;
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useReaderParagraphs(): ParagraphItem[] {
+  const paragraphs = useContext(ReaderParagraphsContext);
+  if (!paragraphs) throw new Error('useReaderParagraphs must be used within ReaderProgressProvider');
+  return paragraphs;
 }

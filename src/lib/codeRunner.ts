@@ -43,6 +43,11 @@ export function stopPython(): void {
   if (pendingRuns.size > 0) discardPythonWorker('Esecuzione interrotta.');
 }
 
+/** Releases the lab runtime, including an idle worker and its loaded packages. */
+export function disposePython(): void {
+  discardPythonWorker('Esecuzione interrotta.');
+}
+
 export async function runPython(code: string, onLoadingPackages?: OnLoadingPackages): Promise<RunResult> {
   const worker = getPythonWorker();
   const id = crypto.randomUUID();
