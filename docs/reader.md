@@ -168,7 +168,7 @@ politost-smartbook/
 | Editor lab | Monaco, incluso nel bundle (`src/lib/monacoSetup.ts`) |
 | Grafici | Plotly.js |
 | Python | Pyodide in `public/pyodide/`, in un worker (`src/workers/pythonWorker.ts`) |
-| MATLAB | `matlabRunner.ts` (interprete didattico) |
+| MATLAB | numbl in un worker (`src/workers/matlabWorker.ts`, `src/lib/matlabRunner.ts`) |
 | Unzip `.ptsb` | fflate |
 
 ---
@@ -203,7 +203,7 @@ Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), 
 
 - Python via Web Worker + Pyodide (`src/workers/pythonWorker.ts`)
 - numpy e matplotlib si caricano alla prima `import` (wheel copiate in `public/pyodide/` da `scripts/copy-pyodide.mjs`); le figure diventano PNG sotto l'output
-- MATLAB/Octave: interprete locale limitato
+- MATLAB/Octave via Web Worker + numbl, senza JIT (la CSP non permette `eval`); `fzero`, `integral`, `hilb` e `vander` vengono da `src/lib/matlabShims.ts`. I grafici 2D passano da Plotly e diventano PNG sotto l'output
 - Configurazione snippet: `ide.json`, vedi [Content-Format.md](Content-Format.md#lab-idejson)
 
 ### Grafici

@@ -22,7 +22,7 @@ In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutt
 - La prima sezione è il testo dei capitoli. Il nome nel menu dipende dal libro, spesso **Capitoli** o **Smartbook**. Nei capitoli una barra permette di saltare da un paragrafo all'altro.
 - **Formulario.** Elenco delle formule numerate, raccolto dai capitoli. Non è un file a parte.
 - **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include.
-- **Laboratorio.** Frammenti Python, eseguiti nel browser, e un interprete limitato in stile MATLAB. Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib: i grafici compaiono sotto l'output.
+- **Laboratorio.** Frammenti Python, eseguiti nel browser, e MATLAB con un interprete compatibile (cicli, funzioni, matrici, grafici 2D). Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib. In tutti e due i linguaggi i grafici compaiono sotto l'output.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
 Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano. L'elenco capitoli sta sotto le schede di sezione.

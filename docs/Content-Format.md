@@ -129,9 +129,11 @@ Reference in text: `{{formula:2.1}}` (keep spaces around markers).
 ]
 ```
 
-Languages: `python` (Pyodide), `matlab` / `octave` / `m` (didactic subset).
+Languages: `python` (Pyodide), `matlab` / `octave` / `m` ([numbl](https://github.com/flatironinstitute/numbl), a MATLAB-compatible interpreter).
 
 Python scripts can import the standard library, `numpy` and `matplotlib`. The first script that imports one of them downloads it, which can take a few seconds. The lab shows every open matplotlib figure under the text output as an image, up to 10 per run, so `plt.show()` is optional.
+
+MATLAB scripts can use loops, conditions, local functions at the end of the script, anonymous functions, matrices and numbl's built-in functions, plus `fzero`, `integral`, `hilb` and `vander`, which the reader adds. A script without a semicolon echoes its result, with 5 significant digits (`format long` is not available: print more digits with `fprintf`). 2-D plots (`plot`, `semilogy`, `loglog`, `bar`, `subplot`, `hold on`) appear under the output as images; 3-D plots (`surf`, `mesh`, `plot3`) are not drawn.
 
 ## Graphs (`grafici.json`)
 
@@ -153,6 +155,6 @@ npm run validate:chapter -- --file path/to/chapter.md --chapter-number N
 |------|-------|
 | Markdown | No tables; images only from `assets/` |
 | Python lab | No preinstalled numpy/matplotlib |
-| MATLAB lab | Subset only (no `for`, user functions, matrices) |
+| MATLAB lab | No `format long`, no 3-D plots, no toolboxes; display differs slightly from MATLAB |
 
 Syntax changes require parser + validator updates — treat this page as the author contract.

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Editor, { type BeforeMount, type OnMount } from '@monaco-editor/react';
 import '../lib/monacoSetup';
 import type { IdeSnippet } from '../types/smartbook';
-import { disposePython, runCode, stopPython } from '../lib/codeRunner';
+import { disposeRuns, runCode, stopRuns } from '../lib/codeRunner';
 import { SectionHeader } from './ds/SectionHeader';
 import { CodeCell, type RunStatus } from './ds/CodeCell';
 import { useTheme } from '../context/ThemeContext';
@@ -63,7 +63,7 @@ export function IdeView({ snippets }: IdeViewProps) {
 
   useEffect(() => () => {
     runId.current += 1;
-    disposePython();
+    disposeRuns();
   }, []);
 
   const snippet = snippets.find((s) => s.id === active) ?? snippets[0];
@@ -71,7 +71,7 @@ export function IdeView({ snippets }: IdeViewProps) {
 
   const select = (s: IdeSnippet) => {
     // A script still running (maybe stuck) would hold the worker and delay the next one.
-    if (status === 'running') stopPython();
+    if (status === 'running') stopRuns();
     runId.current += 1;
     setActive(s.id);
     setOutput('');
@@ -125,7 +125,7 @@ export function IdeView({ snippets }: IdeViewProps) {
     <div className="ide-view sb-page">
       <SectionHeader
         title="Laboratorio"
-        meta={<span>Python eseguito nel browser con Pyodide, con numpy e matplotlib; MATLAB con un interprete per script didattici semplici. Ctrl+Invio (⌘+Invio su Mac) esegue lo script.</span>}
+        meta={<span>Python eseguito nel browser con Pyodide, con numpy e matplotlib; MATLAB con numbl, un interprete compatibile con MATLAB, con cicli, funzioni, matrici e grafici 2D. Ctrl+Invio (⌘+Invio su Mac) esegue lo script.</span>}
       />
 
       <div className="ide-layout">
