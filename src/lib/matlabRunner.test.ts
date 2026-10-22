@@ -60,6 +60,21 @@ test('fzero, integral, hilb and vander come from the shims and give MATLAB\'s va
   assert.equal(r.stdout, '0.739085133215\n2.094551481542\n0.7468241328\n1 0.5 0.5 0.333333 | 2 3 1 1');
 });
 
+test('the shims stay right on the cases a careless implementation gets wrong', () => {
+  const r = executeMatlab([
+    "fprintf('%.3e\\n', integral(@(x) cos(8*pi*x), 0, 1));",
+    "fprintf('%.12f\\n', integral(@(x) sqrt(x), 0, 1));",
+    "fprintf('%.6f\\n', fzero(@(x) 1e-200*(x - 0.3), [0 1]));",
+    "try, fzero(@(x) 1e-200*(x^2 + 1), [0 1]); catch err, disp(err.message); end",
+  ].join('\n'));
+  assert.equal(r.error, undefined);
+  const [cosine, root, tiny, refused] = r.stdout.split('\n');
+  assert.ok(Math.abs(Number(cosine)) < 1e-10, cosine);
+  assert.equal(root, '0.666666666667');
+  assert.equal(tiny, '0.300000');
+  assert.match(refused, /segno diverso/);
+});
+
 test('fzero without a sign change reports it in Italian', () => {
   const r = executeMatlab('fzero(@(x) x^2 + 1, 0)');
   assert.match(r.error ?? '', /nessun cambio di segno/);

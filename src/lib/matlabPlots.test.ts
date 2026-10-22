@@ -79,3 +79,32 @@ test('3-D plots are listed as unsupported instead of failing', () => {
   assert.deepEqual(r.unsupported, ['surf']);
   assert.equal(r.figures.length, 1);
 });
+
+test('hold on belongs to one subplot, and clf drops it', () => {
+  const { figures } = plotsFromInstructions([
+    ins({ type: 'set_subplot', rows: 1, cols: 2, index: 1 }),
+    plot(line([1, 2])),
+    ins({ type: 'set_hold', value: true }),
+    ins({ type: 'set_subplot', rows: 1, cols: 2, index: 2 }),
+    plot(line([1, 2])),
+    plot(line([2, 1])),
+  ]);
+  assert.deepEqual(figures[0].data.map((d) => d.yaxis), ['y', 'y2']);
+  assert.deepEqual(figures[0].data[1].y, [2, 1]);
+
+  const cleared = plotsFromInstructions([ins({ type: 'set_hold', value: true }), ins({ type: 'clf' }), plot(line([1, 2])), plot(line([3, 4]))]);
+  assert.equal(cleared.figures[0].data.length, 1);
+});
+
+test('barh draws horizontal bars, and close removes the current figure', () => {
+  const { figures } = plotsFromInstructions([
+    ins({ type: 'barh', traces: [{ x: [1, 2, 3], y: [4, 5, 6], width: 0.8 }] }),
+    ins({ type: 'set_figure_handle', handle: 2 }),
+    plot(line([1, 2])),
+    ins({ type: 'close' }),
+  ]);
+  assert.equal(figures.length, 1);
+  assert.equal(figures[0].data[0].orientation, 'h');
+  assert.deepEqual(figures[0].data[0].x, [4, 5, 6]);
+  assert.deepEqual(figures[0].data[0].y, [1, 2, 3]);
+});

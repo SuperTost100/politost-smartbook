@@ -48,6 +48,10 @@ export function executeMatlab(code: string): MatlabResult {
 
 function describeError(e: unknown): string {
   if (!(e instanceof Error)) return `Errore: ${String(e)}`;
+  // numbl runs eval'd text through its JIT, which needs `new Function`, and the CSP refuses that.
+  if (e.name === 'EvalError' || /code generation from strings|unsafe-eval/i.test(e.message)) {
+    return 'Errore: eval con cicli non è disponibile nel laboratorio. Scrivi il codice direttamente nello script.';
+  }
   const { line, file } = e as Error & { line?: number; file?: string };
   const where = typeof line === 'number'
     ? file && file !== MAIN_FILE ? ` (in ${file.replace(/\.m$/, '')}, riga ${line})` : ` alla riga ${line}`

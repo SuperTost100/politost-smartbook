@@ -13,7 +13,9 @@ type Rgb = [number, number, number];
 interface Trace { x: number[]; y: number[]; lineStyle?: string; marker?: string; color?: Rgb; lineWidth?: number; markerSize?: number; width?: number }
 
 interface Axes {
-  traces: { kind: 'line' | 'bar'; trace: Trace }[];
+  traces: { kind: Kind; trace: Trace }[];
+  /** hold on belongs to one axes, as in MATLAB: another subplot or a cleared figure starts without it. */
+  hold: boolean;
   scale: 'linear' | 'semilogx' | 'semilogy' | 'loglog';
   title?: string;
   xlabel?: string;
@@ -24,6 +26,8 @@ interface Axes {
   ylim?: [number, number];
   equal: boolean;
 }
+
+type Kind = 'line' | 'bar' | 'barh';
 
 interface Figure { rows: number; cols: number; axes: Map<number, Axes>; current: number }
 
@@ -43,21 +47,20 @@ const UNSUPPORTED: Record<string, string> = {
   pcolor: 'pcolor', patch: 'patch', bar3: 'bar3', uihtml: 'uihtml',
 };
 
-const newAxes = (): Axes => ({ traces: [], scale: 'linear', grid: false, equal: false });
+const newAxes = (): Axes => ({ traces: [], hold: false, scale: 'linear', grid: false, equal: false });
 const rgb = ([r, g, b]: Rgb) => `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`;
 /** Labels end up in Plotly's SVG, which reads a few HTML tags: keep them as plain text. */
 const plain = (text: string) => text.replace(/<[^>]*>/g, '');
 const isRange = (v: unknown): v is [number, number] => Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
 
 /**
- * Replays numbl's plot instructions as MATLAB would draw them (figure, subplot, hold, clf, close all)
+ * Replays numbl's plot instructions as MATLAB would draw them (figure, subplot, hold, clf, close, close all)
  * and returns one Plotly figure per MATLAB figure, plus the names of plot commands the lab cannot draw.
  */
 export function plotsFromInstructions(instructions: PlotInstruction[]): { figures: LabFigure[]; unsupported: string[] } {
   const figures = new Map<number, Figure>();
   const unsupported = new Set<string>();
   let currentFigure = 0;
-  let hold = false;
 
   const figure = (): Figure => {
     if (!figures.has(currentFigure)) figures.set(currentFigure, { rows: 1, cols: 1, axes: new Map(), current: 1 });
@@ -68,10 +71,10 @@ export function plotsFromInstructions(instructions: PlotInstruction[]): { figure
     if (!f.axes.has(f.current)) f.axes.set(f.current, newAxes());
     return f.axes.get(f.current)!;
   };
-  const addTraces = (kind: 'line' | 'bar', traces: Trace[], replace: boolean) => {
+  const addTraces = (kind: Kind, traces: Trace[], replace: boolean) => {
     const a = axes();
     // A new plot without hold on replaces the axes, as in MATLAB; semilogy and loglog set the scale after this.
-    if (replace && !hold) Object.assign(a, newAxes());
+    if (replace && !a.hold) Object.assign(a, newAxes());
     for (const trace of traces) a.traces.push({ kind, trace });
   };
 
@@ -91,7 +94,7 @@ export function plotsFromInstructions(instructions: PlotInstruction[]): { figure
         break;
       }
       case 'set_hold':
-        hold = Boolean(i.value);
+        axes().hold = Boolean(i.value);
         break;
       case 'set_axis_scale':
         pendingScale = String(i.value) as Axes['scale'];
@@ -100,7 +103,7 @@ export function plotsFromInstructions(instructions: PlotInstruction[]): { figure
       case 'line':
       case 'bar':
       case 'barh': {
-        addTraces(i.type === 'bar' || i.type === 'barh' ? 'bar' : 'line', i.traces as Trace[], i.type !== 'line');
+        addTraces(i.type === 'line' ? 'line' : i.type as Kind, i.traces as Trace[], i.type !== 'line');
         if (pendingScale) axes().scale = pendingScale;
         pendingScale = null;
         break;
@@ -130,6 +133,7 @@ export function plotsFromInstructions(instructions: PlotInstruction[]): { figure
         if (i.value === 'equal') axes().equal = true;
         break;
       case 'clf':
+      case 'close':
         figures.delete(currentFigure);
         break;
       case 'close_all':
@@ -195,8 +199,10 @@ function toPlotly(f: Figure, used: [number, Axes][]): LabFigure {
       const color = trace.color ? rgb(trace.color) : COLOR_ORDER[k % COLOR_ORDER.length];
       const name = a.legend?.[k];
       const common = { x: trace.x, y: trace.y, xaxis: `x${suffix}`, yaxis: `y${suffix}`, name: name ?? '', showlegend: name !== undefined };
-      if (kind === 'bar') {
-        data.push({ ...common, type: 'bar', marker: { color }, width: trace.width });
+      if (kind === 'bar' || kind === 'barh') {
+        // barh keeps the categories in x, like bar: Plotly wants them on y for horizontal bars.
+        const flip = kind === 'barh' ? { x: trace.y, y: trace.x, orientation: 'h' } : {};
+        data.push({ ...common, ...flip, type: 'bar', marker: { color }, width: trace.width });
         return;
       }
       const hasLine = trace.lineStyle !== 'none';
