@@ -24,6 +24,11 @@ declare module 'monaco-editor/esm/vs/editor/edcore.main.js' {
 }
 
 declare module 'plotly.js/dist/plotly-cartesian.min.js' {
-  const Plotly: unknown;
+  const Plotly: {
+    toImage(
+      figure: { data: unknown[]; layout?: unknown; config?: unknown },
+      options: { format: 'png'; width: number; height: number; scale?: number },
+    ): Promise<string>;
+  };
   export default Plotly;
 }

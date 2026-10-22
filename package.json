@@ -34,6 +34,7 @@
     "lucide-react": "^1.49.0",
     "markdown-it": "^15.0.2",
     "monaco-editor": "^0.55.1",
+    "numbl": "0.4.21",
     "plotly.js": "4.1.1",
     "pyodide": "^314.0.0",
     "react": "^19.2.6",

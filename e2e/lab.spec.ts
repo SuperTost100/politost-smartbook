@@ -84,4 +84,24 @@ test.describe('Lab', () => {
     await run(page, 'import matplotlib.pyplot as plt\nplt.figure()\nplt.plot([0, 1])\nplt.figure()\nplt.plot([1, 0])\nprint("due")');
     await expect(page.locator('.sb-code-figures img')).toHaveCount(2);
   });
+
+  test('MATLAB runs under the deployed CSP: loops, matrices, plots, and a stuck loop is stopped', async ({ page }) => {
+    await page.getByRole('button', { name: /Stesso saluto in MATLAB/ }).click();
+    await page.getByRole('button', { name: 'Esegui' }).click();
+    await expect(page.getByRole('button', { name: 'Esegui' })).toBeEnabled({ timeout: 60_000 });
+    await expect(page.locator('.sb-code-out pre')).toContainText('Ciao, Studente!');
+
+    // No indented lines: Monaco would add its own indentation to typed text.
+    await expect(await run(page, "s = 0;\nfor k = 1:10\ns = s + k^2;\nend\nA = [4 -1; -1 4];\nx = A\\[3; 3];\nfprintf('%d %g %g\\n', s, x(1), x(2));")).toHaveText('385 1 1');
+
+    await run(page, "x = linspace(0, 2*pi, 50);\nplot(x, sin(x)); hold on; plot(x, cos(x), '--');\ntitle('seno e coseno'); legend('sin', 'cos');");
+    const figure = page.getByRole('img', { name: 'Figura 1 prodotta dallo script' });
+    await expect(figure).toBeVisible();
+    expect(await figure.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(600);
+
+    // A loop inside eval goes through numbl's JIT, which the CSP blocks.
+    await expect(await run(page, "eval('s = 0; for k = 1:5, s = s + k; end, disp(s)')")).toContainText('eval con cicli non è disponibile');
+    await expect(await run(page, 'while true\nend')).toContainText('Tempo scaduto', { timeout: 20_000 });
+    await expect(await run(page, "disp('di nuovo')")).toHaveText('di nuovo');
+  });
 });
