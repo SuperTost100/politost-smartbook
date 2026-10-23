@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smartbook · Direzione A, Libreria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Franklin:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&display=swap" rel="stylesheet">
+<style>@font-face{font-family:KaTeX_AMS;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_AMS-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Caligraphic;font-style:normal;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype")}@font-face{font-family:KaTeX_Caligraphic;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Fraktur;font-style:normal;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype")}@font-face{font-family:KaTeX_Fraktur;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Main;font-style:normal;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Bold.ttf) format("truetype")}@font-face{font-family:KaTeX_Main;font-style:italic;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype")}@font-face{font-family:KaTeX_Main;font-style:italic;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Italic.ttf) format("truetype")}@font-face{font-family:KaTeX_Main;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Math;font-style:italic;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype")}@font-face{font-family:KaTeX_Math;font-style:italic;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-Italic.ttf) format("truetype")}@font-face{font-family:"KaTeX_SansSerif";font-style:normal;font-weight:700;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype")}@font-face{font-family:"KaTeX_SansSerif";font-style:italic;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype")}@font-face{font-family:"KaTeX_SansSerif";font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Script;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Script-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Script-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Size1;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size1-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Size2;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size2-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Size3;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size3-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Size4;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Size4-Regular.ttf) format("truetype")}@font-face{font-family:KaTeX_Typewriter;font-style:normal;font-weight:400;src:url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype")}.katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;text-indent:0;text-rendering:auto}.katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}.katex .katex-version:after{content:"0.16.22"}.katex .katex-mathml{clip:rect(1px,1px,1px,1px);border:0;height:1px;overflow:hidden;padding:0;position:absolute;width:1px}.katex .katex-html>.newline{display:block}.katex .base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}.katex .base,.katex .strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathboldfrak,.katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .mathsfit,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;position:relative;vertical-align:bottom}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}.katex .vbox{align-items:baseline;display:inline-flex;flex-direction:column}.katex .hbox{width:100%}.katex .hbox,.katex .thinbox{display:inline-flex;flex-direction:row}.katex .thinbox{max-width:0;width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline,.katex .hline,.katex .mfrac .frac-line,.katex .overline .overline-line,.katex .rule,.katex .underline .underline-line{min-height:1px}.katex .mspace{display:inline-block}.katex .clap,.katex .llap,.katex .rlap{position:relative;width:0}.katex .clap>.inner,.katex .llap>.inner,.katex .rlap>.inner{position:absolute}.katex .clap>.fix,.katex .llap>.fix,.katex .rlap>.fix{display:inline-block}.katex .llap>.inner{right:0}.katex .clap>.inner,.katex .rlap>.inner{left:0}.katex .clap>.inner>span{margin-left:-50%;margin-right:50%}.katex .rule{border:0 solid;display:inline-block;position:relative}.katex .hline,.katex .overline .overline-line,.katex .underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}.katex .hdashline{border-bottom-style:dashed;display:inline-block;width:100%}.katex .sqrt>.root{margin-left:.2777777778em;margin-right:-.5555555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .sizing.reset-size2.size1{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .sizing.reset-size2.size3{font-size:1.1666666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .sizing.reset-size2.size4{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .sizing.reset-size2.size6{font-size:1.6666666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .sizing.reset-size2.size10{font-size:3.4566666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .sizing.reset-size2.size11{font-size:4.1466666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .sizing.reset-size3.size1{font-size:.7142857143em}.katex .fontsize-ensurer.reset-size3.size2,.katex .sizing.reset-size3.size2{font-size:.8571428571em}.katex .fontsize-ensurer.reset-size3.size3,.katex .sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .sizing.reset-size3.size4{font-size:1.1428571429em}.katex .fontsize-ensurer.reset-size3.size5,.katex .sizing.reset-size3.size5{font-size:1.2857142857em}.katex .fontsize-ensurer.reset-size3.size6,.katex .sizing.reset-size3.size6{font-size:1.4285714286em}.katex .fontsize-ensurer.reset-size3.size7,.katex .sizing.reset-size3.size7{font-size:1.7142857143em}.katex .fontsize-ensurer.reset-size3.size8,.katex .sizing.reset-size3.size8{font-size:2.0571428571em}.katex .fontsize-ensurer.reset-size3.size9,.katex .sizing.reset-size3.size9{font-size:2.4685714286em}.katex .fontsize-ensurer.reset-size3.size10,.katex .sizing.reset-size3.size10{font-size:2.9628571429em}.katex .fontsize-ensurer.reset-size3.size11,.katex .sizing.reset-size3.size11{font-size:3.5542857143em}.katex .fontsize-ensurer.reset-size4.size1,.katex .sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .sizing.reset-size5.size1{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .sizing.reset-size5.size2{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .sizing.reset-size5.size3{font-size:.7777777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .sizing.reset-size5.size4{font-size:.8888888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .sizing.reset-size5.size6{font-size:1.1111111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .sizing.reset-size5.size7{font-size:1.3333333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .sizing.reset-size5.size10{font-size:2.3044444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .sizing.reset-size5.size11{font-size:2.7644444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .sizing.reset-size7.size1{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .sizing.reset-size7.size3{font-size:.5833333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .sizing.reset-size7.size4{font-size:.6666666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .sizing.reset-size7.size6{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .sizing.reset-size7.size10{font-size:1.7283333333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .sizing.reset-size7.size11{font-size:2.0733333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .sizing.reset-size8.size1{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .sizing.reset-size8.size2{font-size:.4166666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .sizing.reset-size8.size3{font-size:.4861111111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .sizing.reset-size8.size4{font-size:.5555555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .sizing.reset-size8.size6{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .sizing.reset-size8.size7{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .sizing.reset-size8.size10{font-size:1.4402777778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .sizing.reset-size8.size11{font-size:1.7277777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .sizing.reset-size9.size1{font-size:.2893518519em}.katex .fontsize-ensurer.reset-size9.size2,.katex .sizing.reset-size9.size2{font-size:.3472222222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .sizing.reset-size9.size3{font-size:.4050925926em}.katex .fontsize-ensurer.reset-size9.size4,.katex .sizing.reset-size9.size4{font-size:.462962963em}.katex .fontsize-ensurer.reset-size9.size5,.katex .sizing.reset-size9.size5{font-size:.5208333333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .sizing.reset-size9.size6{font-size:.5787037037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .sizing.reset-size9.size7{font-size:.6944444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .sizing.reset-size9.size8{font-size:.8333333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .sizing.reset-size9.size10{font-size:1.2002314815em}.katex .fontsize-ensurer.reset-size9.size11,.katex .sizing.reset-size9.size11{font-size:1.4398148148em}.katex .fontsize-ensurer.reset-size10.size1,.katex .sizing.reset-size10.size1{font-size:.2410800386em}.katex .fontsize-ensurer.reset-size10.size2,.katex .sizing.reset-size10.size2{font-size:.2892960463em}.katex .fontsize-ensurer.reset-size10.size3,.katex .sizing.reset-size10.size3{font-size:.337512054em}.katex .fontsize-ensurer.reset-size10.size4,.katex .sizing.reset-size10.size4{font-size:.3857280617em}.katex .fontsize-ensurer.reset-size10.size5,.katex .sizing.reset-size10.size5{font-size:.4339440694em}.katex .fontsize-ensurer.reset-size10.size6,.katex .sizing.reset-size10.size6{font-size:.4821600771em}.katex .fontsize-ensurer.reset-size10.size7,.katex .sizing.reset-size10.size7{font-size:.5785920926em}.katex .fontsize-ensurer.reset-size10.size8,.katex .sizing.reset-size10.size8{font-size:.6943105111em}.katex .fontsize-ensurer.reset-size10.size9,.katex .sizing.reset-size10.size9{font-size:.8331726133em}.katex .fontsize-ensurer.reset-size10.size10,.katex .sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .sizing.reset-size10.size11{font-size:1.1996142719em}.katex .fontsize-ensurer.reset-size11.size1,.katex .sizing.reset-size11.size1{font-size:.2009646302em}.katex .fontsize-ensurer.reset-size11.size2,.katex .sizing.reset-size11.size2{font-size:.2411575563em}.katex .fontsize-ensurer.reset-size11.size3,.katex .sizing.reset-size11.size3{font-size:.2813504823em}.katex .fontsize-ensurer.reset-size11.size4,.katex .sizing.reset-size11.size4{font-size:.3215434084em}.katex .fontsize-ensurer.reset-size11.size5,.katex .sizing.reset-size11.size5{font-size:.3617363344em}.katex .fontsize-ensurer.reset-size11.size6,.katex .sizing.reset-size11.size6{font-size:.4019292605em}.katex .fontsize-ensurer.reset-size11.size7,.katex .sizing.reset-size11.size7{font-size:.4823151125em}.katex .fontsize-ensurer.reset-size11.size8,.katex .sizing.reset-size11.size8{font-size:.578778135em}.katex .fontsize-ensurer.reset-size11.size9,.katex .sizing.reset-size11.size9{font-size:.6945337621em}.katex .fontsize-ensurer.reset-size11.size10,.katex .sizing.reset-size11.size10{font-size:.8336012862em}.katex .fontsize-ensurer.reset-size11.size11,.katex .sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .accent>.vlist-t,.katex .op-limits>.vlist-t{text-align:center}.katex .accent .accent-body{position:relative}.katex .accent .accent-body:not(.accent-full){width:0}.katex .overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{fill:currentColor;stroke:currentColor;fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;display:block;height:inherit;position:absolute;width:100%}.katex svg path{stroke:none}.katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}.katex .stretchy{display:block;overflow:hidden;position:relative;width:100%}.katex .stretchy:after,.katex .stretchy:before{content:""}.katex .hide-tail{overflow:hidden;position:relative;width:100%}.katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}.katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}.katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}.katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}.katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}.katex .x-arrow-pad{padding:0 .5em}.katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{border:.04em solid;box-sizing:border-box}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .sout{border-bottom-style:solid;border-bottom-width:.08em}.katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}.katex .anglpad{padding:0 .03889em}.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}.katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}.katex .mtr-glue{width:50%}.katex .cd-vert-arrow{display:inline-block;position:relative}.katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}.katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.tag{left:0;right:auto}.katex-display.fleqn>.katex{padding-left:2em;text-align:left}body{counter-reset:katexEqnNo mmlEqnNo}
+</style>
+<style>/* Mockup-only chrome and helpers shared by the three directions. Not part of any design. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg { display: block; }
+.i { flex: none; }
+[data-view] { display: none; }
+[data-view].is-active { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+.katex { font-size: 1.08em; }
+.katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+.mockbar {
+  position: fixed; z-index: 1000; left: 50%; bottom: 14px; transform: translateX(-50%);
+  display: flex; gap: 6px; align-items: center; padding: 5px;
+  font: 500 12px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0;
+  background: rgba(20, 20, 20, .86); color: #eee; border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+.mockbar-group { display: flex; gap: 2px; padding-right: 6px; border-right: 1px solid rgba(255,255,255,.18); }
+.mockbar a, .mockbar button { color: #ddd; text-decoration: none; padding: 7px 9px; border-radius: 6px; border: 0; background: none; font: inherit; cursor: pointer; white-space: nowrap; }
+.mockbar a:hover, .mockbar button:hover { background: rgba(255,255,255,.12); }
+.mockbar a[aria-current="true"] { background: #fff; color: #111; }
+.mockbar a:focus-visible, .mockbar button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.shot .mockbar { display: none; }
+@media (max-width: 560px) { .mockbar { font-size: 11px; bottom: 8px; } .mockbar a, .mockbar button { padding: 6px 6px; } }
+</style>
+<style>
+/* Direction A, Libreria: a bookshop at night. Cloth covers on wooden shelves, Caslon titles, an oxblood accent and a brass ribbon. */
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --room: #ece3d2;
+  --page: #f9f5ec;
+  --raise: #fffdf8;
+  --well: #f1e9da;
+  --rule: #ddd0b9;
+  --rule-strong: #9c8a73;
+  --ink: #2a2019;
+  --ink-2: #5a4b3f;
+  --ink-3: #6f5f51;
+  --accent: #8a2f2a;
+  --accent-hover: #74241f;
+  --on-accent: #fff8f0;
+  --accent-soft: #f3e1da;
+  --green: #2f5546;
+  --green-soft: #e1ebe4;
+  --ribbon: #a8772a;
+  --brass-text: #7a5512;
+  --hint-bg: #f6ecd4;
+  --sol-bg: #e6eee6;
+  --plank-1: #6e4c34; --plank-2: #4c3324; --plank-edge: #8a6446;
+  --shadow-book: 0 1px 0 rgba(255,255,255,.25) inset, 0 10px 18px -8px rgba(40,22,10,.55), 0 2px 3px rgba(40,22,10,.25);
+  --shadow-page: 0 1px 2px rgba(60,40,20,.08), 0 18px 40px -24px rgba(60,40,20,.35);
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .24  0 0 0 0 .15  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --fig-ink: #3b2e24; --fig-line: #8a2f2a; --fig-area: rgba(168,119,42,.22); --fig-guide: #b9a68b;
+  --focus: #8a2f2a;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --room: #120e0b;
+  --page: #1c1611;
+  --raise: #251d17;
+  --well: #17120e;
+  --rule: #3a2e24;
+  --rule-strong: #6d5b49;
+  --ink: #ecdfc8;
+  --ink-2: #c2b097;
+  --ink-3: #a3917a;
+  --accent: #e5a458;
+  --accent-hover: #f0b46c;
+  --on-accent: #1a110a;
+  --accent-soft: #3a2714;
+  --green: #93b9a5;
+  --green-soft: #1c2a23;
+  --ribbon: #d6a24a;
+  --brass-text: #e0b766;
+  --hint-bg: #2c2214;
+  --sol-bg: #19261f;
+  --plank-1: #3b2a1e; --plank-2: #22170f; --plank-edge: #5a4230;
+  --shadow-book: 0 1px 0 rgba(255,255,255,.08) inset, 0 12px 20px -8px rgba(0,0,0,.8), 0 2px 3px rgba(0,0,0,.5);
+  --shadow-page: 0 0 0 1px rgba(255,220,170,.04), 0 24px 50px -24px rgba(0,0,0,.9);
+  --fig-ink: #d8c9b0; --fig-line: #e5a458; --fig-area: rgba(214,162,74,.2); --fig-guide: #5f4f40;
+  --focus: #e5a458;
+}
+
+body {
+  background: var(--grain), var(--room);
+  color: var(--ink);
+  font: 400 1rem/1.55 'Libre Franklin', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme="dark"] body {
+  background:
+    var(--grain),
+    radial-gradient(1200px 520px at 50% -180px, rgba(229,164,88,.10), transparent 70%),
+    var(--room);
+}
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+::selection { background: rgba(168,119,42,.3); }
+
+.display { font-family: 'Libre Caslon Display', 'Literata', serif; font-weight: 400; letter-spacing: -.005em; }
+.smallcaps { font-variant-caps: all-small-caps; letter-spacing: .08em; font-weight: 600; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  min-height: 44px; padding: 0 18px; border-radius: 4px; border: 1px solid transparent;
+  font: 600 .95rem/1 'Libre Franklin', sans-serif; text-decoration: none; cursor: pointer;
+  transition: background-color .15s ease-out, border-color .15s ease-out, transform .1s ease-out;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-quiet { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+.btn-quiet:hover { background: var(--well); }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: .85rem; }
+.icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 4px; border: 0; background: none; color: var(--ink-2); cursor: pointer; }
+.icon-btn:hover { background: var(--well); color: var(--ink); }
+
+/* Site header */
+.site-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 1180px; margin: 0 auto; padding: 22px 28px 18px;
+}
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand .mark { width: 34px; height: 26px; color: var(--ink); }
+.brand-word { font-family: 'Libre Caslon Display', serif; font-size: 1.6rem; line-height: 1; }
+.head-actions { display: flex; align-items: center; gap: 6px; }
+.head-link { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: .92rem; border-radius: 4px; }
+.head-link:hover { color: var(--ink); background: var(--well); }
+.head-rule { max-width: 1124px; margin: 0 auto; height: 4px; border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule); }
+
+/* Home */
+.home { max-width: 1180px; margin: 0 auto; padding: 0 28px 120px; }
+.resume { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: center; padding: 44px 0 40px; }
+.resume-kicker { margin: 0 0 14px; color: var(--accent); font-size: .95rem; }
+.resume h1 { margin: 0; font-size: clamp(2.6rem, 5.2vw, 4.4rem); line-height: 1.02; }
+.resume-book { margin: 22px 0 0; font: 400 1.25rem/1.45 'Literata', serif; color: var(--ink-2); }
+.resume-book strong { color: var(--ink); font-weight: 600; }
+.resume-progress { display: flex; align-items: center; gap: 14px; margin: 26px 0 30px; max-width: 420px; color: var(--ink-3); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.meter { position: relative; flex: 1; height: 6px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+.meter > span { position: absolute; inset: 0 auto 0 0; background: var(--ribbon); border-radius: 3px; }
+.resume-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.resume-cover { position: relative; justify-self: center; width: 200px; transform: rotate(1.6deg); text-decoration: none; }
+.resume-cover .ribbon-tab { right: 30px; height: 64px; width: 18px; }
+.resume-cover .cover { width: 100%; }
+
+.cover {
+  --cloth: #2f5546;
+  position: relative; display: flex; flex-direction: column; aspect-ratio: 2 / 3; padding: 18px 16px 16px 22px; overflow: hidden;
+  border-radius: 2px 5px 5px 2px; color: #ecd59c; text-align: center;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.34) 0, rgba(0,0,0,.08) 5%, rgba(255,255,255,.10) 6.5%, rgba(0,0,0,0) 9%, rgba(0,0,0,0) 92%, rgba(0,0,0,.12)),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 3px),
+    var(--cloth);
+  box-shadow: var(--shadow-book);
+}
+.cover::before { content: ''; position: absolute; inset: 10px 10px 10px 16px; border: 1px solid rgba(236,213,156,.55); outline: 1px solid rgba(236,213,156,.3); outline-offset: -5px; pointer-events: none; }
+.cover-subject { margin-top: 10px; font: 600 .62rem/1.2 'Libre Franklin', sans-serif; font-variant-caps: all-small-caps; letter-spacing: .18em; font-size: .78rem; opacity: .9; }
+.cover-title { margin: auto 0; font: 400 1.6rem/1.08 'Libre Caslon Display', serif; text-shadow: 0 1px 0 rgba(0,0,0,.35); text-wrap: balance; }
+.cover-author { margin-bottom: 8px; font: italic 400 .8rem/1 'Literata', serif; opacity: .85; }
+.cover.fisica { --cloth: #2f5546; }
+.cover.analisi { --cloth: #7a2b27; }
+.cover.chimica { --cloth: #263a57; }
+.cover.esempio { --cloth: #bf8f3f; color: #22160a; }
+.cover.esempio::before { border-color: rgba(44,29,12,.45); outline-color: rgba(44,29,12,.25); }
+.cover.esempio .cover-title { text-shadow: 0 1px 0 rgba(255,235,190,.35); }
+.cover.geometria { --cloth: #4b3450; }
+[data-theme="dark"] .cover { filter: brightness(.88) saturate(.95); }
+
+.shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-top: 8px; }
+.shelf-head h2 { margin: 0; font-size: 2.2rem; }
+.shelf-count { color: var(--ink-3); font-size: .92rem; }
+.shelf-note { max-width: 62ch; margin: 8px 0 34px; color: var(--ink-2); font: 400 1.05rem/1.55 'Literata', serif; }
+
+.shelf { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.shelf > li { display: flex; flex-direction: column; }
+.shelf-slot { position: relative; display: flex; align-items: flex-end; justify-content: center; padding: 26px 22px 0; min-height: 300px; }
+.shelf-slot::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -18px; height: 18px; z-index: 0;
+  background:
+    linear-gradient(180deg, var(--plank-edge) 0 2px, transparent 2px),
+    repeating-linear-gradient(92deg, rgba(0,0,0,.08) 0 2px, transparent 2px 9px, rgba(255,255,255,.04) 9px 10px, transparent 10px 23px),
+    linear-gradient(180deg, var(--plank-1), var(--plank-2));
+  box-shadow: 0 14px 18px -10px rgba(30,15,5,.55);
+}
+.book-link { position: relative; z-index: 1; display: block; width: 100%; max-width: 168px; text-decoration: none; transition: transform .2s ease-out; }
+.book-link:hover { transform: translateY(-6px); }
+.book-link .cover-title { font-size: 1.35rem; }
+.shelf-caption { padding: 34px 22px 36px; }
+.shelf-caption h3 { margin: 0; font: 600 1.08rem/1.3 'Literata', serif; }
+.shelf-caption h3 a { color: var(--ink); text-decoration: none; }
+.shelf-caption h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.shelf-meta { margin: 4px 0 0; color: var(--ink-3); font-size: .85rem; }
+.source { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--ink-2); font-size: .82rem; }
+.source .i { width: 15px; height: 15px; }
+.resume-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; font-weight: 600; font-size: .88rem; text-decoration: none; }
+.resume-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ribbon-tab { position: absolute; z-index: 2; top: -4px; right: 18px; width: 14px; height: 46px; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%); box-shadow: 0 2px 2px rgba(0,0,0,.2); }
+
+.slot-empty {
+  position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 168px; aspect-ratio: 2 / 3; padding: 16px; text-align: center; cursor: pointer;
+  border: 1.5px dashed var(--rule-strong); border-radius: 3px; color: var(--ink-2); background: transparent;
+  font: 500 .9rem/1.35 'Libre Franklin', sans-serif; transition: background-color .15s ease-out, border-color .15s ease-out;
+}
+.slot-empty:hover { background: var(--well); border-color: var(--accent); color: var(--ink); }
+.slot-empty .i { width: 26px; height: 26px; color: var(--accent); }
+.slot-empty small { color: var(--ink-3); font-size: .78rem; }
+
+.colophon { max-width: 1124px; margin: 0 auto; padding: 28px 0 90px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--ink-3); font-size: .85rem; }
+.colophon nav { display: flex; gap: 18px; }
+.colophon a { color: var(--ink-2); text-decoration: none; }
+.colophon a:hover { text-decoration: underline; }
+
+/* Reader shell */
+.r-top {
+  position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 300px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  height: 64px; padding: 0 16px 0 22px; background: color-mix(in srgb, var(--room) 92%, transparent); backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--rule);
+}
+.r-book { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--ink); text-decoration: none; }
+.r-book .mark { width: 30px; height: 23px; color: var(--ink); flex: none; }
+.r-book-title { font: 400 1.3rem/1 'Libre Caslon Display', serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-sections { display: flex; justify-content: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.r-sections a {
+  position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; height: 64px; white-space: nowrap;
+  color: var(--ink-2); text-decoration: none; font: 500 .92rem/1 'Libre Franklin', sans-serif;
+}
+.r-sections a .i { width: 16px; height: 16px; }
+.r-sections a:hover { color: var(--ink); }
+.r-sections a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+.r-sections a[aria-current="page"]::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--accent); }
+.r-tools { display: flex; gap: 2px; }
+.r-menu { display: none; }
+
+.r-body { display: grid; grid-template-columns: 300px minmax(0, 1fr) 230px; }
+.toc { position: sticky; top: 64px; align-self: start; height: calc(100vh - 64px); overflow-y: auto; padding: 30px 18px 40px 22px; border-right: 1px solid var(--rule); }
+.toc-label, .outline-label { margin: 0 0 12px; color: var(--ink-3); font: 600 .85rem/1 'Libre Franklin', sans-serif; font-variant-caps: all-small-caps; letter-spacing: .1em; font-size: .95rem; }
+.toc-list, .toc-paras, .outline-list { list-style: none; margin: 0; padding: 0; }
+.toc-list > li > a { display: flex; gap: 12px; padding: 8px 10px; border-radius: 4px; color: var(--ink-2); text-decoration: none; font: 400 .98rem/1.35 'Literata', serif; }
+.toc-list > li > a:hover { background: var(--well); color: var(--ink); }
+.toc-n { min-width: 1.4em; color: var(--ink-3); font-variant-numeric: oldstyle-nums; }
+.toc-list > li.is-open > a { color: var(--ink); font-weight: 600; }
+.toc-list > li.is-open > a .toc-n { color: var(--accent); }
+.toc-paras { margin: 2px 0 8px 34px; border-left: 1px solid var(--rule); }
+.toc-paras a { position: relative; display: block; padding: 6px 12px 6px 16px; color: var(--ink-2); text-decoration: none; font-size: .9rem; }
+.toc-paras a:hover { color: var(--ink); }
+.toc-paras .is-here a { color: var(--ink); font-weight: 600; }
+.toc-paras .is-here a::before { content: ''; position: absolute; left: -7px; top: 3px; width: 12px; height: 26px; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); }
+
+.r-main { min-width: 0; padding: 40px 32px 120px; }
+.sheet { max-width: 760px; margin: 0 auto; padding: 64px 72px 56px; background: var(--page); box-shadow: var(--shadow-page); border-radius: 2px; }
+.chapter, .exercises { font: 400 1.16rem/1.72 'Literata', serif; font-optical-sizing: auto; }
+.ch-head { text-align: center; padding-bottom: 34px; margin-bottom: 40px; border-bottom: 1px solid var(--rule); }
+.ch-kicker { margin: 0 0 10px; color: var(--accent); font: 600 1rem/1 'Libre Franklin', sans-serif; font-variant-caps: all-small-caps; letter-spacing: .16em; }
+.ch-title, .sec-title { margin: 0; font: 400 clamp(2.4rem, 5vw, 3.6rem)/1.04 'Libre Caslon Display', serif; text-wrap: balance; }
+.ch-meta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 22px; margin-top: 22px; color: var(--ink-3); font: 400 .88rem/1 'Libre Franklin', sans-serif; }
+.ch-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+.ch-meta .i { width: 15px; height: 15px; }
+.para + .para { margin-top: 56px; }
+.para-h { display: flex; align-items: baseline; gap: 14px; margin: 0 0 18px; font: 400 2rem/1.15 'Libre Caslon Display', serif; }
+.para-num { color: var(--accent); font: 500 1.25rem/1 'Literata', serif; font-variant-numeric: oldstyle-nums; }
+.sub-h { margin: 36px 0 10px; font: 600 1.2rem/1.3 'Literata', serif; font-style: italic; }
+.chapter p { margin: 0 0 1.05em; hyphens: auto; }
+.lede::first-letter { float: left; margin: .08em .1em 0 0; font: 400 4.6em/.8 'Libre Caslon Display', serif; color: var(--accent); }
+.math-display { margin: 6px 0 18px; }
+.formula { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 16px; margin: 26px -20px; padding: 18px 20px 14px; border-radius: 3px; transition: background-color .15s ease-out; }
+.formula:hover, .formula:target { background: var(--well); }
+.formula-math { grid-column: 1; grid-row: 1; }
+.formula-num { grid-column: 2; grid-row: 1; color: var(--ink-2); font: 400 1rem/1 'Literata', serif; font-variant-numeric: lining-nums; }
+.formula-label { grid-column: 1; grid-row: 2; margin-top: 6px; text-align: center; color: var(--ink-3); font: italic 400 .92rem/1.3 'Literata', serif; }
+.xref { color: var(--accent); text-decoration: underline dotted; text-underline-offset: 3px; white-space: nowrap; }
+.fig { margin: 34px 0 8px; }
+.fig-art { width: 100%; height: auto; }
+.fig-area { fill: var(--fig-area); }
+.fig-axis { fill: none; stroke: var(--fig-ink); stroke-width: 1.4; }
+.fig-guide { fill: none; stroke: var(--fig-guide); stroke-width: 1; stroke-dasharray: 4 4; }
+.fig-line { fill: none; stroke: var(--fig-line); stroke-width: 2.6; stroke-linecap: round; }
+.fig-t { fill: var(--fig-ink); font: italic 400 18px 'Literata', serif; }
+.fig-t-strong { font-style: normal; font-weight: 600; font-size: 20px; }
+.fig figcaption { max-width: 56ch; margin: 14px auto 0; text-align: center; color: var(--ink-2); font-size: .92rem; line-height: 1.5; }
+.fig-num { margin-right: 6px; color: var(--ink); font-variant-caps: all-small-caps; letter-spacing: .08em; font-weight: 700; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--rule); }
+.pager-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 4px; color: var(--ink); text-decoration: none; font: 400 1.25rem/1.2 'Libre Caslon Display', serif; }
+.pager-link:hover { background: var(--well); }
+.pager-link small { display: block; margin-bottom: 4px; color: var(--ink-3); font: 600 .85rem/1 'Libre Franklin', sans-serif; font-variant-caps: all-small-caps; letter-spacing: .1em; }
+.pager-next { justify-content: flex-end; text-align: right; }
+
+.outline { position: sticky; top: 64px; align-self: start; padding: 40px 22px 0 8px; }
+.outline-list a { display: flex; gap: 10px; padding: 5px 0; color: var(--ink-3); text-decoration: none; font-size: .88rem; line-height: 1.35; }
+.outline-list a span { min-width: 2em; font-variant-numeric: tabular-nums; }
+.outline-list a:hover { color: var(--ink); }
+.outline-list .is-here a { color: var(--ink); font-weight: 600; }
+.outline-progress { display: flex; align-items: center; gap: 10px; margin-top: 18px; color: var(--ink-3); font-size: .8rem; font-variant-numeric: tabular-nums; }
+
+/* Exercises */
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 28px; margin-bottom: 36px; border-bottom: 1px solid var(--rule); }
+.sec-head .ch-kicker { text-align: left; }
+.sec-meta { margin: 10px 0 0; color: var(--ink-3); font: 400 .9rem/1 'Libre Franklin', sans-serif; }
+.ex { padding: 0 0 36px; }
+.ex + .ex { padding-top: 36px; border-top: 1px solid var(--rule); }
+.ex-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 12px; }
+.ex-id { margin: 0; font: 400 1.6rem/1.1 'Libre Caslon Display', serif; }
+.ex-ch { color: var(--ink-3); font: 400 .85rem/1 'Libre Franklin', sans-serif; }
+.diff { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; color: var(--ink-2); font: 600 .82rem/1 'Libre Franklin', sans-serif; }
+.diff::before { content: ''; width: 34px; height: 8px; background: radial-gradient(circle 4px at 4px 4px, var(--ribbon) 98%, transparent) 0 0 / 13px 8px repeat-x; -webkit-mask: linear-gradient(90deg, #000 var(--fill), rgba(0,0,0,.25) var(--fill)); mask: linear-gradient(90deg, #000 var(--fill), rgba(0,0,0,.25) var(--fill)); }
+.diff-1 { --fill: 8px; } .diff-2 { --fill: 21px; } .diff-3 { --fill: 34px; }
+.ex-q p { margin: 0 0 16px; }
+.reveal { margin-top: 10px; }
+.reveal summary { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; margin-left: -12px; border-radius: 4px; color: var(--accent); font: 600 .92rem/1 'Libre Franklin', sans-serif; }
+.reveal summary:hover { background: var(--well); }
+.reveal summary .i { width: 17px; height: 17px; }
+.reveal[open] summary { color: var(--ink); }
+.reveal-body { margin-top: 6px; padding: 14px 18px; border-radius: 3px; font-size: 1.05rem; }
+.reveal-body p { margin: 0; }
+.reveal-hint .reveal-body { background: var(--hint-bg); font-style: italic; }
+.reveal-sol .reveal-body { background: var(--sol-bg); }
+
+@media (max-width: 1240px) { .r-body { grid-template-columns: 270px minmax(0, 1fr); } .outline { display: none; } .r-top { grid-template-columns: 270px minmax(0,1fr) auto; } }
+@media (max-width: 900px) {
+  .r-top { grid-template-columns: auto minmax(0, 1fr) auto; height: 56px; padding: 0 8px; }
+  .r-menu { display: inline-grid; }
+  .r-sections { position: fixed; left: 0; right: 0; top: 56px; justify-content: flex-start; height: 46px; padding: 0 8px; background: var(--room); border-bottom: 1px solid var(--rule); }
+  .r-sections a { height: 46px; font-size: .88rem; padding: 0 10px; }
+  .r-body { grid-template-columns: 1fr; padding-top: 46px; }
+  .toc { display: none; }
+  .drawer-open .toc { display: block; position: fixed; z-index: 30; top: 56px; left: 0; width: min(320px, 86vw); height: calc(100vh - 56px); background: var(--page); box-shadow: var(--shadow-page); }
+  .r-main { padding: 0; }
+  .sheet { padding: 40px 22px 48px; border-radius: 0; box-shadow: none; }
+  .chapter, .exercises { font-size: 1.08rem; line-height: 1.66; }
+  .formula { margin: 20px -10px; padding: 14px 10px 10px; column-gap: 8px; }
+  .para-h { font-size: 1.65rem; }
+  .pager { grid-template-columns: 1fr; }
+  .pager-next { justify-content: flex-start; text-align: left; flex-direction: row-reverse; }
+  .sec-head { flex-direction: column; align-items: flex-start; }
+  .resume { grid-template-columns: 1fr; gap: 28px; padding: 34px 0 52px; }
+  .resume-cover { grid-row: 1; width: 150px; justify-self: start; }
+  .site-head { padding: 16px 18px 14px; }
+  .head-rule { margin: 0 18px; }
+  .home { padding: 0 18px 100px; }
+  .colophon { margin: 0 18px; }
+  .head-long { display: none; }
+}
+@media (max-width: 560px) {
+  .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shelf-slot { min-height: 0; padding: 22px 14px 0; }
+  .shelf-caption { padding: 30px 14px 28px; }
+  .book-link .cover-title { font-size: 1.05rem; }
+  .cover { padding: 12px 10px 10px 16px; }
+  .shelf-head h2 { font-size: 1.8rem; }
+  .resume-actions .btn { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div data-view="home">
+  <header class="site-head">
+    <a class="brand" href="#home" aria-label="Smartbook, la tua libreria"><svg class="mark" viewBox="8 26 84 62" aria-hidden="true"><path d="M44,66H56V84L50,79.5L44,84Z" fill="var(--ribbon)"/><path d="M14,36C30,34 42,36 50,44C58,36 70,34 86,36" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" opacity=".55"/><path d="M14,54C30,52 42,54 50,62C58,54 70,52 86,54" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/></svg><span class="brand-word">Smartbook</span></a>
+    <div class="head-actions">
+      <a class="head-link" href="#home"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg><span class="head-long">Riscatta codice</span></a>
+      <a class="head-link" href="#home"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg><span>Accedi</span></a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+    </div>
+  </header>
+  <div class="head-rule" role="presentation"></div>
+
+  <main class="home" id="main-content">
+    <section class="resume" aria-labelledby="resume-title">
+      <div>
+        <p class="resume-kicker smallcaps">Continua a leggere</p>
+        <h1 class="display" id="resume-title">Cinematica del punto</h1>
+        <p class="resume-book"><strong>Fisica 1</strong>, capitolo 2. L’ultima volta eri al paragrafo 2.2, <em>Moto rettilineo</em>.</p>
+        <div class="resume-progress"><div class="meter" role="meter" aria-label="Letto del capitolo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="24"><span style="width:24%"></span></div><span>24 % del capitolo</span></div>
+        <div class="resume-actions">
+          <a class="btn btn-primary" href="#capitolo">Riprendi dal paragrafo 2.2</a>
+          <a class="btn btn-quiet" href="#capitolo">Apri l’indice</a>
+        </div>
+      </div>
+      <a class="resume-cover" href="#capitolo" aria-hidden="true" tabindex="-1"><span class="ribbon-tab"></span>
+        <div class="cover fisica"><span class="cover-subject">Fisica</span><span class="cover-title">Fisica 1</span><span class="cover-author">Tost</span></div>
+      </a>
+    </section>
+
+    <section aria-labelledby="shelf-title">
+      <div class="shelf-head">
+        <h2 class="display" id="shelf-title">Sullo scaffale</h2>
+        <span class="shelf-count">5 libri</span>
+      </div>
+      <p class="shelf-note">Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.</p>
+      <ul class="shelf">
+        <li>
+          <div class="shelf-slot"><a class="book-link" href="#capitolo" aria-label="Fisica 1"><span class="ribbon-tab" aria-hidden="true"></span><div class="cover fisica"><span class="cover-subject">Fisica</span><span class="cover-title">Fisica 1</span><span class="cover-author">Tost</span></div></a></div>
+          <div class="shelf-caption"><h3><a href="#capitolo">Fisica 1</a></h3><p class="shelf-meta">Tost · v1.1.0</p><span class="source"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Dal catalogo PoliTost</span><br><a class="resume-link" href="#capitolo">Riprendi · Capitolo 2 <svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a></div>
+        </li>
+        <li>
+          <div class="shelf-slot"><a class="book-link" href="#capitolo" aria-label="Analisi Matematica 1"><div class="cover analisi"><span class="cover-subject">Analisi 1</span><span class="cover-title">Analisi Matematica 1</span><span class="cover-author">Tost</span></div></a></div>
+          <div class="shelf-caption"><h3><a href="#capitolo">Analisi Matematica 1</a></h3><p class="shelf-meta">Tost · v1.0.1</p><span class="source"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Dal catalogo PoliTost</span></div>
+        </li>
+        <li>
+          <div class="shelf-slot"><a class="book-link" href="#capitolo" aria-label="Chimica di base"><div class="cover chimica"><span class="cover-subject">Chimica</span><span class="cover-title">Chimica di base</span><span class="cover-author">Tost</span></div></a></div>
+          <div class="shelf-caption"><h3><a href="#capitolo">Chimica di base</a></h3><p class="shelf-meta">Tost · v1.0.0</p><span class="source"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> Dal catalogo PoliTost</span></div>
+        </li>
+        <li>
+          <div class="shelf-slot"><a class="book-link" href="#capitolo" aria-label="Geometria e algebra lineare"><div class="cover geometria"><span class="cover-subject">Geometria</span><span class="cover-title">Geometria e algebra lineare</span><span class="cover-author">Dip. di Matematica</span></div></a></div>
+          <div class="shelf-caption"><h3><a href="#capitolo">Geometria e algebra lineare</a></h3><p class="shelf-meta">Dip. di Matematica · v2.0</p><span class="source"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg> Importato su questo dispositivo</span></div>
+        </li>
+        <li>
+          <div class="shelf-slot"><a class="book-link" href="#capitolo" aria-label="Guida di esempio"><div class="cover esempio"><span class="cover-subject">Esempio</span><span class="cover-title">Guida di esempio</span><span class="cover-author">PoliTost</span></div></a></div>
+          <div class="shelf-caption"><h3><a href="#capitolo">Guida di esempio</a></h3><p class="shelf-meta">PoliTost · v1.0.1</p><span class="source"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg> Incluso nell’app</span></div>
+        </li>
+        <li>
+          <div class="shelf-slot"><button class="slot-empty" type="button"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg><span>Aggiungi un libro</span><small>Trascina qui un file .ptsb o scegli dal computer</small></button></div>
+          <div class="shelf-caption"><h3>Hai un libro digitale?</h3><p class="shelf-meta">Se hai ricevuto un file dal docente o dall’editore, importalo qui. Resta su questo dispositivo.</p></div>
+        </li>
+      </ul>
+    </section>
+  </main>
+  <footer class="colophon">
+    <span>Smartbook · un progetto PoliTost</span>
+    <nav aria-label="Note legali"><a href="#home">Guida</a><a href="#home">Privacy</a><a href="#home">Termini</a></nav>
+  </footer>
+</div>
+
+<!-- CHAPTER -->
+<div data-view="capitolo">
+  <header class="r-top">
+    <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16"/></svg></button>
+    <a class="r-book" href="#home" aria-label="Torna alla libreria"><svg class="mark" viewBox="8 26 84 62" aria-hidden="true"><path d="M44,66H56V84L50,79.5L44,84Z" fill="var(--ribbon)"/><path d="M14,36C30,34 42,36 50,44C58,36 70,34 86,36" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" opacity=".55"/><path d="M14,54C30,52 42,54 50,62C58,54 70,52 86,54" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/></svg><span class="r-book-title">Fisica 1</span></a>
+    <nav class="r-sections" aria-label="Sezioni del libro">
+      <a href="#capitolo" aria-current="page"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg> Capitoli</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"/></svg> Formulario</a>
+      <a href="#esercizio"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> Esercizi</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg> Prove d’esame</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></svg> Laboratorio</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg> Grafici e calcoli</a>
+    </nav>
+    <div class="r-tools">
+      <button class="icon-btn" type="button" aria-label="Stampa"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+    </div>
+  </header>
+  <div class="r-body">
+    <nav class="toc" aria-label="Indice del libro">
+  <p class="toc-label">Indice</p>
+  <ol class="toc-list">
+    <li><a href="#capitolo"><span class="toc-n">1</span> Misure e vettori</a></li>
+    <li class="is-open"><a href="#capitolo" aria-current="page"><span class="toc-n">2</span> Cinematica del punto</a>
+      <ol class="toc-paras">
+        <li><a href="#p1">Introduzione</a></li>
+        <li class="is-here"><a href="#p2">Moto rettilineo</a></li>
+        <li><a href="#p1">Moto verticale</a></li>
+        <li><a href="#p1">Moto armonico</a></li>
+        <li><a href="#p1">Moto nel piano</a></li>
+        <li><a href="#p1">Moto circolare</a></li>
+        <li><a href="#p1">Moto parabolico</a></li>
+      </ol>
+    </li>
+    <li><a href="#capitolo"><span class="toc-n">3</span> Dinamica del punto</a></li>
+    <li><a href="#capitolo"><span class="toc-n">4</span> Lavoro ed energia</a></li>
+    <li><a href="#capitolo"><span class="toc-n">5</span> Momento angolare</a></li>
+    <li><a href="#capitolo"><span class="toc-n">6</span> Moti relativi</a></li>
+    <li><a href="#capitolo"><span class="toc-n">7</span> Sistemi di punti</a></li>
+    <li><a href="#capitolo"><span class="toc-n">8</span> Corpo rigido: cinematica e inerzia</a></li>
+    <li><a href="#capitolo"><span class="toc-n">9</span> Dinamica del corpo rigido</a></li>
+    <li><a href="#capitolo"><span class="toc-n">10</span> Gravitazione ed elettrostatica</a></li>
+  </ol>
+</nav>
+
+    <main class="r-main"><div class="sheet"><article class="chapter" aria-labelledby="ch-title">
+  <header class="ch-head">
+    <p class="ch-kicker">Capitolo 2</p>
+    <h1 class="ch-title" id="ch-title">Cinematica del punto</h1>
+    <div class="ch-meta">
+      <span><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg> 7 paragrafi</span>
+      <span><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> circa 45 min</span>
+      <button class="btn btn-quiet btn-sm" type="button"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Versione stampabile</button>
+    </div>
+  </header>
+
+  <section class="para" id="p1">
+    <h2 class="para-h"><span class="para-num">2.1</span> Introduzione</h2>
+    <p class="lede">Descrivere il moto significa capire come cambia la posizione di un punto nel tempo e collegare quel cambiamento alla velocità e all’accelerazione. Questi strumenti permettono di interpretare situazioni quotidiane e di risolvere problemi di meccanica con un metodo comune, dai movimenti lungo una linea alle traiettorie nel piano.</p>
+    <p>Per affrontare il capitolo servono le idee di misura e vettore: saper indicare grandezze, unità di misura, direzioni e versi. Da qui si costruiscono le descrizioni del moto in coordinate cartesiane, polari e intrinseche, distinguendo la variazione del modulo della velocità dal cambiamento della sua direzione.</p>
+  </section>
+
+  <section class="para" id="p2">
+    <h2 class="para-h"><span class="para-num">2.2</span> Moto rettilineo</h2>
+    <p>Il moto rettilineo è il caso più semplice di moto di un punto materiale: la traiettoria è una retta, sulla quale si fissano un’origine e un verso, e l’intera informazione cinematica è contenuta in un’unica funzione scalare <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">x(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span>, detta <em>legge oraria</em>.</p>
+
+    <h3 class="sub-h">Dalla posizione alla velocità e all’accelerazione</h3>
+    <p>La <strong>velocità media</strong> nell’intervallo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><msub><mi>t</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>t</mi><mn>2</mn></msub><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[t_1, t_2]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">]</span></span></span></span> misura lo spostamento complessivo diviso il tempo impiegato,</p>
+    <div class="math-display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>v</mi><mi>m</mi></msub><mo>=</mo><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mn>2</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub></mrow><mrow><msub><mi>t</mi><mn>2</mn></msub><mo>−</mo><msub><mi>t</mi><mn>1</mn></msub></mrow></mfrac><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">v_m = \frac{\Delta x}{\Delta t} = \frac{x_2 - x_1}{t_2 - t_1},</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">Δ</span><span class="mord mathnormal">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0963em;vertical-align:-0.836em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.2603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span></span></span></span></span></div>
+    <p>ma non dà informazioni su come il moto si è svolto all’interno dell’intervallo. La <strong>velocità istantanea</strong> è il limite della velocità media su un intervallo che tende a zero:</p>
+
+    <figure class="formula" id="f-2.1">
+      <div class="formula-math"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>v</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mrow><mi>lim</mi><mo>⁡</mo></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi><mo>→</mo><mn>0</mn></mrow></munder><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mi>d</mi><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">v(t) = \lim_{\Delta t \to 0} \frac{\Delta x(t)}{\Delta t} = \frac{dx(t)}{dt}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1713em;vertical-align:-0.7443em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-2.3557em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">Δ</span><span class="mord mathnormal mtight">t</span><span class="mrel mtight">→</span><span class="mord mtight">0</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">lim</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7443em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">Δ</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.113em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal">t</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div>
+      <figcaption class="formula-label">Velocità istantanea</figcaption>
+      <span class="formula-num">(2.1)</span>
+    </figure>
+
+    <p>Il segno di <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">v(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span> indica il verso di percorrenza rispetto al riferimento scelto. Analogamente, l’<strong>accelerazione istantanea</strong> è la derivata della velocità rispetto al tempo, cioè la derivata seconda della posizione:</p>
+
+    <figure class="formula" id="f-2.2">
+      <div class="formula-math"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>a</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>d</mi><mi>v</mi></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><mi>x</mi></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac></mrow><annotation encoding="application/x-tex">a(t) = \frac{dv}{dt} = \frac{d^2x}{dt^2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">a</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0574em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal">t</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1771em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div>
+      <figcaption class="formula-label">Accelerazione istantanea</figcaption>
+      <span class="formula-num">(2.2)</span>
+    </figure>
+
+    <h3 class="sub-h">Dall’integrazione alla legge oraria</h3>
+    <p>Il percorso inverso richiede un’integrazione. Scrivendo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>x</mi><mo>=</mo><mi>v</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mtext> </mtext><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">dx = v(t)\,dt</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">t</span></span></span></span> e integrando tra l’istante iniziale <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">t_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> e l’istante generico <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> si ottiene la legge oraria valida per <strong>qualunque</strong> moto rettilineo, purché sia nota <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">v(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span>:</p>
+
+    <figure class="formula" id="f-2.3">
+      <div class="formula-math"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><msubsup><mo>∫</mo><msub><mi>t</mi><mn>0</mn></msub><mi>t</mi></msubsup><mi>v</mi><mo stretchy="false">(</mo><msup><mi>t</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo stretchy="false">)</mo><mtext> </mtext><mi>d</mi><msup><mi>t</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">x(t) = x_0 + \int_{t_0}^{t} v(t&#x27;)\,dt&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.5555em;vertical-align:-1.012em;"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.44445em;position:relative;top:-0.0011em;">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5435em;"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3173em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.8129em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.012em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8019em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8019em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span></span></div>
+      <figcaption class="formula-label">Legge oraria per integrazione della velocità</figcaption>
+      <span class="formula-num">(2.3)</span>
+    </figure>
+
+    <p>Geometricamente, l’integrale della <a class="xref" href="#f-2.3">(2.3)</a> è l’area sottesa dal grafico di <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">v(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span> tra <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">t_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">t_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7651em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>, e rappresenta lo spostamento <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\Delta x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">x</span></span></span></span>: non la distanza percorsa in modulo, ma la somma algebrica degli spostamenti, con segno.</p>
+
+    <figure class="fig">
+      <svg class="fig-art" viewBox="0 0 560 300" role="img" aria-labelledby="fig21-cap">
+        <path class="fig-area" d="M180,260 L180,160.9 L400,89.1 L400,260 Z"/>
+        <path class="fig-axis" d="M60,276 L60,24 M44,260 L536,260"/>
+        <path class="fig-axis" d="M54,32 L60,22 L66,32 M526,254 L538,260 L526,266"/>
+        <path class="fig-guide" d="M180,260 L180,160.9 M400,260 L400,89.1"/>
+        <path class="fig-line" d="M60,200 L520,50"/>
+        <text class="fig-t" x="72" y="34">v</text>
+        <text class="fig-t" x="522" y="286">t</text>
+        <text class="fig-t" x="20" y="205">v₀</text>
+        <text class="fig-t" x="172" y="286">t₁</text>
+        <text class="fig-t" x="392" y="286">t₂</text>
+        <text class="fig-t fig-t-strong" x="268" y="210">Δx</text>
+      </svg>
+      <figcaption id="fig21-cap"><span class="fig-num">Fig. 2.1</span> Nel moto uniformemente accelerato la velocità cresce linearmente nel tempo; l’area sotto la retta tra due istanti è lo spostamento <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\Delta x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">x</span></span></span></span>.</figcaption>
+    </figure>
+  </section>
+
+  <nav class="pager" aria-label="Capitoli vicini">
+    <a class="pager-link" href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span><small>Capitolo 1</small>Misure e vettori</span></a>
+    <a class="pager-link pager-next" href="#capitolo"><span><small>Capitolo 3</small>Dinamica del punto</span><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+  </nav>
+</article>
+</div></main>
+    <aside class="outline" aria-label="In questo capitolo">
+  <p class="outline-label">In questo capitolo</p>
+  <ol class="outline-list">
+    <li><a href="#p1"><span>2.1</span> Introduzione</a></li>
+    <li class="is-here"><a href="#p2" aria-current="location"><span>2.2</span> Moto rettilineo</a></li>
+    <li><a href="#p2"><span>2.3</span> Moto verticale</a></li>
+    <li><a href="#p2"><span>2.4</span> Moto armonico</a></li>
+    <li><a href="#p2"><span>2.5</span> Moto nel piano</a></li>
+    <li><a href="#p2"><span>2.6</span> Moto circolare</a></li>
+    <li><a href="#p2"><span>2.7</span> Moto parabolico</a></li>
+  </ol>
+  <div class="outline-progress">
+    <div class="meter" role="meter" aria-label="Letto del capitolo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="24"><span style="width:24%"></span></div>
+    <span class="outline-pct">24 %</span>
+  </div>
+</aside>
+
+  </div>
+</div>
+
+<!-- EXERCISES -->
+<div data-view="esercizio">
+  <header class="r-top">
+    <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M4 6h16M4 18h16"/></svg></button>
+    <a class="r-book" href="#home" aria-label="Torna alla libreria"><svg class="mark" viewBox="8 26 84 62" aria-hidden="true"><path d="M44,66H56V84L50,79.5L44,84Z" fill="var(--ribbon)"/><path d="M14,36C30,34 42,36 50,44C58,36 70,34 86,36" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" opacity=".55"/><path d="M14,54C30,52 42,54 50,62C58,54 70,52 86,54" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/></svg><span class="r-book-title">Fisica 1</span></a>
+    <nav class="r-sections" aria-label="Sezioni del libro">
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg> Capitoli</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"/></svg> Formulario</a>
+      <a href="#esercizio" aria-current="page"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> Esercizi</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg> Prove d’esame</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></svg> Laboratorio</a>
+      <a href="#capitolo"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg> Grafici e calcoli</a>
+    </nav>
+    <div class="r-tools">
+      <button class="icon-btn" type="button" aria-label="Stampa"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+    </div>
+  </header>
+  <div class="r-body">
+    <nav class="toc" aria-label="Indice del libro">
+  <p class="toc-label">Indice</p>
+  <ol class="toc-list">
+    <li><a href="#capitolo"><span class="toc-n">1</span> Misure e vettori</a></li>
+    <li class="is-open"><a href="#capitolo" aria-current="page"><span class="toc-n">2</span> Cinematica del punto</a>
+      <ol class="toc-paras">
+        <li><a href="#p1">Introduzione</a></li>
+        <li class="is-here"><a href="#p2">Moto rettilineo</a></li>
+        <li><a href="#p1">Moto verticale</a></li>
+        <li><a href="#p1">Moto armonico</a></li>
+        <li><a href="#p1">Moto nel piano</a></li>
+        <li><a href="#p1">Moto circolare</a></li>
+        <li><a href="#p1">Moto parabolico</a></li>
+      </ol>
+    </li>
+    <li><a href="#capitolo"><span class="toc-n">3</span> Dinamica del punto</a></li>
+    <li><a href="#capitolo"><span class="toc-n">4</span> Lavoro ed energia</a></li>
+    <li><a href="#capitolo"><span class="toc-n">5</span> Momento angolare</a></li>
+    <li><a href="#capitolo"><span class="toc-n">6</span> Moti relativi</a></li>
+    <li><a href="#capitolo"><span class="toc-n">7</span> Sistemi di punti</a></li>
+    <li><a href="#capitolo"><span class="toc-n">8</span> Corpo rigido: cinematica e inerzia</a></li>
+    <li><a href="#capitolo"><span class="toc-n">9</span> Dinamica del corpo rigido</a></li>
+    <li><a href="#capitolo"><span class="toc-n">10</span> Gravitazione ed elettrostatica</a></li>
+  </ol>
+</nav>
+
+    <main class="r-main"><div class="sheet"><section class="exercises" aria-labelledby="ex-title">
+  <header class="sec-head">
+    <div>
+      <p class="ch-kicker">Fisica 1</p>
+      <h1 class="sec-title" id="ex-title">Esercizi</h1>
+      <p class="sec-meta">Capitolo 2 · 6 esercizi</p>
+    </div>
+    <button class="btn btn-quiet btn-sm" type="button"><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Versione stampabile</button>
+  </header>
+
+  <article class="ex" aria-labelledby="e23">
+    <header class="ex-head">
+      <h2 class="ex-id" id="e23">Esercizio E2.3</h2>
+      <span class="ex-ch">Capitolo 2</span>
+      <span class="diff diff-1">Facile</span>
+    </header>
+    <div class="ex-q"><p>Un punto percorre una circonferenza di raggio <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0,5</mn><mtext> </mtext><mi mathvariant="normal">m</mi></mrow><annotation encoding="application/x-tex">0{,}5\,\mathrm{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">5</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">m</span></span></span></span> compiendo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>120</mn></mrow><annotation encoding="application/x-tex">120</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">120</span></span></span></span> giri al minuto con moto circolare uniforme. Determina la velocità angolare, il modulo della velocità lineare e il modulo dell’accelerazione centripeta.</p></div>
+    <details class="reveal reveal-hint" open>
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg> <span>Suggerimento</span></summary>
+      <div class="reveal-body"><p>Converti i giri al minuto in giri al secondo. Poi usa le relazioni tra velocità angolare, velocità lineare e accelerazione centripeta.</p></div>
+    </details>
+    <details class="reveal reveal-sol">
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> <span>Soluzione</span></summary>
+      <div class="reveal-body"><p>La frequenza è <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>=</mo><mn>120</mn><mi mathvariant="normal">/</mi><mn>60</mn><mo>=</mo><mn>2</mn><mtext> </mtext><mrow><mi mathvariant="normal">H</mi><mi mathvariant="normal">z</mi></mrow></mrow><annotation encoding="application/x-tex">f=120/60=2\,\mathrm{Hz}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">120/60</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">Hz</span></span></span></span></span>, quindi <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mn>2</mn><mi>π</mi><mi>f</mi><mo>=</mo><mn>4</mn><mi>π</mi><mtext> </mtext><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">\omega=2\pi f=4\pi\,\mathrm{rad/s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">rad/s</span></span></span></span></span>. La velocità lineare vale <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><mi>ω</mi><mi>r</mi><mo>=</mo><mn>2</mn><mi>π</mi><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">v=\omega r=2\pi\,\mathrm{m/s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/s</span></span></span></span></span> e l’accelerazione centripeta è <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mi>c</mi></msub><mo>=</mo><msup><mi>ω</mi><mn>2</mn></msup><mi>r</mi><mo>=</mo><mn>8</mn><msup><mi>π</mi><mn>2</mn></msup><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><msup><mi mathvariant="normal">s</mi><mn>2</mn></msup></mrow></mrow><annotation encoding="application/x-tex">a_c=\omega^2r=8\pi^2\,\mathrm{m/s^2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">c</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord">8</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/</span><span class="mord"><span class="mord mathrm">s</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>.</p></div>
+    </details>
+  </article>
+
+  <article class="ex" aria-labelledby="e24">
+    <header class="ex-head">
+      <h2 class="ex-id" id="e24">Esercizio E2.4</h2>
+      <span class="ex-ch">Capitolo 2</span>
+      <span class="diff diff-1">Facile</span>
+    </header>
+    <div class="ex-q"><p>La posizione di un punto nel piano è descritta da <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>t</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x(t)=t^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">x</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><mn>2</mn><mi>t</mi></mrow><annotation encoding="application/x-tex">y(t)=2t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">t</span></span></span></span>, con coordinate in metri e tempo in secondi. Determina i vettori velocità e accelerazione all’istante <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>1</mn><mtext> </mtext><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">t=1\,\mathrm{s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">s</span></span></span></span> e il modulo della velocità.</p></div>
+    <details class="reveal reveal-hint">
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg> <span>Suggerimento</span></summary>
+      <div class="reveal-body"><p>Deriva separatamente le due coordinate una volta per ottenere la velocità e due volte per ottenere l’accelerazione.</p></div>
+    </details>
+    <details class="reveal reveal-sol" open>
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> <span>Soluzione</span></summary>
+      <div class="reveal-body"><p>Le componenti della velocità sono <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>x</mi></msub><mo>=</mo><mn>2</mn><mi>t</mi></mrow><annotation encoding="application/x-tex">v_x=2t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">t</span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>y</mi></msub><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">v_y=2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7167em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">y</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span>. A <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>1</mn><mtext> </mtext><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">t=1\,\mathrm{s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">s</span></span></span></span>, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>v</mi><mo>⃗</mo></mover><mo>=</mo><mo stretchy="false">(</mo><mn>2</mn><mo separator="true">,</mo><mn>2</mn><mo stretchy="false">)</mo><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">\vec v=(2,2)\,\mathrm{m/s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.714em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.714em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2077em;"><span class="overlay" style="height:0.714em;width:0.471em;"><svg xmlns="http://www.w3.org/2000/svg" width="0.471em" height="0.714em" style="width:0.471em" viewBox="0 0 471 714" preserveAspectRatio="xMinYMin"><path d="M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5
+3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11
+10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63
+-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1
+-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59
+H213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359
+c-16-25.333-24-45-24-59z"/></svg></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">2</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/s</span></span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><mover accent="true"><mi>v</mi><mo>⃗</mo></mover><mi mathvariant="normal">∣</mi><mo>=</mo><mn>2</mn><msqrt><mn>2</mn></msqrt><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">|\vec v|=2\sqrt2\,\mathrm{m/s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.714em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2077em;"><span class="overlay" style="height:0.714em;width:0.471em;"><svg xmlns="http://www.w3.org/2000/svg" width="0.471em" height="0.714em" style="width:0.471em" viewBox="0 0 471 714" preserveAspectRatio="xMinYMin"><path d="M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5
+3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11
+10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63
+-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1
+-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59
+H213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359
+c-16-25.333-24-45-24-59z"/></svg></span></span></span></span></span></span></span><span class="mord">∣</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.1572em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9072em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;">2</span></span><span style="top:-2.8672em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1328em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/s</span></span></span></span></span>. L’accelerazione è <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>a</mi><mo>⃗</mo></mover><mo>=</mo><mo stretchy="false">(</mo><mn>2</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><msup><mi mathvariant="normal">s</mi><mn>2</mn></msup></mrow></mrow><annotation encoding="application/x-tex">\vec a=(2,0)\,\mathrm{m/s^2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.714em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.714em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal">a</span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.2355em;"><span class="overlay" style="height:0.714em;width:0.471em;"><svg xmlns="http://www.w3.org/2000/svg" width="0.471em" height="0.714em" style="width:0.471em" viewBox="0 0 471 714" preserveAspectRatio="xMinYMin"><path d="M377 20c0-5.333 1.833-10 5.5-14S391 0 397 0c4.667 0 8.667 1.667 12 5
+3.333 2.667 6.667 9 10 19 6.667 24.667 20.333 43.667 41 57 7.333 4.667 11
+10.667 11 18 0 6-1 10-3 12s-6.667 5-14 9c-28.667 14.667-53.667 35.667-75 63
+-1.333 1.333-3.167 3.5-5.5 6.5s-4 4.833-5 5.5c-1 .667-2.5 1.333-4.5 2s-4.333 1
+-7 1c-4.667 0-9.167-1.833-13.5-5.5S337 184 337 178c0-12.667 15.667-32.333 47-59
+H213l-171-1c-8.667-6-13-12.333-13-19 0-4.667 4.333-11.333 13-20h359
+c-16-25.333-24-45-24-59z"/></svg></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/</span><span class="mord"><span class="mord mathrm">s</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>.</p></div>
+    </details>
+  </article>
+
+  <article class="ex" aria-labelledby="e21">
+    <header class="ex-head">
+      <h2 class="ex-id" id="e21">Esercizio E2.1</h2>
+      <span class="ex-ch">Capitolo 2</span>
+      <span class="diff diff-2">Medio</span>
+    </header>
+    <div class="ex-q"><p>Un oscillatore armonico ha ampiezza <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo>=</mo><mn>0,12</mn><mtext> </mtext><mi mathvariant="normal">m</mi></mrow><annotation encoding="application/x-tex">A=0{,}12\,\mathrm{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">12</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">m</span></span></span></span> e periodo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mn>0,8</mn><mtext> </mtext><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">T=0{,}8\,\mathrm{s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">8</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">s</span></span></span></span>. Quando si trova nella posizione <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0,072</mn><mtext> </mtext><mi mathvariant="normal">m</mi></mrow><annotation encoding="application/x-tex">x=0{,}072\,\mathrm{m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">072</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathrm">m</span></span></span></span> si muove nel verso positivo. Determina la velocità in quell’istante e l’accelerazione.</p></div>
+    <details class="reveal reveal-hint">
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg> <span>Suggerimento</span></summary>
+      <div class="reveal-body"><p>Calcola prima la pulsazione dal periodo. Per la velocità usa la relazione tra velocità e posizione <a class="xref" href="#esercizio">(2.19)</a>.</p></div>
+    </details>
+    <details class="reveal reveal-sol">
+      <summary><svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> <span>Soluzione</span></summary>
+      <div class="reveal-body"><p>La pulsazione vale <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ω</mi><mo>=</mo><mn>2</mn><mi>π</mi><mi mathvariant="normal">/</mi><mi>T</mi><mo>=</mo><mn>5</mn><mi>π</mi><mi mathvariant="normal">/</mi><mn>2</mn><mtext> </mtext><msup><mi mathvariant="normal">s</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\omega=2\pi/T=5\pi/2\,\mathrm{s^{-1}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord">5</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mord">/2</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">s</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathrm mtight">1</span></span></span></span></span></span></span></span></span></span></span></span>, da cui <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><mi>ω</mi><msqrt><mrow><msup><mi>A</mi><mn>2</mn></msup><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msqrt><mo>=</mo><mn>0,24</mn><mi>π</mi><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">v=\omega\sqrt{A^2-x^2}=0{,}24\pi\,\mathrm{m/s}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.04em;vertical-align:-0.1266em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9134em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord"><span class="mord mathnormal">A</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-2.8734em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1266em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">24</span><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/s</span></span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>=</mo><mo>−</mo><msup><mi>ω</mi><mn>2</mn></msup><mi>x</mi><mo>=</mo><mo>−</mo><mn>0,45</mn><msup><mi>π</mi><mn>2</mn></msup><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><msup><mi mathvariant="normal">s</mi><mn>2</mn></msup></mrow></mrow><annotation encoding="application/x-tex">a=-\omega^2x=-0{,}45\pi^2\,\mathrm{m/s^2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord">−</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">ω</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord">−</span><span class="mord">0</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">45</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">π</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">m/</span><span class="mord"><span class="mord mathrm">s</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>.</p></div>
+    </details>
+  </article>
+</section>
+</div></main>
+  </div>
+</div>
+
+<div class="mockbar" role="toolbar" aria-label="Controlli del mockup">
+  <span class="mockbar-group" aria-label="Direzione">
+    <a href="a-libreria.html" data-dir="a-libreria">A Libreria</a>
+    <a href="b-carta.html" data-dir="b-carta">B Carta</a>
+    <a href="c-ambra.html" data-dir="c-ambra">C Ambra</a>
+  </span>
+  <span class="mockbar-group" aria-label="Schermata">
+    <a href="#home" data-view-link="home">Home</a>
+    <a href="#capitolo" data-view-link="capitolo">Capitolo</a>
+    <a href="#esercizio" data-view-link="esercizio">Esercizi</a>
+  </span>
+  <button type="button" class="mockbar-theme" data-theme-toggle>Tema</button>
+</div>
+
+<script>// Mockup-only: switches screens by hash, theme by ?theme= or the toolbar, and hides the toolbar with ?shot.
+(function () {
+  var params = new URLSearchParams(location.search);
+  var root = document.documentElement;
+  var stored = null;
+  try { stored = localStorage.getItem('ptsb-mock-theme'); } catch (e) { stored = null; }
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = params.get('theme') || stored || (prefersDark ? 'dark' : 'light');
+  if (params.has('shot')) root.classList.add('shot');
+
+  var file = location.pathname.split('/').pop().replace('.html', '');
+  document.querySelectorAll('[data-dir]').forEach(function (a) {
+    if (a.dataset.dir === file) a.setAttribute('aria-current', 'true');
+    a.addEventListener('click', function () { a.href = a.getAttribute('href').split('#')[0] + location.search.replace(/[?&]shot\b/, '') + location.hash; });
+  });
+
+  function show() {
+    var view = (location.hash || '#home').slice(1);
+    if (!document.querySelector('[data-view="' + view + '"]')) view = 'home';
+    document.querySelectorAll('[data-view]').forEach(function (el) { el.classList.toggle('is-active', el.dataset.view === view); });
+    document.querySelectorAll('[data-view-link]').forEach(function (a) {
+      if (a.dataset.viewLink === view) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+    root.dataset.screen = view;
+  }
+  window.addEventListener('hashchange', function () { show(); window.scrollTo(0, 0); });
+  show();
+
+  document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('ptsb-mock-theme', root.dataset.theme); } catch (e) { console.warn('theme not saved', e); }
+    });
+  });
+
+  document.querySelectorAll('[data-drawer-open]').forEach(function (b) {
+    b.addEventListener('click', function () { root.classList.toggle('drawer-open'); });
+  });
+})();
+</script>
+</body>
+</html>
