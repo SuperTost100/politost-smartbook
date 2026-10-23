@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smartbook · Direzione B, Carta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&display=swap" rel="stylesheet">
+<style>{{css:katex}}</style>
+<style>{{css:shared}}</style>
+<style>
+/* Direction B, Carta: a desk of paper objects. Raised and pressed surfaces, matte covers with a line drawing per subject, terracotta accent. */
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --desk: #e8e0d3;
+  --raise: #efe8dc;
+  --paper: #fbf8f2;
+  --well: #e1d8c9;
+  --edge: rgba(120, 96, 68, .16);
+  --edge-strong: #a08d75;
+  --ink: #2f2620;
+  --ink-2: #5b4e43;
+  --ink-3: #62554a;
+  --accent: #a9472a;
+  --accent-hover: #933c22;
+  --on-accent: #fff7f0;
+  --accent-text: #9a3f24;
+  --ribbon: #c0602f;
+  --hint-bg: #f3e7cf;
+  --sol-bg: #e3ebe0;
+  --sh-dark: rgba(140, 116, 86, .42);
+  --sh-light: rgba(255, 253, 248, .95);
+  --raised: 7px 7px 16px var(--sh-dark), -6px -6px 14px var(--sh-light);
+  --raised-sm: 3px 3px 7px var(--sh-dark), -3px -3px 7px var(--sh-light);
+  --pressed: inset 3px 3px 7px var(--sh-dark), inset -3px -3px 7px var(--sh-light);
+  --pressed-lg: inset 5px 5px 12px var(--sh-dark), inset -5px -5px 12px var(--sh-light);
+  --paper-shadow: 0 1px 1px rgba(90,70,40,.08), 0 24px 48px -26px rgba(90,70,40,.5);
+  --pages: #f6f1e7; --pages-line: #d6ccbb;
+  --fig-ink: #3e332a; --fig-line: #a9472a; --fig-area: rgba(192,96,47,.16); --fig-guide: #b8a993;
+  --focus: #a9472a;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --desk: #26211d;
+  --raise: #2c2622;
+  --paper: #312a25;
+  --well: #1f1b18;
+  --edge: rgba(255, 236, 210, .07);
+  --edge-strong: #7d6d5e;
+  --ink: #eee4d6;
+  --ink-2: #c8b9a7;
+  --ink-3: #a99a88;
+  --accent: #e08a62;
+  --accent-hover: #eb9b76;
+  --on-accent: #22150e;
+  --accent-text: #eb9670;
+  --ribbon: #e08a62;
+  --hint-bg: #3a2f20;
+  --sol-bg: #26302a;
+  --sh-dark: rgba(0, 0, 0, .55);
+  --sh-light: rgba(255, 240, 220, .045);
+  --paper-shadow: 0 0 0 1px rgba(255,236,210,.05), 0 26px 50px -24px rgba(0,0,0,.9);
+  --pages: #3b332d; --pages-line: #1f1a16;
+  --fig-ink: #ddd0bf; --fig-line: #e08a62; --fig-area: rgba(224,138,98,.18); --fig-guide: #5e5248;
+  --focus: #e08a62;
+}
+
+body { background: var(--desk); color: var(--ink); font: 400 1rem/1.55 'Hanken Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 10px; }
+::selection { background: rgba(192,96,47,.25); }
+.serif { font-family: 'Newsreader', serif; }
+
+/* Controls */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  min-height: 46px; padding: 0 20px; border-radius: 14px; border: 1px solid var(--edge);
+  font: 600 .95rem/1 'Hanken Grotesk', sans-serif; text-decoration: none; cursor: pointer;
+  background: var(--raise); color: var(--ink); box-shadow: var(--raised-sm);
+  transition: box-shadow .15s ease-out, background-color .15s ease-out, color .15s ease-out;
+}
+.btn:hover { color: var(--accent-text); }
+.btn:active, .btn[aria-pressed="true"] { box-shadow: var(--pressed); }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: transparent; box-shadow: var(--raised-sm), inset 0 1px 0 rgba(255,255,255,.22); }
+.btn-primary:hover { background: var(--accent-hover); color: var(--on-accent); }
+.btn-primary:active { box-shadow: inset 3px 3px 7px rgba(0,0,0,.3), inset -2px -2px 5px rgba(255,255,255,.12); }
+.btn-quiet { }
+.btn-sm { min-height: 38px; padding: 0 14px; font-size: .85rem; border-radius: 12px; }
+.icon-btn { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--edge); background: var(--raise); color: var(--ink-2); box-shadow: var(--raised-sm); cursor: pointer; transition: box-shadow .15s ease-out, color .15s ease-out; }
+.icon-btn:hover { color: var(--accent-text); }
+.icon-btn:active { box-shadow: var(--pressed); }
+.groove { position: relative; flex: 1; height: 12px; border-radius: 8px; background: var(--well); box-shadow: inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light); }
+.groove > span { position: absolute; left: 2px; top: 2px; bottom: 2px; border-radius: 6px; background: linear-gradient(180deg, color-mix(in srgb, var(--ribbon) 80%, white), var(--ribbon)); box-shadow: 1px 1px 2px rgba(0,0,0,.2); }
+
+/* Site header */
+.site-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1200px; margin: 20px auto 0; padding: 10px 12px 10px 20px; border-radius: 22px; background: var(--raise); border: 1px solid var(--edge); box-shadow: var(--raised); }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand .mark { width: 32px; height: 24px; color: var(--ink); }
+.brand-word { font: 600 1.35rem/1 'Newsreader', serif; letter-spacing: -.01em; }
+.head-actions { display: flex; align-items: center; gap: 10px; }
+
+/* Home */
+.home { max-width: 1200px; margin: 0 auto; padding: 40px 0 120px; }
+.resume { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 56px; align-items: center; padding: 44px 56px; border-radius: 30px; background: var(--raise); border: 1px solid var(--edge); box-shadow: var(--raised); }
+.resume-cover { justify-self: center; width: 200px; text-decoration: none; }
+.resume-kicker { margin: 0 0 12px; color: var(--accent-text); font: 600 .9rem/1 'Hanken Grotesk', sans-serif; }
+.resume h1 { margin: 0; font: 500 clamp(2.4rem, 4.6vw, 3.8rem)/1.02 'Newsreader', serif; letter-spacing: -.02em; }
+.resume-book { margin: 16px 0 0; color: var(--ink-2); font: 400 1.2rem/1.45 'Newsreader', serif; }
+.resume-book strong { color: var(--ink); font-weight: 600; }
+.resume-progress { display: flex; align-items: center; gap: 14px; max-width: 440px; margin: 26px 0 30px; color: var(--ink-3); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.resume-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+
+.book {
+  --cover: #a24a31; container-type: inline-size; position: relative; display: flex; flex-direction: column; aspect-ratio: 2 / 3; padding: 14px 14px 16px 18px; overflow: visible;
+  border-radius: 3px 8px 8px 3px; color: #fbf3e6; background: var(--cover);
+  box-shadow:
+    inset 5px 0 7px -3px rgba(0,0,0,.35), inset -1px 0 0 rgba(255,255,255,.18),
+    2px 1px 0 var(--pages), 3px 2px 0 var(--pages-line), 5px 3px 0 var(--pages), 6px 4px 0 var(--pages-line), 8px 5px 0 var(--pages), 9px 6px 0 var(--pages-line),
+    14px 16px 22px -6px rgba(70, 50, 25, .45);
+}
+[data-theme="dark"] .book { box-shadow: inset 5px 0 7px -3px rgba(0,0,0,.45), inset -1px 0 0 rgba(255,255,255,.1), 2px 1px 0 var(--pages), 3px 2px 0 var(--pages-line), 5px 3px 0 var(--pages), 6px 4px 0 var(--pages-line), 8px 5px 0 var(--pages), 9px 6px 0 var(--pages-line), 14px 16px 22px -6px rgba(0,0,0,.7); }
+.book-subject { font: 600 max(.62rem, 6.4cqi)/1 'Hanken Grotesk', sans-serif; opacity: .92; }
+.cover-art { width: 78%; margin: auto auto 0; color: rgba(255, 247, 232, .9); }
+.book-title { margin-top: auto; font: 500 12.5cqi/1.08 'Newsreader', serif; hyphens: auto; letter-spacing: -.01em; text-wrap: balance; }
+.book-author { margin-top: 6px; font: 400 max(.6rem, 6cqi)/1.2 'Hanken Grotesk', sans-serif; opacity: .85; }
+.book.fisica { --cover: #a24a31; }
+.book.analisi { --cover: #56705c; }
+.book.chimica { --cover: #3d5d79; }
+.book.geometria { --cover: #74566f; }
+.book.esempio { --cover: #c8973f; color: #2d2110; }
+.book.esempio .cover-art { color: rgba(45, 33, 16, .8); }
+[data-theme="dark"] .book { filter: brightness(.9); }
+.book .tab { position: absolute; top: -6px; right: 16px; width: 14px; height: 40px; background: var(--ribbon); border-radius: 2px 2px 0 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); filter: drop-shadow(0 2px 1px rgba(0,0,0,.25)); }
+[data-theme="dark"] .book .tab { background: #f2c48a; }
+
+.lib-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 72px 8px 6px; }
+.lib-head h2 { margin: 0; font: 500 2.2rem/1.1 'Newsreader', serif; letter-spacing: -.015em; }
+.lib-count { color: var(--ink-3); font-size: .92rem; }
+.lib-note { max-width: 62ch; margin: 0 8px 34px; color: var(--ink-2); font: 400 1.08rem/1.55 'Newsreader', serif; }
+.lib { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 28px; }
+.tile { display: flex; flex-direction: column; padding: 26px 24px 22px; border-radius: 24px; background: var(--raise); border: 1px solid var(--edge); box-shadow: var(--raised); transition: box-shadow .2s ease-out; }
+.tile:hover { box-shadow: 9px 9px 20px var(--sh-dark), -7px -7px 16px var(--sh-light); }
+.tile-book { display: block; width: 66%; margin: 0 auto 26px 12%; text-decoration: none; }
+.tile h3 { margin: 0; font: 600 1.12rem/1.25 'Newsreader', serif; }
+.tile h3 a { color: var(--ink); text-decoration: none; }
+.tile h3 a::after { content: ''; position: absolute; inset: 0; }
+.tile { position: relative; }
+.tile-meta { margin: 4px 0 0; color: var(--ink-3); font-size: .85rem; }
+.chip { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 12px; padding: 6px 10px; border-radius: 999px; background: var(--well); box-shadow: inset 1px 1px 3px var(--sh-dark), inset -1px -1px 3px var(--sh-light); color: var(--ink-2); font-size: .78rem; font-weight: 500; }
+.chip .i { width: 14px; height: 14px; }
+.tile-resume { position: relative; z-index: 1; margin-top: 16px; align-self: flex-start; }
+
+.tray { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; margin-top: 44px; padding: 30px 34px; border-radius: 26px; background: var(--well); box-shadow: var(--pressed-lg); }
+.tray h2 { margin: 0 0 6px; font: 500 1.6rem/1.15 'Newsreader', serif; }
+.tray p { margin: 0; max-width: 58ch; color: var(--ink-2); }
+.tray-drop { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 18px; border: 1.5px dashed var(--edge-strong); color: var(--ink-2); }
+.tray-drop .i { width: 24px; height: 24px; color: var(--accent-text); }
+
+.foot { max-width: 1200px; margin: 0 auto; padding: 24px 8px 96px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--ink-3); font-size: .85rem; }
+.foot nav { display: flex; gap: 18px; }
+.foot a { color: var(--ink-2); text-decoration: none; }
+
+/* Reader */
+.r-top { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 290px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 20px; background: var(--desk); }
+.r-book { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--ink); text-decoration: none; }
+.r-book .mark { width: 30px; height: 23px; flex: none; color: var(--ink); }
+.r-book-title { font: 600 1.2rem/1 'Newsreader', serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.segmented { justify-self: center; display: flex; gap: 4px; max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 5px; border-radius: 16px; background: var(--well); box-shadow: var(--pressed); }
+.segmented a { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border-radius: 12px; white-space: nowrap; color: var(--ink-2); text-decoration: none; font: 500 .9rem/1 'Hanken Grotesk', sans-serif; transition: color .15s ease-out, background-color .15s ease-out; }
+.segmented a .i { width: 16px; height: 16px; }
+.segmented a:hover { color: var(--ink); }
+.segmented a[aria-current="page"] { background: var(--raise); color: var(--accent-text); font-weight: 600; box-shadow: var(--raised-sm); border: 1px solid var(--edge); }
+.r-tools { display: flex; gap: 10px; }
+.r-menu { display: none; }
+
+.r-body { display: grid; grid-template-columns: 290px minmax(0, 1fr) 250px; gap: 0; padding: 8px 20px 0; }
+.toc { position: sticky; top: 84px; align-self: start; max-height: calc(100vh - 104px); overflow-y: auto; padding: 22px 14px; border-radius: 24px; background: var(--well); box-shadow: var(--pressed-lg); }
+.toc-label, .outline-label { margin: 0 8px 12px; color: var(--ink-3); font: 600 .82rem/1 'Hanken Grotesk', sans-serif; }
+.toc-list, .toc-paras, .outline-list { list-style: none; margin: 0; padding: 0; }
+.toc-list > li > a { display: flex; gap: 10px; padding: 9px 12px; border-radius: 12px; color: var(--ink-2); text-decoration: none; font: 500 .93rem/1.35 'Hanken Grotesk', sans-serif; }
+.toc-list > li > a:hover { color: var(--ink); }
+.toc-n { min-width: 1.5em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.toc-list > li.is-open > a { background: var(--raise); color: var(--ink); font-weight: 600; box-shadow: var(--raised-sm); border: 1px solid var(--edge); }
+.toc-list > li.is-open > a .toc-n { color: var(--accent-text); }
+.toc-paras { margin: 8px 0 10px 22px; }
+.toc-paras a { position: relative; display: block; padding: 6px 12px 6px 18px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: .88rem; }
+.toc-paras a::before { content: ''; position: absolute; left: 4px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--well); box-shadow: inset 1px 1px 2px var(--sh-dark), inset -1px -1px 2px var(--sh-light); }
+.toc-paras .is-here a { color: var(--ink); font-weight: 600; }
+.toc-paras .is-here a::before { background: var(--ribbon); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ribbon) 22%, transparent); }
+
+.r-main { min-width: 0; padding: 8px 36px 120px; }
+.sheet { position: relative; max-width: 760px; margin: 0 auto; padding: 60px 68px 52px; border-radius: 6px; background: var(--paper); box-shadow: var(--paper-shadow); }
+.sheet::before, .sheet::after { content: ''; position: absolute; z-index: -1; left: 6px; right: 6px; top: 6px; bottom: -6px; border-radius: 6px; background: var(--paper); box-shadow: var(--paper-shadow); }
+.sheet::after { left: 12px; right: 12px; bottom: -12px; opacity: .8; }
+.chapter, .exercises { font: 400 1.17rem/1.7 'Newsreader', serif; font-optical-sizing: auto; }
+.ch-head { padding-bottom: 30px; margin-bottom: 38px; border-bottom: 1px dashed var(--edge-strong); }
+.ch-kicker { margin: 0 0 10px; color: var(--accent-text); font: 600 .9rem/1 'Hanken Grotesk', sans-serif; }
+.ch-title, .sec-title { margin: 0; font: 500 clamp(2.3rem, 4.6vw, 3.4rem)/1.04 'Newsreader', serif; letter-spacing: -.02em; text-wrap: balance; }
+.ch-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin-top: 20px; color: var(--ink-3); font: 500 .88rem/1 'Hanken Grotesk', sans-serif; }
+.ch-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+.ch-meta .i { width: 15px; height: 15px; }
+.ch-meta .btn { margin-left: auto; }
+.para + .para { margin-top: 52px; }
+.para-h { display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font: 500 1.85rem/1.15 'Newsreader', serif; letter-spacing: -.015em; }
+.para-num { display: inline-grid; place-items: center; min-width: 46px; height: 30px; padding: 0 8px; border-radius: 9px; background: var(--desk); color: var(--accent-text); font: 700 .9rem/1 'Hanken Grotesk', sans-serif; font-variant-numeric: tabular-nums; box-shadow: var(--raised-sm); transform: translateY(-4px); }
+[data-theme="dark"] .para-num { background: var(--raise); }
+.sub-h { margin: 34px 0 10px; font: 700 1.02rem/1.3 'Hanken Grotesk', sans-serif; }
+.chapter p { margin: 0 0 1em; hyphens: auto; }
+.math-display { margin: 6px 0 18px; }
+.formula { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 16px; margin: 26px 0; padding: 20px 18px 14px 22px; border-radius: 16px; background: var(--well); box-shadow: inset 2px 2px 6px var(--sh-dark), inset -2px -2px 6px var(--sh-light); }
+[data-theme="light"] .formula { background: #f2ece2; box-shadow: inset 2px 2px 5px rgba(140,116,86,.28), inset -2px -2px 5px #fff; }
+[data-theme="dark"] .formula { background: #29231f; }
+.formula-math { grid-column: 1; grid-row: 1; }
+.formula-num { grid-column: 2; grid-row: 1 / span 2; align-self: center; padding: 7px 10px; border-radius: 10px; background: var(--paper); color: var(--accent-text); font: 700 .85rem/1 'Hanken Grotesk', sans-serif; font-variant-numeric: tabular-nums; box-shadow: var(--raised-sm); }
+.formula-label { grid-column: 1; grid-row: 2; margin-top: 6px; text-align: center; color: var(--ink-3); font: 500 .82rem/1.3 'Hanken Grotesk', sans-serif; }
+.xref { display: inline-block; padding: 0 6px; border-radius: 7px; background: color-mix(in srgb, var(--ribbon) 14%, transparent); color: var(--accent-text); font: 700 .85em/1.5 'Hanken Grotesk', sans-serif; text-decoration: none; font-variant-numeric: tabular-nums; }
+.xref:hover { background: color-mix(in srgb, var(--ribbon) 24%, transparent); }
+.fig { margin: 30px 0 6px; padding: 20px 20px 16px; border-radius: 18px; background: var(--paper); box-shadow: 0 0 0 1px var(--edge); }
+.fig-art { width: 100%; height: auto; }
+.fig-area { fill: var(--fig-area); }
+.fig-axis { fill: none; stroke: var(--fig-ink); stroke-width: 1.4; }
+.fig-guide { fill: none; stroke: var(--fig-guide); stroke-width: 1; stroke-dasharray: 4 4; }
+.fig-line { fill: none; stroke: var(--fig-line); stroke-width: 2.8; stroke-linecap: round; }
+.fig-t { fill: var(--fig-ink); font: italic 400 18px 'Newsreader', serif; }
+.fig-t-strong { font-style: normal; font-weight: 600; }
+.fig figcaption { margin-top: 12px; color: var(--ink-2); font: 400 .88rem/1.5 'Hanken Grotesk', sans-serif; }
+.fig-num { margin-right: 6px; color: var(--ink); font-weight: 700; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 56px; }
+.pager-link { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 18px; border: 1px solid var(--edge); background: var(--raise); color: var(--ink); text-decoration: none; box-shadow: var(--raised-sm); font: 500 1.15rem/1.2 'Newsreader', serif; transition: box-shadow .15s ease-out; }
+.pager-link:active { box-shadow: var(--pressed); }
+.pager-link small { display: block; margin-bottom: 4px; color: var(--ink-3); font: 600 .8rem/1 'Hanken Grotesk', sans-serif; }
+.pager-next { justify-content: flex-end; text-align: right; }
+
+.outline { position: sticky; top: 84px; align-self: start; padding: 22px 18px; border-radius: 24px; background: var(--raise); border: 1px solid var(--edge); box-shadow: var(--raised); }
+.outline-list a { display: flex; gap: 10px; padding: 6px 8px; border-radius: 10px; color: var(--ink-3); text-decoration: none; font-size: .87rem; line-height: 1.35; }
+.outline-list a span { min-width: 2em; font-variant-numeric: tabular-nums; }
+.outline-list a:hover { color: var(--ink); }
+.outline-list .is-here a { color: var(--ink); font-weight: 600; background: var(--well); box-shadow: var(--pressed); }
+.outline-progress { display: flex; align-items: center; gap: 10px; margin: 18px 8px 0; color: var(--ink-3); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.outline-progress .meter { position: relative; flex: 1; height: 12px; border-radius: 8px; background: var(--well); box-shadow: inset 2px 2px 4px var(--sh-dark), inset -2px -2px 4px var(--sh-light); }
+.outline-progress .meter > span { position: absolute; left: 2px; top: 2px; bottom: 2px; border-radius: 6px; background: var(--ribbon); }
+
+/* Exercises */
+.exercises-wrap { max-width: 800px; margin: 0 auto; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 28px; margin-bottom: 30px; border-bottom: 1px dashed var(--edge-strong); }
+.sec-meta { margin: 10px 0 0; color: var(--ink-3); font: 500 .9rem/1 'Hanken Grotesk', sans-serif; }
+.ex { padding: 26px 28px 22px; border-radius: 22px; background: var(--raise); border: 1px solid var(--edge); box-shadow: var(--raised); }
+[data-theme="light"] .ex { background: #f4eee4; }
+.ex + .ex { margin-top: 26px; }
+.ex-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; }
+.ex-id { margin: 0; font: 600 1.3rem/1.1 'Newsreader', serif; }
+.ex-ch { color: var(--ink-3); font: 500 .85rem/1 'Hanken Grotesk', sans-serif; }
+.diff { margin-left: auto; padding: 6px 11px; border-radius: 999px; background: var(--well); box-shadow: inset 1px 1px 3px var(--sh-dark), inset -1px -1px 3px var(--sh-light); font: 700 .78rem/1 'Hanken Grotesk', sans-serif; }
+.diff-1 { color: #2f5a3d; } .diff-2 { color: #714a0c; } .diff-3 { color: var(--accent-text); }
+[data-theme="dark"] .diff-1 { color: #8fc49f; } [data-theme="dark"] .diff-2 { color: #e0b766; }
+.ex-q p { margin: 0 0 16px; }
+.ex .reveal { display: inline-block; vertical-align: top; margin: 4px 10px 0 0; }
+.ex .reveal[open] { display: block; margin-right: 0; }
+.reveal summary { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--edge); background: var(--raise); color: var(--ink); box-shadow: var(--raised-sm); font: 600 .88rem/1 'Hanken Grotesk', sans-serif; transition: box-shadow .15s ease-out; }
+.reveal summary .i { width: 16px; height: 16px; color: var(--accent-text); }
+.reveal[open] summary { box-shadow: var(--pressed); color: var(--accent-text); }
+.reveal-body { margin: 12px 0 6px; padding: 14px 18px; border-radius: 14px; font-size: 1.05rem; }
+.reveal-body p { margin: 0; }
+.reveal-hint .reveal-body { background: var(--hint-bg); }
+.reveal-sol .reveal-body { background: var(--sol-bg); }
+
+@media (max-width: 1260px) { .r-body { grid-template-columns: 270px minmax(0, 1fr); } .outline { display: none; } .r-top { grid-template-columns: 270px minmax(0,1fr) auto; } }
+@media (max-width: 1240px) { .site-head, .home, .foot { margin-left: 20px; margin-right: 20px; } }
+@media (max-width: 900px) {
+  .r-top { grid-template-columns: auto minmax(0, 1fr) auto; padding: 10px 12px; gap: 10px; }
+  .r-menu { display: inline-grid; }
+  .segmented { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 25; justify-self: stretch; background: var(--raise); box-shadow: var(--raised); border: 1px solid var(--edge); }
+  .segmented a { flex: 1 0 auto; height: 44px; font-size: .84rem; padding: 0 12px; }
+  .segmented a[aria-current="page"] { background: var(--well); box-shadow: var(--pressed); border-color: transparent; }
+  html:not(.shot) .segmented { bottom: 60px; }
+  .r-body { grid-template-columns: 1fr; padding: 4px 0 0; }
+  .toc { display: none; }
+  .drawer-open .toc { display: block; position: fixed; z-index: 30; top: 70px; left: 10px; width: min(320px, 88vw); background: var(--raise); }
+  .r-main { padding: 0 10px 110px; }
+  .sheet { padding: 34px 22px 40px; }
+  .chapter, .exercises { font-size: 1.1rem; line-height: 1.64; }
+  .formula { padding: 16px 12px 12px 14px; column-gap: 8px; }
+  .ch-meta .btn { margin-left: 0; }
+  .para-h { font-size: 1.6rem; }
+  .pager { grid-template-columns: 1fr; }
+  .sec-head { flex-direction: column; align-items: flex-start; }
+  .ex { padding: 20px 18px 16px; }
+  .resume { grid-template-columns: 1fr; gap: 28px; padding: 28px 22px; border-radius: 24px; }
+  .resume-cover { width: 140px; justify-self: start; }
+  .site-head { margin: 12px 12px 0; padding: 8px 8px 8px 14px; }
+  .home { margin: 0 12px; padding-top: 24px; }
+  .lib { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .tile { padding: 18px 14px 16px; border-radius: 20px; }
+  .tray { grid-template-columns: 1fr; padding: 24px 20px; }
+  .foot { margin: 0 12px; }
+  .head-long { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div data-view="home">
+  <header class="site-head">
+    <a class="brand" href="#home" aria-label="Smartbook, la tua libreria">{{mark}}<span class="brand-word">Smartbook</span></a>
+    <div class="head-actions">
+      <a class="btn btn-sm" href="#home">{{icon:key}}<span class="head-long">Riscatta codice</span></a>
+      <a class="btn btn-sm" href="#home">{{icon:login}}<span>Accedi</span></a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+    </div>
+  </header>
+
+  <main class="home" id="main-content">
+    <section class="resume" aria-labelledby="resume-title">
+      <a class="resume-cover" href="#capitolo" aria-hidden="true" tabindex="-1">
+        <div class="book fisica"><span class="tab"></span><span class="book-subject">Fisica</span>{{include:art-fisica}}<span class="book-title">Fisica 1</span><span class="book-author">Tost</span></div>
+      </a>
+      <div>
+        <p class="resume-kicker">Continua a leggere</p>
+        <h1 id="resume-title">Cinematica del punto</h1>
+        <p class="resume-book"><strong>Fisica 1</strong>, capitolo 2. L’ultima volta eri al paragrafo 2.2, <em>Moto rettilineo</em>.</p>
+        <div class="resume-progress"><div class="groove" role="meter" aria-label="Letto del capitolo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="24"><span style="width:24%"></span></div><span>24 % del capitolo</span></div>
+        <div class="resume-actions">
+          <a class="btn btn-primary" href="#capitolo">Riprendi dal paragrafo 2.2</a>
+          <a class="btn" href="#capitolo">Apri l’indice</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="lib-head">
+      <h2 id="lib-title">I tuoi libri</h2>
+      <span class="lib-count">5 libri</span>
+    </div>
+    <p class="lib-note">Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.</p>
+    <ul class="lib" aria-labelledby="lib-title">
+      <li class="tile">
+        <a class="tile-book" href="#capitolo" tabindex="-1" aria-hidden="true"><div class="book fisica"><span class="tab"></span><span class="book-subject">Fisica</span>{{include:art-fisica}}<span class="book-title">Fisica 1</span><span class="book-author">Tost</span></div></a>
+        <h3><a href="#capitolo">Fisica 1</a></h3><p class="tile-meta">Tost · v1.1.0</p>
+        <span class="chip">{{icon:cloud}} Dal catalogo</span>
+        <a class="btn btn-sm tile-resume" href="#capitolo">Riprendi · Cap. 2 {{icon:right}}</a>
+      </li>
+      <li class="tile">
+        <a class="tile-book" href="#capitolo" tabindex="-1" aria-hidden="true"><div class="book analisi"><span class="book-subject">Analisi 1</span>{{include:art-analisi}}<span class="book-title">Analisi Matematica 1</span><span class="book-author">Tost</span></div></a>
+        <h3><a href="#capitolo">Analisi Matematica 1</a></h3><p class="tile-meta">Tost · v1.0.1</p>
+        <span class="chip">{{icon:cloud}} Dal catalogo</span>
+      </li>
+      <li class="tile">
+        <a class="tile-book" href="#capitolo" tabindex="-1" aria-hidden="true"><div class="book chimica"><span class="book-subject">Chimica</span>{{include:art-chimica}}<span class="book-title">Chimica di base</span><span class="book-author">Tost</span></div></a>
+        <h3><a href="#capitolo">Chimica di base</a></h3><p class="tile-meta">Tost · v1.0.0</p>
+        <span class="chip">{{icon:cloud}} Dal catalogo</span>
+      </li>
+      <li class="tile">
+        <a class="tile-book" href="#capitolo" tabindex="-1" aria-hidden="true"><div class="book geometria"><span class="book-subject">Geometria</span>{{include:art-geometria}}<span class="book-title">Geometria e algebra lineare</span><span class="book-author">Dip. di Matematica</span></div></a>
+        <h3><a href="#capitolo">Geometria e algebra lineare</a></h3><p class="tile-meta">Dip. di Matematica · v2.0</p>
+        <span class="chip">{{icon:file}} Importato qui</span>
+      </li>
+      <li class="tile">
+        <a class="tile-book" href="#capitolo" tabindex="-1" aria-hidden="true"><div class="book esempio"><span class="book-subject">Esempio</span>{{include:art-esempio}}<span class="book-title">Guida di esempio</span><span class="book-author">PoliTost</span></div></a>
+        <h3><a href="#capitolo">Guida di esempio</a></h3><p class="tile-meta">PoliTost · v1.0.1</p>
+        <span class="chip">{{icon:book}} Incluso nell’app</span>
+      </li>
+    </ul>
+
+    <section class="tray" aria-labelledby="tray-title">
+      <div>
+        <h2 id="tray-title">Hai un libro digitale?</h2>
+        <p>Se hai ricevuto un file dal docente o dall’editore, importalo qui. Il libro resta su questo dispositivo.</p>
+      </div>
+      <div class="tray-drop">{{icon:upload}}<span>Trascina qui il file .ptsb</span><button class="btn btn-sm" type="button">Scegli il file</button></div>
+    </section>
+  </main>
+  <footer class="foot">
+    <span>Smartbook · un progetto PoliTost</span>
+    <nav aria-label="Note legali"><a href="#home">Guida</a><a href="#home">Privacy</a><a href="#home">Termini</a></nav>
+  </footer>
+</div>
+
+<!-- CHAPTER -->
+<div data-view="capitolo">
+  <header class="r-top">
+    <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice">{{icon:menu}}</button>
+    <a class="r-book" href="#home" aria-label="Torna alla libreria">{{mark}}<span class="r-book-title">Fisica 1</span></a>
+    <nav class="segmented" aria-label="Sezioni del libro">
+      <a href="#capitolo" aria-current="page">{{icon:book}} Capitoli</a>
+      <a href="#capitolo">{{icon:sigma}} Formulario</a>
+      <a href="#esercizio">{{icon:pencil}} Esercizi</a>
+      <a href="#capitolo">{{icon:cap}} Prove d’esame</a>
+      <a href="#capitolo">{{icon:terminal}} Laboratorio</a>
+      <a href="#capitolo">{{icon:chart}} Grafici</a>
+    </nav>
+    <div class="r-tools">
+      <button class="icon-btn" type="button" aria-label="Stampa">{{icon:printer}}</button>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+    </div>
+  </header>
+  <div class="r-body">
+    {{include:index}}
+    <main class="r-main"><div class="sheet">{{include:chapter}}</div></main>
+    {{include:outline}}
+  </div>
+</div>
+
+<!-- EXERCISES -->
+<div data-view="esercizio">
+  <header class="r-top">
+    <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice">{{icon:menu}}</button>
+    <a class="r-book" href="#home" aria-label="Torna alla libreria">{{mark}}<span class="r-book-title">Fisica 1</span></a>
+    <nav class="segmented" aria-label="Sezioni del libro">
+      <a href="#capitolo">{{icon:book}} Capitoli</a>
+      <a href="#capitolo">{{icon:sigma}} Formulario</a>
+      <a href="#esercizio" aria-current="page">{{icon:pencil}} Esercizi</a>
+      <a href="#capitolo">{{icon:cap}} Prove d’esame</a>
+      <a href="#capitolo">{{icon:terminal}} Laboratorio</a>
+      <a href="#capitolo">{{icon:chart}} Grafici</a>
+    </nav>
+    <div class="r-tools">
+      <button class="icon-btn" type="button" aria-label="Stampa">{{icon:printer}}</button>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+    </div>
+  </header>
+  <div class="r-body">
+    {{include:index}}
+    <main class="r-main"><div class="exercises-wrap">{{include:exercises}}</div></main>
+  </div>
+</div>
+
+{{include:mockbar}}
+<script>{{js:shared}}</script>
+</body>
+</html>
