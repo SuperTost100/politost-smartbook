@@ -1,0 +1,74 @@
+<article class="chapter" aria-labelledby="ch-title">
+  <header class="ch-head">
+    <p class="ch-kicker">Capitolo 2</p>
+    <h1 class="ch-title" id="ch-title">Cinematica del punto</h1>
+    <div class="ch-meta">
+      <span>{{icon:book}} 7 paragrafi</span>
+      <span>{{icon:clock}} circa 45 min</span>
+      <button class="btn btn-quiet btn-sm" type="button">{{icon:printer}} Versione stampabile</button>
+    </div>
+  </header>
+
+  <section class="para" id="p1">
+    <h2 class="para-h"><span class="para-num">2.1</span> Introduzione</h2>
+    <p class="lede">Descrivere il moto significa capire come cambia la posizione di un punto nel tempo e collegare quel cambiamento alla velocità e all’accelerazione. Questi strumenti permettono di interpretare situazioni quotidiane e di risolvere problemi di meccanica con un metodo comune, dai movimenti lungo una linea alle traiettorie nel piano.</p>
+    <p>Per affrontare il capitolo servono le idee di misura e vettore: saper indicare grandezze, unità di misura, direzioni e versi. Da qui si costruiscono le descrizioni del moto in coordinate cartesiane, polari e intrinseche, distinguendo la variazione del modulo della velocità dal cambiamento della sua direzione.</p>
+  </section>
+
+  <section class="para" id="p2">
+    <h2 class="para-h"><span class="para-num">2.2</span> Moto rettilineo</h2>
+    <p>Il moto rettilineo è il caso più semplice di moto di un punto materiale: la traiettoria è una retta, sulla quale si fissano un’origine e un verso, e l’intera informazione cinematica è contenuta in un’unica funzione scalare $x(t)$, detta <em>legge oraria</em>.</p>
+
+    <h3 class="sub-h">Dalla posizione alla velocità e all’accelerazione</h3>
+    <p>La <strong>velocità media</strong> nell’intervallo $[t_1, t_2]$ misura lo spostamento complessivo diviso il tempo impiegato,</p>
+    <div class="math-display">$$v_m = \frac{\Delta x}{\Delta t} = \frac{x_2 - x_1}{t_2 - t_1},$$</div>
+    <p>ma non dà informazioni su come il moto si è svolto all’interno dell’intervallo. La <strong>velocità istantanea</strong> è il limite della velocità media su un intervallo che tende a zero:</p>
+
+    <figure class="formula" id="f-2.1">
+      <div class="formula-math">$$v(t) = \lim_{\Delta t \to 0} \frac{\Delta x(t)}{\Delta t} = \frac{dx(t)}{dt}$$</div>
+      <figcaption class="formula-label">Velocità istantanea</figcaption>
+      <span class="formula-num">(2.1)</span>
+    </figure>
+
+    <p>Il segno di $v(t)$ indica il verso di percorrenza rispetto al riferimento scelto. Analogamente, l’<strong>accelerazione istantanea</strong> è la derivata della velocità rispetto al tempo, cioè la derivata seconda della posizione:</p>
+
+    <figure class="formula" id="f-2.2">
+      <div class="formula-math">$$a(t) = \frac{dv}{dt} = \frac{d^2x}{dt^2}$$</div>
+      <figcaption class="formula-label">Accelerazione istantanea</figcaption>
+      <span class="formula-num">(2.2)</span>
+    </figure>
+
+    <h3 class="sub-h">Dall’integrazione alla legge oraria</h3>
+    <p>Il percorso inverso richiede un’integrazione. Scrivendo $dx = v(t)\,dt$ e integrando tra l’istante iniziale $t_0$ e l’istante generico $t$ si ottiene la legge oraria valida per <strong>qualunque</strong> moto rettilineo, purché sia nota $v(t)$:</p>
+
+    <figure class="formula" id="f-2.3">
+      <div class="formula-math">$$x(t) = x_0 + \int_{t_0}^{t} v(t')\,dt'$$</div>
+      <figcaption class="formula-label">Legge oraria per integrazione della velocità</figcaption>
+      <span class="formula-num">(2.3)</span>
+    </figure>
+
+    <p>Geometricamente, l’integrale della <a class="xref" href="#f-2.3">(2.3)</a> è l’area sottesa dal grafico di $v(t)$ tra $t_1$ e $t_2$, e rappresenta lo spostamento $\Delta x$: non la distanza percorsa in modulo, ma la somma algebrica degli spostamenti, con segno.</p>
+
+    <figure class="fig">
+      <svg class="fig-art" viewBox="0 0 560 300" role="img" aria-labelledby="fig21-cap">
+        <path class="fig-area" d="M180,260 L180,160.9 L400,89.1 L400,260 Z"/>
+        <path class="fig-axis" d="M60,276 L60,24 M44,260 L536,260"/>
+        <path class="fig-axis" d="M54,32 L60,22 L66,32 M526,254 L538,260 L526,266"/>
+        <path class="fig-guide" d="M180,260 L180,160.9 M400,260 L400,89.1"/>
+        <path class="fig-line" d="M60,200 L520,50"/>
+        <text class="fig-t" x="72" y="34">v</text>
+        <text class="fig-t" x="522" y="286">t</text>
+        <text class="fig-t" x="20" y="205">v₀</text>
+        <text class="fig-t" x="172" y="286">t₁</text>
+        <text class="fig-t" x="392" y="286">t₂</text>
+        <text class="fig-t fig-t-strong" x="268" y="210">Δx</text>
+      </svg>
+      <figcaption id="fig21-cap"><span class="fig-num">Fig. 2.1</span> Nel moto uniformemente accelerato la velocità cresce linearmente nel tempo; l’area sotto la retta tra due istanti è lo spostamento $\Delta x$.</figcaption>
+    </figure>
+  </section>
+
+  <nav class="pager" aria-label="Capitoli vicini">
+    <a class="pager-link" href="#capitolo">{{icon:left}}<span><small>Capitolo 1</small>Misure e vettori</span></a>
+    <a class="pager-link pager-next" href="#capitolo"><span><small>Capitolo 3</small>Dinamica del punto</span>{{icon:right}}</a>
+  </nav>
+</article>
