@@ -8,6 +8,7 @@
   color-scheme: light;
   --bg: #e8e0d3;
   --page: #fbf8f2;
+  --figure-plate: #fbf8f2;
   --surface: #efe8dc;
   --surface-raised: #e1d8c9;
   --surface-overlay: #fbf8f2;
@@ -59,6 +60,7 @@
   color-scheme: dark;
   --bg: #26211d;
   --page: #312a25;
+  --figure-plate: #ddd3c4;
   --surface: #2c2622;
   --surface-raised: #1f1b18;
   --surface-overlay: #3a322c;

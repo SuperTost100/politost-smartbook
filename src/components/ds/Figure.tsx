@@ -17,7 +17,7 @@ export function Figure({ src, alt, caption, resolveAsset }: FigureProps) {
 
   return (
     <figure className="sb-figure">
-      <div className="sb-figure-frame">
+      <div className={url ? 'sb-figure-frame' : 'sb-figure-frame is-missing'}>
         {url ? (
           <img src={url} alt={alt} loading="lazy" decoding="async" />
         ) : (

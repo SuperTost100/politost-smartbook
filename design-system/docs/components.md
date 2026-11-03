@@ -36,7 +36,7 @@ The origin chip reads "Incluso nell’app", "Dal catalogo", "Dal tuo account" or
 | `ParagraphHeading` | `ds/ParagraphHeading.tsx` | A `title-2` heading with its number in a raised badge and a hover anchor |
 | `Formula` | `ds/Formula.tsx` | An engraved plate (`code-bg`, inset shadow) with the number in a raised paper badge and the label below |
 | `FormulaRef` | `ds/FormulaRef.tsx` | The number as a tinted chip that opens a preview popover on hover and focus |
-| `Figure` | `ds/Figure.tsx` | The image on paper with a hairline, the caption below with its number in bold |
+| `Figure` | `ds/Figure.tsx` | The image on a `figure-plate` with a hairline, the caption below with its number in bold. The image is multiplied onto the plate, so a white background takes the plate colour in both themes |
 | `ChapterPager` | `ds/ChapterPager.tsx` | Previous and next chapter as two raised buttons |
 | `Meter` | `ds/Meter.tsx` | A groove with the ribbon colour filled up to the value, `role="meter"` |
 

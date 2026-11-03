@@ -11,7 +11,7 @@ import {
 } from '../lib/api';
 import { useReaderFeatures } from './ReaderConfigContext';
 import { unregisterUploadedBook } from '../lib/loader';
-import { forgetReadingPosition } from '../lib/readingPosition';
+import { forgetAllReadingPositions } from '../lib/readingPosition';
 import { removeUploadedForUser } from '../lib/ptsbStore';
 import { consentIsCurrent } from '../lib/consentVersion';
 import versions from '../legal/versions.json';
@@ -84,13 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     const leavingId = user?.id;
     await apiLogout();
+    // Every book's position, catalog books included: on a shared browser the next person starts with no "Riprendi".
+    forgetAllReadingPositions();
     if (leavingId) {
       try {
         const ids = await removeUploadedForUser(leavingId);
-        for (const id of ids) {
-          unregisterUploadedBook(id);
-          forgetReadingPosition(id);
-        }
+        for (const id of ids) unregisterUploadedBook(id);
       } catch (err) {
         console.error(err);
       }

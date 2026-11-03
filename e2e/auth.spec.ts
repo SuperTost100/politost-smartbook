@@ -83,4 +83,35 @@ test.describe('Auth form', () => {
     await expect(page).toHaveURL('/');
     await expect(page.getByRole('heading', { name: 'I tuoi libri', exact: true })).toBeVisible();
   });
+
+  test('signing out forgets every reading position on this browser', async ({ page }) => {
+    const user = { id: 'user-1', email: 'studente@esempio.it', display_name: null, is_admin: false };
+    let authed = true;
+    await page.route('**/api/auth/me', (route) =>
+      authed
+        ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(user) })
+        : route.fulfill({ status: 401, contentType: 'application/json', body: '{}' }),
+    );
+    await page.route('**/api/consent/status', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ has_consent: true, tos_version: legalVersions.tos, privacy_version: legalVersions.privacy }),
+      }),
+    );
+    await page.route('**/auth/jwt/logout', (route) => {
+      authed = false;
+      route.fulfill({ status: 204, body: '' });
+    });
+
+    await page.goto('/auth');
+    // A catalog book, not one this account uploaded.
+    await page.evaluate(() => localStorage.setItem('politost-last-read', JSON.stringify({
+      esempio: { chapterId: 'nel-libro', chapterNumber: 2, chapterTitle: 'Cosa trovi nel libro', paragraphId: 'p2', readAt: 1 },
+    })));
+    await page.getByRole('button', { name: 'Esci' }).click();
+
+    await expect(page.locator('form.auth-form')).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem('politost-last-read'))).toBeNull();
+  });
 });

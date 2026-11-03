@@ -180,8 +180,11 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 
 /* Figure */
 .sb-figure { margin: 30px 0 var(--space-6); }
-.sb-figure-frame { display: flex; justify-content: center; padding: 20px; background: var(--page); border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--border); }
-.sb-figure-frame img, .sb-figure-frame svg { display: block; max-width: 100%; height: auto; }
+/* Book figures are drawn on white. Multiplying them onto the plate turns the white into the plate, so dark mode shows
+   one cream plate instead of a white box, and the lines keep their colour. */
+.sb-figure-frame { display: flex; justify-content: center; padding: 20px; background: var(--figure-plate); border-radius: var(--radius-lg); box-shadow: 0 0 0 1px var(--border); isolation: isolate; }
+.sb-figure-frame img, .sb-figure-frame svg { display: block; max-width: 100%; height: auto; mix-blend-mode: multiply; }
+.sb-figure-frame.is-missing { background: var(--page); }
 .sb-figure figcaption { margin-top: 12px; font: 400 14px/1.5 var(--font-sans); color: var(--ink-muted); }
 .sb-figure figcaption b { margin-right: 6px; color: var(--ink); font-weight: 700; }
 .sb-figure-missing { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-muted); font: 400 14px/20px var(--font-sans); }

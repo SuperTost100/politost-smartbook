@@ -30,7 +30,8 @@ Light (the desk) is the primary theme, and dark (clay) is fully designed. Set `d
 | `bg` | `#e8e0d3` | `#26211d` | The desk: page ground and reader header |
 | `surface` | `#efe8dc` | `#2c2622` | Raised objects: header bar, tiles, cards, buttons |
 | `surface-raised` | `#e1d8c9` | `#1f1b18` | Wells: tracks, the TOC panel, chips, meters, the import tray |
-| `page` | `#fbf8f2` | `#312a25` | Paper: the chapter sheet, figures, plots |
+| `page` | `#fbf8f2` | `#312a25` | Paper: the chapter sheet, plots |
+| `figure-plate` | `#fbf8f2` | `#ddd3c4` | The plate under a chapter figure, light in both themes |
 | `ink` / `ink-muted` / `ink-subtle` | `#2f2620` / `#5b4e43` / `#62554a` | `#eee4d6` / `#c8b9a7` / `#a99a88` | Text; all three hold 4.5:1 on every ground |
 | `primary` | `#a9472a` | `#e08a62` | Terracotta: one primary button per view, checked controls |
 | `primary-text` | `#9a3f24` | `#eb9670` | Links, kickers, the active tab, numbers in badges |

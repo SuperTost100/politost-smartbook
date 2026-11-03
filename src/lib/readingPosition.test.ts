@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
+import { forgetAllReadingPositions, forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
 
 const data = new Map<string, string>();
 Object.defineProperty(globalThis, 'localStorage', {
@@ -29,6 +29,14 @@ describe('readingPosition', () => {
     saveReadingPosition('esempio', pos);
     forgetReadingPosition('esempio');
     assert.equal(getReadingPosition('esempio'), undefined);
+  });
+
+  it('forgets every book at once', () => {
+    saveReadingPosition('esempio', pos);
+    saveReadingPosition('fisica-1', { ...pos, chapterId: 'cinematica' });
+    forgetAllReadingPositions();
+    assert.equal(lastReadingPosition(['esempio', 'fisica-1']), undefined);
+    assert.equal(data.has('politost-last-read'), false);
   });
 
   it('ignores corrupt or foreign data', () => {
