@@ -63,7 +63,7 @@ The reader has a sticky header on the desk, the chapter index in an inset panel 
 - **Index** (`ChapterToc`, `sider-width` 270, 240 below 1240px): the chapters, with the open one raised and its paragraphs listed under it.
 - **Sheet**: the chapter on `page`, at most `reading-width` 920 wide, with two sheets drawn under it. The text inside stops at 76ch. Formulario, exercises, lab and graphs have no sheet and put their cards on the desk instead.
 - **Outline** (`ParagraphRail`, `rail-width` 230): from 1360px only, with the current paragraph pressed in and a reading meter.
-- **Below 1024px** the index moves into a drawer (the menu button), and the section switcher becomes a raised bar at the bottom of the screen, above the support banner.
+- **Below 1024px** the index moves into a drawer (the menu button), and the section switcher becomes a raised bar at the bottom of the screen.
 - **Library**: a floating raised header, the resume panel (or the introduction when nothing has been read), the book tiles in an auto-fill grid (two columns on phones), and the inset import tray.
 - Spacing uses the 4px scale `space-1` to `space-16`. Radii run from `radius-xs` (the sheet) to `radius-2xl` (the resume panel). Controls are `control-sm` 38, `control-md` 46, `control-lg` 52 and `control-icon` 42.
 

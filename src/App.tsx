@@ -5,8 +5,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AntdProvider } from './context/AntdProvider';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { GoogleAdvertising } from './components/GoogleAdvertising';
-import { PrivacyControls } from './components/PrivacyControls';
 import { InstallBanner } from './components/InstallBanner';
 import { initBuiltinBooks, initRemoteBooks, initUploadedBooks } from './lib/loader';
 import { initCloudBooks } from './lib/cloudLoader';
@@ -57,6 +55,7 @@ function ScrollToTop() {
   return null;
 }
 
+/** Only the library offers the install, so the banner never covers the reader's section bar. */
 function HomeInstallBanner() {
   const { pathname } = useLocation();
   return <InstallBanner visible={pathname === '/'} />;
@@ -68,8 +67,6 @@ function AppRoutes() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <ScrollToTop />
-      <PrivacyControls />
-      <GoogleAdvertising />
       <HomeInstallBanner />
       <ConsentGate>
       <Routes>

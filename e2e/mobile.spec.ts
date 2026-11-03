@@ -80,6 +80,21 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await expect.poll(dragmode).not.toBe(false);
   });
 
+  test('the install prompt is captured in a book and shown only on the catalog', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/benvenuto');
+    await expect(page.locator('.smartbook-view')).toBeVisible();
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt', { cancelable: true });
+      Object.assign(event, { prompt: async () => undefined, userChoice: Promise.resolve({ outcome: 'dismissed' }) });
+      window.dispatchEvent(event);
+      window.scrollTo({ top: 300, behavior: 'instant' });
+      window.dispatchEvent(new Event('scroll'));
+    });
+    await expect(page.getByRole('region', { name: "Installa l'app" })).toHaveCount(0);
+    await page.locator('.sb-header-brand').click();
+    await expect(page.getByRole('button', { name: 'Aggiungi alla Home' })).toBeVisible();
+  });
+
   test('serves web app manifest for PWA install', async ({ request }) => {
     const res = await request.get('/manifest.webmanifest');
     expect(res.ok()).toBeTruthy();

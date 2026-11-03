@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { openPrivacyPreferences } from '../lib/privacyPreferences';
 import { FileText } from 'lucide-react';
 
 interface FooterProps {
@@ -14,7 +13,6 @@ export function Footer({ showCatalogLink = false, compact = false, wide = false 
     return (
       <footer className="site-footer site-footer--compact no-print">
         {showCatalogLink && <Link to="/" className="site-footer-compact-catalog">← Catalogo</Link>}
-        <button type="button" className="privacy-preferences-link" onClick={openPrivacyPreferences}>Preferenze privacy</button>
         <span className="site-footer-compact-copy">© PoliTost</span>
       </footer>
     );
@@ -33,7 +31,6 @@ export function Footer({ showCatalogLink = false, compact = false, wide = false 
           <Link to="/termini">Termini</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/cookie">Cookie</Link>
-          <button type="button" className="privacy-preferences-link" onClick={openPrivacyPreferences}>Preferenze privacy</button>
         </nav>
       </div>
     </footer>

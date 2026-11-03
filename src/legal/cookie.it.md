@@ -1,16 +1,16 @@
 # Cookie policy
 
-**Versione:** 2026-10-19
+**Versione:** 2026-11-03
 
-Il reader usa la memoria del browser per libri e preferenze. Le promozioni di PoliTost non impostano cookie di tracciamento. Google Analytics e gli annunci Google, se configurati, hanno scelte di consenso separate.
+Il reader non imposta cookie. Usa solo la memoria del tuo browser, per servizi che chiedi tu: ricordare il tema, dove eri arrivato e i libri che hai aperto o importato. Per questo non chiediamo il consenso e non mostriamo un banner.
 
 ## Memoria del browser
 
-Le chiavi tecniche elencate qui restano nel browser e non tracciano la navigazione fra siti.
+Nessuna di queste chiavi arriva al server o traccia la navigazione fra siti.
 
 **`politost-theme`.** Chiave in localStorage, valore `light` o `dark`. La scriviamo solo quando usi il pulsante del tema. Finché non lo usi, il reader segue il tema del sistema.
 
-**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto salva l'ultimo capitolo e paragrafo letto, con numero e titolo del capitolo, così la home può proporti «Riprendi». «Rimuovi da questo dispositivo» cancella anche la posizione di quel libro.
+**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto salva l'ultimo capitolo letto, con numero e titolo, e, se avevi superato il primo paragrafo, anche il paragrafo a cui eri arrivato, sempre con numero e titolo. Salva inoltre quanto del capitolo hai letto e quando, così la home può proporti «Riprendi» partendo dal libro letto per ultimo. Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» cancella anche la posizione di quel libro.
 
 **`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni.
 
@@ -18,17 +18,9 @@ Le chiavi tecniche elencate qui restano nel browser e non tracciano la navigazio
 
 **Cache `smartbook-static-v4`.** Un service worker tiene in cache la struttura dell'app, le icone e il manifest, per aprire il reader anche senza rete.
 
-## Statistiche e pubblicità
+## Analitici
 
-Se Google Analytics è configurato, chiediamo il consenso prima di caricare il suo script. La scelta viene salvata per 180 giorni in `politost-privacy-v1`, in localStorage. `politost_reader_ga` e `politost_reader_ga_<identificativo>` distinguono i browser e le sessioni. Impostiamo una durata massima di 180 giorni senza rinnovo automatico. I cookie sono limitati all’host e al percorso di questa copia del reader. La revoca elimina i cookie Analytics accessibili su questo sito e ricarica la pagina per fermare lo script.
-
-Se AdSense è configurato, il suo gestore del consenso certificato contatta Google per mostrare e ricordare le scelte. Può usare cookie come `FCCDCF` e `FCNEC`. Dopo il consenso richiesto, gli annunci possono usare ulteriori cookie, come `__gads`, `__gpi` e `IDE`, con le durate e finalità indicate da Google. Non tentiamo di cancellare cookie di altri domini. Vedi la [descrizione dei cookie Google](https://policies.google.com/technologies/cookies).
-
-Puoi rifiutare le statistiche e gli annunci e continuare a leggere. "Preferenze privacy" riapre la scelta sulle statistiche. Dentro un libro, il pulsante sul consenso pubblicitario riapre il messaggio Google. Se Google è bloccato, gli annunci non partono e compare una promozione di PoliTost.
-
-## Preferenze della barra
-
-In sessionStorage, `politost-support-dismissed` ricorda la chiusura della promozione per la sessione della scheda. `politost-support-book`, `politost-support-current` e `politost-support-next` mantengono la promozione stabile nel libro e alternano Pyxis, Telegram e TikTok all'apertura successiva. Non sono identificativi pubblicitari e non li inviamo al server.
+Nessuno. Non carichiamo Google Analytics, Matomo, Cloudflare Web Analytics o altri strumenti di statistica. Se un giorno li aggiungessimo, chiederemmo prima il consenso.
 
 ## Cloudflare
 
