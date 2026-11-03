@@ -48,7 +48,8 @@ export function executeMatlab(code: string): MatlabResult {
 
 function describeError(e: unknown): string {
   if (!(e instanceof Error)) return `Errore: ${String(e)}`;
-  // numbl runs eval'd text through its JIT, which needs `new Function`, and the CSP refuses that.
+  // Up to 0.4.21 numbl compiled loops inside eval with `new Function`, which the CSP refuses.
+  // 0.4.22 no longer does; this keeps the message readable if a later version goes back to it.
   if (e.name === 'EvalError' || /code generation from strings|unsafe-eval/i.test(e.message)) {
     return 'Errore: eval con cicli non è disponibile nel laboratorio. Scrivi il codice direttamente nello script.';
   }
