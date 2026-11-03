@@ -32,6 +32,12 @@ a:hover { color: var(--primary-hover); }
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
+/* antd resets links with a:focus { outline: 0 }, which outranks the :where() rule above.
+   .sb-book-link is left out because its card draws the ring instead. */
+a:focus-visible:not(.sb-book-link) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }

@@ -19,6 +19,18 @@ test.describe('Accessibility landmarks', () => {
     await expect(page.locator('#auth-panel[role="tabpanel"]')).toBeVisible();
   });
 
+  test('keyboard focus is visible on links and buttons', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.locator('.smartbook-view .paragraph-section').first()).toBeVisible();
+    for (const target of [page.getByRole('link', { name: 'Formulario' }).first(), page.locator('.sb-fref-chip').first()]) {
+      await target.focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await expect(target).toBeFocused();
+      await expect(target).toHaveCSS('outline-style', 'solid');
+    }
+  });
+
   test('reader chapter has a main landmark', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     await expect(page.locator('main.app-main')).toBeVisible();

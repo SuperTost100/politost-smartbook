@@ -34,6 +34,8 @@ export function FormulaRef({ formulaId, formulas }: FormulaRefProps) {
           <button
             type="button"
             className="sb-btn sb-btn-ghost sb-btn-sm"
+            // A tap would move focus off the chip, and the focus trigger would close the popover before the click.
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => navigate(`/libro/${bookId}/formulario#${formula.id}`)}
           >
             Apri nel formulario

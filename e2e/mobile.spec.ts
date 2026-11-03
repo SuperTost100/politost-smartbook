@@ -21,6 +21,27 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await assertNoHorizontalOverflow(page);
   });
 
+  test('the resume button stays inside its book card', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('politost-last-read', JSON.stringify({
+        esempio: { chapterId: 'nel-libro', chapterNumber: 2, chapterTitle: 'Cosa trovi nel libro', paragraphId: 'p3', readAt: 1 },
+      }));
+    });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    const card = page.locator('.sb-book').filter({ has: page.locator('.sb-book-foot') }).first();
+    const [cardBox, buttonBox] = await Promise.all([card.boundingBox(), card.locator('.sb-book-foot .sb-btn').first().boundingBox()]);
+    expect(cardBox && buttonBox).toBeTruthy();
+    if (cardBox && buttonBox) expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width);
+  });
+
+  test('a tapped formula reference opens the formula in the formulario', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await page.locator('.sb-fref-chip').first().tap();
+    await page.getByRole('button', { name: 'Apri nel formulario' }).tap();
+    await expect(page).toHaveURL(/\/libro\/esempio\/formulario#2\.1$/);
+  });
+
   test('chapter content is visible without scrolling past chapter drawer chrome', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
 
