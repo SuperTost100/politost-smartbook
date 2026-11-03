@@ -134,8 +134,8 @@ export const FONT_MONO = "\"JetBrains Mono\", ui-monospace, \"SF Mono\", Menlo, 
 
 export const ptsbLayout = {
   headerHeight: 70,
-  siderWidth: 290,
-  railWidth: 250,
-  readingWidth: 760,
+  siderWidth: 270,
+  railWidth: 230,
+  readingWidth: 920,
   wideWidth: 1200,
 } as const;

@@ -22,12 +22,14 @@ interface SectionTabsProps {
   value: SectionKey;
   /** Icons only; the label stays available to assistive tech and as a tooltip. */
   compact?: boolean;
+  /** The fixed bar at the bottom of the screen on phones and tablets. */
+  bottom?: boolean;
 }
 
 /** Book sections as a pressed segmented track: the current one is raised out of it. */
-export function SectionTabs({ items, value, compact = false }: SectionTabsProps) {
+export function SectionTabs({ items, value, compact = false, bottom = false }: SectionTabsProps) {
   return (
-    <nav aria-label="Sezioni del libro" className={`sb-segmented${compact ? ' sb-segmented-compact' : ''}`}>
+    <nav aria-label="Sezioni del libro" className={`sb-segmented${compact ? ' sb-segmented-compact' : ''}${bottom ? ' sb-segmented-bottom' : ''}`}>
       {items.map(({ key, label, href }) => {
         const Icon = SECTION_ICONS[key];
         return (

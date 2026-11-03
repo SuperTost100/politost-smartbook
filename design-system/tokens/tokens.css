@@ -131,9 +131,9 @@
   --control-lg: 52px;
   --control-icon: 42px;
   --header-height: 70px;
-  --sider-width: 290px;
-  --rail-width: 250px;
-  --reading-width: 760px;
+  --sider-width: 270px;
+  --rail-width: 230px;
+  --reading-width: 920px;
   --wide-width: 1200px;
 }
 .sb-cover-terracotta { --cover: #a24a31; --cover-ink: #fbf3e6; }
