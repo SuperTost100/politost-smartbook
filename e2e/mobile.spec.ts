@@ -63,6 +63,10 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     // on phones the section switcher is a bar at the bottom of the screen
     const sectionNav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+    // iOS Safari stops painting a fixed bar inside the sticky header while scrolling, so it lives outside it.
+    expect(await sectionNav.evaluate((el) => el.closest('.sb-rtop') === null)).toBe(true);
+    // ...but it still comes before the chapter in keyboard order.
+    expect(await sectionNav.evaluate((el) => !!(el.compareDocumentPosition(document.getElementById('main-content')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
     await expect(sectionNav.getByRole('link', { name: 'Formulario' })).toBeVisible();
     await expect(sectionNav.getByRole('link', { name: 'Laboratorio' })).toHaveCount(0);
     await sectionNav.getByRole('link', { name: 'Grafici & Calcoli' }).click();
