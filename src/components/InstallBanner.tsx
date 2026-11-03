@@ -30,7 +30,7 @@ function snooze(days = SNOOZE_DAYS) {
   localStorage.setItem(SNOOZE_KEY, String(Date.now() + days * 86_400_000));
 }
 
-export function InstallBanner() {
+export function InstallBanner({ visible = true }: { visible?: boolean }) {
   const isMobile = useMediaQuery(MOBILE_LAYOUT_QUERY);
   const [snoozed, setSnoozed] = useState(isSnoozed);
   const [revealed, setRevealed] = useState(false);
@@ -83,7 +83,7 @@ export function InstallBanner() {
     return () => window.cancelAnimationFrame(frame);
   }, [revealed]);
 
-  if (!eligible || !revealed) return null;
+  if (!visible || !eligible || !revealed) return null;
   if (!installEvent && !showIosHint) return null;
 
   const dismissLater = () => {

@@ -55,12 +55,19 @@ function ScrollToTop() {
   return null;
 }
 
+/** Only the library offers the install, so the banner never covers the reader's section bar. */
+function HomeInstallBanner() {
+  const { pathname } = useLocation();
+  return <InstallBanner visible={pathname === '/'} />;
+}
+
 function AppRoutes() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <ScrollToTop />
+      <HomeInstallBanner />
       <ConsentGate>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -150,7 +157,6 @@ export function App() {
           <AntdProvider>
             <AuthProvider>
               <AppRoutes />
-              <InstallBanner />
             </AuthProvider>
           </AntdProvider>
         </ThemeProvider>
