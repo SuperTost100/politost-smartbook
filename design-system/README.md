@@ -21,6 +21,7 @@ Smartbook is Pyxis' sibling: same skeleton (antd v6 + Ant Design Pro, Figtree + 
 | `icons/` | Lucide sprite of the icons the design uses |
 | `logo/` | Mark (light, dark, mono, small), lockups, app icon SVG + PNG 16–1024 |
 | `reference/` | `index.html` (every component, light/dark toggle, opens offline), `bundle.css`, `bundle.js`, `index.d.ts`, `lib/` (React 18 UMD + KaTeX for the offline page only) |
+| `mockups/` | The three redesign directions from October 2026: `a-libreria.html`, `b-carta.html`, `c-ambra.html`. Tost picked B, Carta, on 3 November 2026, and A and C stay here for reference. Edit `src/`, then rebuild with `node design-system/mockups/src/build.mjs` |
 
 ## Quick start
 

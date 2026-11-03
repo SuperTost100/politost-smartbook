@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smartbook · Direzione C, Ambra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Young+Serif&display=swap" rel="stylesheet">
+<style>{{css:katex}}</style>
+<style>{{css:shared}}</style>
+<style>
+/* Direction C, Ambra: a bright reading app. Rounded white cards on cream, amber accent, Young Serif titles, a progress ring, a bottom tab bar on phones. */
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --bg: #faf5ee;
+  --card: #ffffff;
+  --card-2: #fdf9f3;
+  --line: #eee3d4;
+  --line-strong: #a8927c;
+  --ink: #2a1d14;
+  --ink-2: #5d4a3b;
+  --ink-3: #6f5a49;
+  --accent: #bf5417;
+  --accent-hover: #a84813;
+  --on-accent: #ffffff;
+  --accent-text: #ad4a12;
+  --amber-soft: #fcebd6;
+  --amber-softer: #fff4e6;
+  --sage: #4f6e52;
+  --sage-soft: #e5efe3;
+  --rose: #a33c3c;
+  --rose-soft: #f8e1df;
+  --shadow-1: 0 1px 2px rgba(84, 52, 20, .06), 0 1px 1px rgba(84, 52, 20, .04);
+  --shadow-2: 0 2px 4px rgba(84, 52, 20, .05), 0 12px 32px -12px rgba(84, 52, 20, .18);
+  --shadow-cover: 0 2px 4px rgba(60, 30, 10, .12), 0 16px 28px -12px rgba(60, 30, 10, .4);
+  --ribbon: #e08a2e;
+  --fig-ink: #3a2a1e; --fig-line: #c95c1b; --fig-area: rgba(224,138,46,.2); --fig-guide: #cdb9a3;
+  --focus: #bf5417;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #17120e;
+  --card: #221b16;
+  --card-2: #1d1712;
+  --line: #352a21;
+  --line-strong: #7a6655;
+  --ink: #f4e9db;
+  --ink-2: #cdbba7;
+  --ink-3: #ad9b88;
+  --accent: #f2a45c;
+  --accent-hover: #f7b577;
+  --on-accent: #2a1606;
+  --accent-text: #f4ac68;
+  --amber-soft: #3b2814;
+  --amber-softer: #2a1f15;
+  --sage: #9cc29f;
+  --sage-soft: #1f2b20;
+  --rose: #f09a92;
+  --rose-soft: #3a2020;
+  --shadow-1: 0 0 0 1px rgba(255,235,210,.04);
+  --shadow-2: 0 0 0 1px rgba(255,235,210,.05), 0 16px 36px -16px rgba(0,0,0,.8);
+  --shadow-cover: 0 2px 4px rgba(0,0,0,.4), 0 16px 28px -12px rgba(0,0,0,.85);
+  --ribbon: #f2a45c;
+  --fig-ink: #e2d3c1; --fig-line: #f2a45c; --fig-area: rgba(242,164,92,.18); --fig-guide: #5d4c3e;
+  --focus: #f2a45c;
+}
+
+body { background: var(--bg); color: var(--ink); font: 400 1rem/1.55 'Albert Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 12px; }
+::selection { background: rgba(224,138,46,.28); }
+.display { font-family: 'Young Serif', Georgia, serif; font-weight: 400; letter-spacing: -.01em; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; min-height: 46px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent; font: 600 .95rem/1 'Albert Sans', sans-serif; text-decoration: none; cursor: pointer; transition: background-color .15s ease-out, border-color .15s ease-out, transform .1s ease-out; }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-quiet { background: var(--card); color: var(--ink); border-color: var(--line); box-shadow: var(--shadow-1); }
+.btn-quiet:hover { border-color: var(--line-strong); }
+.btn-sm { min-height: 38px; padding: 0 16px; font-size: .86rem; }
+.icon-btn { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink-2); cursor: pointer; transition: border-color .15s ease-out, color .15s ease-out; }
+.icon-btn:hover { color: var(--ink); border-color: var(--line-strong); }
+.meter { position: relative; flex: 1; height: 8px; border-radius: 999px; background: var(--amber-soft); overflow: hidden; }
+.meter > span { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--ribbon); }
+
+/* Covers */
+.cover { --c1: #b5531a; --c2: #a8460f; container-type: inline-size; position: relative; display: flex; flex-direction: column; aspect-ratio: 2 / 3; padding: 9% 9% 10%; overflow: hidden; border-radius: 6px 14px 14px 6px; color: #fff8ef; background: linear-gradient(160deg, var(--c1), var(--c2)); box-shadow: var(--shadow-cover); }
+.cover::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 5%; background: linear-gradient(90deg, rgba(0,0,0,.22), rgba(255,255,255,.12) 70%, transparent); }
+.cover-subject { font: 600 max(.6rem, 7cqi)/1 'Albert Sans', sans-serif; opacity: .9; }
+.cover-art { width: 74%; margin: auto auto 6cqi; color: rgba(255, 249, 240, .92); }
+.cover-title { font: 400 13cqi/1.06 'Young Serif', serif; text-wrap: balance; hyphens: auto; }
+.cover-author { margin-top: 5cqi; font: 500 max(.6rem, 6.5cqi)/1.2 'Albert Sans', sans-serif; opacity: .85; }
+.cover.fisica { --c1: #b5531a; --c2: #a8460f; }
+.cover.analisi { --c1: #5a7852; --c2: #44613f; }
+.cover.chimica { --c1: #46708f; --c2: #2f5070; }
+.cover.geometria { --c1: #8e6585; --c2: #613f5b; }
+.cover.esempio { --c1: #f3c766; --c2: #d99a2b; color: #33230c; }
+.cover.esempio .cover-art { color: rgba(51, 35, 12, .78); }
+[data-theme="dark"] .cover { filter: brightness(.9) saturate(.92); }
+
+/* Site */
+.site-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1240px; margin: 0 auto; padding: 20px 28px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand .mark { width: 32px; height: 24px; color: var(--ink); }
+.brand-word { font: 400 1.4rem/1 'Young Serif', serif; }
+.head-actions { display: flex; align-items: center; gap: 8px; }
+.head-link { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: .92rem; }
+.head-link:hover { background: var(--card); color: var(--ink); }
+
+.home { max-width: 1240px; margin: 0 auto; padding: 8px 28px 120px; }
+.home-title { margin: 18px 0 22px; font-size: clamp(2rem, 3.6vw, 2.8rem); line-height: 1.1; }
+.top-row { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 22px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow-2); }
+.resume { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 32px; align-items: center; padding: 28px 32px 28px 28px; }
+.resume-cover { grid-row: span 2; align-self: center; text-decoration: none; }
+.resume-kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 6px 12px; border-radius: 999px; background: var(--amber-soft); color: var(--accent-text); font: 600 .82rem/1 'Albert Sans', sans-serif; }
+.resume h2 { margin: 0; font-size: clamp(1.7rem, 2.8vw, 2.3rem); line-height: 1.1; }
+.resume-book { margin: 10px 0 0; color: var(--ink-2); font: 400 1.1rem/1.45 'Spectral', serif; }
+.resume-book strong { color: var(--ink); font-weight: 600; }
+.resume-progress { display: flex; align-items: center; gap: 12px; margin: 20px 0 22px; color: var(--ink-3); font-size: .86rem; font-variant-numeric: tabular-nums; }
+.resume-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 10px; }
+
+.import { display: flex; flex-direction: column; padding: 26px; background: var(--amber-softer); border-color: color-mix(in srgb, var(--ribbon) 25%, var(--line)); box-shadow: none; }
+.import h2 { margin: 0 0 8px; font-size: 1.45rem; line-height: 1.15; }
+.import p { margin: 0 0 18px; color: var(--ink-2); font-size: .95rem; }
+.drop { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 140px; padding: 18px; border: 1.5px dashed color-mix(in srgb, var(--ribbon) 55%, var(--line-strong)); border-radius: 20px; text-align: center; color: var(--ink-2); font-size: .9rem; }
+.drop-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--card); color: var(--accent-text); box-shadow: var(--shadow-1); }
+
+.lib-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 52px 4px 6px; }
+.lib-head h2 { margin: 0; font-size: 1.8rem; }
+.lib-count { color: var(--ink-3); font-size: .92rem; }
+.lib-note { max-width: 64ch; margin: 0 4px 26px; color: var(--ink-2); font: 400 1.05rem/1.5 'Spectral', serif; }
+.lib { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 30px 26px; }
+.lib li { position: relative; }
+.lib .cover { transition: transform .2s ease-out, box-shadow .2s ease-out; }
+.lib li:hover .cover { transform: translateY(-4px); }
+.lib h3 { margin: 16px 0 0; font: 600 1.02rem/1.3 'Albert Sans', sans-serif; }
+.lib h3 a { color: var(--ink); text-decoration: none; }
+.lib h3 a::after { content: ''; position: absolute; inset: 0; }
+.lib-meta { margin: 3px 0 0; color: var(--ink-3); font-size: .85rem; }
+.tag { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 5px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink-2); font-size: .78rem; font-weight: 500; }
+.tag .i { width: 14px; height: 14px; }
+.lib-resume { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 4px; margin: 10px 0 0 6px; font-size: .86rem; font-weight: 600; text-decoration: none; }
+.lib-resume .i { width: 15px; height: 15px; }
+.ring { position: absolute; z-index: 2; top: 10px; right: 10px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow-2); color: var(--ink); font: 700 .7rem/1 'Albert Sans', sans-serif; font-variant-numeric: tabular-nums; }
+.ring svg { position: absolute; inset: 4px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 3.5; }
+.ring .ring-bg { stroke: var(--amber-soft); }
+.ring .ring-fg { stroke: var(--ribbon); stroke-linecap: round; }
+.foot { max-width: 1240px; margin: 0 auto; padding: 24px 28px 96px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--ink-3); font-size: .85rem; border-top: 1px solid var(--line); }
+.foot nav { display: flex; gap: 18px; }
+.foot a { color: var(--ink-2); text-decoration: none; }
+
+/* Reader */
+.r-shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 100vh; }
+.r-side { position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column; gap: 14px; padding: 18px 14px 18px 18px; overflow-y: auto; }
+.r-back { display: inline-flex; align-items: center; gap: 10px; padding: 4px 6px; color: var(--ink); text-decoration: none; }
+.r-back .mark { width: 28px; height: 21px; color: var(--ink); }
+.r-back span { font: 400 1.15rem/1 'Young Serif', serif; }
+.r-bookcard { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px; }
+.r-bookcard .cover { border-radius: 4px 8px 8px 4px; }
+.r-bookcard h2 { margin: 0; font: 400 1.1rem/1.2 'Young Serif', serif; }
+.r-bookcard p { margin: 3px 0 10px; color: var(--ink-3); font-size: .8rem; }
+.r-side .toc { padding: 14px 10px; }
+.toc-label, .outline-label { margin: 2px 10px 10px; color: var(--ink-3); font: 600 .82rem/1 'Albert Sans', sans-serif; }
+.toc-list, .toc-paras, .outline-list { list-style: none; margin: 0; padding: 0; }
+.toc-list > li > a { display: flex; gap: 10px; padding: 9px 10px; border-radius: 12px; color: var(--ink-2); text-decoration: none; font: 500 .92rem/1.35 'Albert Sans', sans-serif; }
+.toc-list > li > a:hover { background: var(--card-2); color: var(--ink); }
+.toc-n { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 8px; background: var(--card-2); border: 1px solid var(--line); color: var(--ink-3); font: 600 .75rem/1 'Albert Sans', sans-serif; font-variant-numeric: tabular-nums; }
+.toc-list > li.is-open > a { background: var(--amber-soft); color: var(--ink); font-weight: 600; }
+.toc-list > li.is-open > a .toc-n { background: var(--accent); border-color: transparent; color: var(--on-accent); }
+.toc-paras { margin: 6px 0 8px 22px; padding-left: 12px; border-left: 2px solid var(--line); }
+.toc-paras a { display: block; padding: 6px 10px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: .87rem; }
+.toc-paras a:hover { color: var(--ink); background: var(--card-2); }
+.toc-paras .is-here a { color: var(--accent-text); font-weight: 600; background: var(--amber-softer); }
+
+.r-col { min-width: 0; padding: 18px 22px 120px 8px; }
+.r-top { position: sticky; top: 12px; z-index: 20; display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.tabs { display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-2); overflow-x: auto; scrollbar-width: none; }
+.tabs a { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border-radius: 999px; color: var(--ink-2); text-decoration: none; white-space: nowrap; font: 500 .9rem/1 'Albert Sans', sans-serif; transition: background-color .15s ease-out, color .15s ease-out; }
+.tabs a .i { width: 16px; height: 16px; }
+.tabs a:hover { color: var(--ink); background: var(--card-2); }
+.tabs a[aria-current="page"] { background: var(--ink); color: var(--bg); font-weight: 600; }
+.r-tools { display: flex; gap: 8px; margin-left: auto; }
+.r-menu { display: none; }
+
+.r-grid { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 22px; align-items: start; }
+.sheet { padding: 56px 64px 48px; border-radius: 30px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-2); }
+.chapter, .exercises { max-width: 700px; margin: 0 auto; font: 400 1.18rem/1.7 'Spectral', serif; }
+.ch-head { padding-bottom: 28px; margin-bottom: 34px; border-bottom: 1px solid var(--line); }
+.ch-kicker { display: inline-flex; margin: 0 0 14px; padding: 6px 12px; border-radius: 999px; background: var(--amber-soft); color: var(--accent-text); font: 600 .82rem/1 'Albert Sans', sans-serif; }
+.ch-title, .sec-title { margin: 0; font: 400 clamp(2.2rem, 4.2vw, 3.2rem)/1.08 'Young Serif', serif; letter-spacing: -.015em; text-wrap: balance; }
+.ch-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 18px; color: var(--ink-3); font: 500 .88rem/1 'Albert Sans', sans-serif; }
+.ch-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+.ch-meta .i { width: 15px; height: 15px; }
+.ch-meta .btn { margin-left: auto; background: var(--card-2); border: 1px solid var(--line); color: var(--ink); }
+.para + .para { margin-top: 50px; }
+.para-h { display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font: 400 1.75rem/1.2 'Young Serif', serif; }
+.para-num { color: var(--accent-text); font: 700 1rem/1 'Albert Sans', sans-serif; font-variant-numeric: tabular-nums; }
+.sub-h { margin: 32px 0 10px; font: 700 1.05rem/1.3 'Albert Sans', sans-serif; }
+.chapter p { margin: 0 0 1em; hyphens: auto; }
+.math-display { margin: 6px 0 18px; }
+.formula { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 16px; margin: 24px 0; padding: 20px 18px 14px 22px; border-radius: 20px; background: var(--amber-softer); border: 1px solid color-mix(in srgb, var(--ribbon) 22%, var(--line)); }
+.formula-math { grid-column: 1; grid-row: 1; }
+.formula-num { grid-column: 2; grid-row: 1 / span 2; padding: 7px 11px; border-radius: 999px; background: var(--card); color: var(--accent-text); font: 700 .85rem/1 'Albert Sans', sans-serif; font-variant-numeric: tabular-nums; box-shadow: var(--shadow-1); border: 1px solid var(--line); }
+.formula-label { grid-column: 1; grid-row: 2; margin-top: 6px; text-align: center; color: var(--ink-3); font: 500 .82rem/1.3 'Albert Sans', sans-serif; }
+.xref { padding: 1px 7px; border-radius: 999px; background: var(--amber-soft); color: var(--accent-text); font: 700 .85em/1.5 'Albert Sans', sans-serif; text-decoration: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fig { margin: 30px 0 6px; padding: 20px 20px 16px; border-radius: 22px; background: var(--card-2); border: 1px solid var(--line); }
+.fig-art { width: 100%; height: auto; }
+.fig-area { fill: var(--fig-area); }
+.fig-axis { fill: none; stroke: var(--fig-ink); stroke-width: 1.4; }
+.fig-guide { fill: none; stroke: var(--fig-guide); stroke-width: 1; stroke-dasharray: 4 4; }
+.fig-line { fill: none; stroke: var(--fig-line); stroke-width: 3; stroke-linecap: round; }
+.fig-t { fill: var(--fig-ink); font: italic 400 18px 'Spectral', serif; }
+.fig-t-strong { font-style: normal; font-weight: 600; }
+.fig figcaption { margin-top: 12px; color: var(--ink-2); font: 400 .88rem/1.5 'Albert Sans', sans-serif; }
+.fig-num { margin-right: 6px; color: var(--accent-text); font-weight: 700; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 52px; }
+.pager-link { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 20px; background: var(--card-2); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font: 400 1.1rem/1.2 'Young Serif', serif; transition: border-color .15s ease-out; }
+.pager-link:hover { border-color: var(--line-strong); }
+.pager-link small { display: block; margin-bottom: 4px; color: var(--ink-3); font: 600 .8rem/1 'Albert Sans', sans-serif; }
+.pager-next { justify-content: flex-end; text-align: right; }
+
+.outline { position: sticky; top: 84px; padding: 20px 16px; border-radius: 24px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-2); }
+.outline-list a { display: flex; gap: 10px; padding: 6px 10px; border-radius: 10px; color: var(--ink-3); text-decoration: none; font-size: .87rem; line-height: 1.35; }
+.outline-list a span { min-width: 2em; font-variant-numeric: tabular-nums; }
+.outline-list a:hover { color: var(--ink); background: var(--card-2); }
+.outline-list .is-here a { color: var(--ink); font-weight: 600; background: var(--amber-softer); }
+.outline-progress { display: flex; align-items: center; gap: 10px; margin: 16px 10px 0; color: var(--ink-3); font-size: .8rem; font-variant-numeric: tabular-nums; }
+
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+.sec-meta { margin: 10px 0 0; color: var(--ink-3); font: 500 .9rem/1 'Albert Sans', sans-serif; }
+.ex { padding: 24px 26px 20px; border-radius: 24px; background: var(--card-2); border: 1px solid var(--line); }
+.ex + .ex { margin-top: 18px; }
+.ex-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+.ex-id { margin: 0; font: 400 1.25rem/1.1 'Young Serif', serif; }
+.ex-ch { color: var(--ink-3); font: 500 .85rem/1 'Albert Sans', sans-serif; }
+.diff { margin-left: auto; padding: 6px 11px; border-radius: 999px; font: 700 .78rem/1 'Albert Sans', sans-serif; }
+.diff-1 { background: var(--sage-soft); color: var(--sage); }
+.diff-2 { background: var(--amber-soft); color: var(--accent-text); }
+.diff-3 { background: var(--rose-soft); color: var(--rose); }
+.ex-q p { margin: 0 0 14px; }
+.ex .reveal { display: inline-block; vertical-align: top; margin: 2px 8px 0 0; }
+.ex .reveal[open] { display: block; margin-right: 0; }
+.reveal summary { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink); font: 600 .88rem/1 'Albert Sans', sans-serif; transition: border-color .15s ease-out; }
+.reveal summary:hover { border-color: var(--line-strong); }
+.reveal summary .i { width: 16px; height: 16px; color: var(--accent-text); }
+.reveal[open] summary { background: var(--ink); color: var(--bg); border-color: transparent; }
+.reveal[open] summary .i { color: inherit; }
+.reveal-body { margin: 12px 0 6px; padding: 14px 18px; border-radius: 16px; font-size: 1.05rem; }
+.reveal-body p { margin: 0; }
+.reveal-hint .reveal-body { background: var(--amber-softer); border: 1px solid color-mix(in srgb, var(--ribbon) 22%, var(--line)); }
+.reveal-sol .reveal-body { background: var(--sage-soft); }
+
+.bottom-bar { display: none; }
+
+@media (max-width: 1280px) { .r-grid { grid-template-columns: minmax(0, 1fr); } .outline { display: none; } }
+@media (max-width: 1080px) { .top-row { grid-template-columns: 1fr; } .import { flex-direction: row; flex-wrap: wrap; gap: 0 24px; align-items: center; } .import > div:first-child { flex: 1 1 280px; } .drop { flex: 1 1 280px; min-height: 110px; } }
+@media (max-width: 900px) {
+  .r-shell { grid-template-columns: 1fr; }
+  .r-side { display: none; }
+  .drawer-open .r-side { display: flex; position: fixed; z-index: 30; inset: 0 auto 0 0; width: min(330px, 88vw); background: var(--bg); box-shadow: var(--shadow-2); }
+  .r-col { padding: 10px 10px 110px; }
+  .r-top { top: 8px; margin-bottom: 10px; }
+  .r-menu { display: inline-grid; }
+  .r-top .tabs { display: none; }
+  .r-top .r-title { display: block; }
+  .bottom-bar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; z-index: 25; left: 10px; right: 10px; bottom: 10px; padding: 6px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-2); }
+  html:not(.shot) .bottom-bar { bottom: 58px; }
+  .bottom-bar a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; border-radius: 16px; color: var(--ink-3); text-decoration: none; font: 600 .72rem/1 'Albert Sans', sans-serif; }
+  .bottom-bar a .i { width: 20px; height: 20px; }
+  .bottom-bar a[aria-current="page"] { background: var(--amber-soft); color: var(--accent-text); }
+  .sheet { padding: 30px 20px 36px; border-radius: 24px; }
+  .chapter, .exercises { font-size: 1.1rem; line-height: 1.64; }
+  .formula { padding: 16px 12px 12px 14px; column-gap: 8px; }
+  .ch-meta .btn { margin-left: 0; }
+  .para-h { font-size: 1.5rem; }
+  .pager { grid-template-columns: 1fr; }
+  .sec-head { flex-direction: column; align-items: flex-start; }
+  .ex { padding: 18px 16px 16px; }
+  .site-head { padding: 14px 16px; }
+  .home { padding: 0 14px 100px; }
+  .resume { grid-template-columns: 96px minmax(0, 1fr); gap: 18px; padding: 18px; align-items: start; }
+  .resume-cover { grid-row: auto; align-self: start; }
+  .resume-actions { grid-column: 1 / -1; }
+  .resume-actions .btn { flex: 1 1 auto; }
+  .resume-progress { margin-bottom: 0; }
+  .lib { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+  .foot { margin: 0 14px; padding-left: 0; padding-right: 0; }
+  .head-long { display: none; }
+}
+.r-title { display: none; margin: 0; font: 400 1.1rem/1 'Young Serif', serif; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div data-view="home">
+  <header class="site-head">
+    <a class="brand" href="#home" aria-label="Smartbook, la tua libreria">{{mark}}<span class="brand-word">Smartbook</span></a>
+    <div class="head-actions">
+      <a class="head-link" href="#home">{{icon:key}}<span class="head-long">Riscatta codice</span></a>
+      <a class="btn btn-quiet btn-sm" href="#home">{{icon:login}} Accedi</a>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+    </div>
+  </header>
+
+  <main class="home" id="main-content">
+    <h1 class="display home-title">La tua libreria</h1>
+    <div class="top-row">
+      <section class="card resume" aria-labelledby="resume-title">
+        <a class="resume-cover" href="#capitolo" aria-hidden="true" tabindex="-1">
+          <div class="cover fisica"><span class="cover-subject">Fisica</span>{{include:art-fisica}}<span class="cover-title">Fisica 1</span><span class="cover-author">Tost</span></div>
+        </a>
+        <div>
+          <p class="resume-kicker">{{icon:book}} Continua a leggere</p>
+          <h2 class="display" id="resume-title">Cinematica del punto</h2>
+          <p class="resume-book"><strong>Fisica 1</strong>, capitolo 2. L’ultima volta eri al paragrafo 2.2, <em>Moto rettilineo</em>.</p>
+          <div class="resume-progress"><div class="meter" role="meter" aria-label="Letto del capitolo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="24"><span style="width:24%"></span></div><span>24 %</span></div>
+        </div>
+        <div class="resume-actions">
+          <a class="btn btn-primary" href="#capitolo">Riprendi dal paragrafo 2.2</a>
+          <a class="btn btn-quiet" href="#capitolo">Apri l’indice</a>
+        </div>
+      </section>
+
+      <section class="card import" aria-labelledby="import-title">
+        <div>
+          <h2 class="display" id="import-title">Hai un libro digitale?</h2>
+          <p>Se hai ricevuto un file dal docente o dall’editore, importalo qui. Il libro resta su questo dispositivo.</p>
+        </div>
+        <div class="drop"><span class="drop-icon">{{icon:upload}}</span><span>Trascina qui il file .ptsb</span><button class="btn btn-quiet btn-sm" type="button">Scegli il file</button></div>
+      </section>
+    </div>
+
+    <div class="lib-head">
+      <h2 class="display" id="lib-title">I tuoi libri</h2>
+      <span class="lib-count">5 libri</span>
+    </div>
+    <p class="lib-note">Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.</p>
+    <ul class="lib" aria-labelledby="lib-title">
+      <li>
+        <span class="ring" aria-label="Capitolo 2 letto al 24 %"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring-fg" cx="18" cy="18" r="15" stroke-dasharray="22.6 94.2"/></svg>24%</span>
+        <div class="cover fisica"><span class="cover-subject">Fisica</span>{{include:art-fisica}}<span class="cover-title">Fisica 1</span><span class="cover-author">Tost</span></div>
+        <h3><a href="#capitolo">Fisica 1</a></h3><p class="lib-meta">Tost · v1.1.0</p>
+        <span class="tag">{{icon:cloud}} Dal catalogo</span><a class="lib-resume" href="#capitolo">Riprendi {{icon:right}}</a>
+      </li>
+      <li>
+        <div class="cover analisi"><span class="cover-subject">Analisi 1</span>{{include:art-analisi}}<span class="cover-title">Analisi Matematica 1</span><span class="cover-author">Tost</span></div>
+        <h3><a href="#capitolo">Analisi Matematica 1</a></h3><p class="lib-meta">Tost · v1.0.1</p>
+        <span class="tag">{{icon:cloud}} Dal catalogo</span>
+      </li>
+      <li>
+        <div class="cover chimica"><span class="cover-subject">Chimica</span>{{include:art-chimica}}<span class="cover-title">Chimica di base</span><span class="cover-author">Tost</span></div>
+        <h3><a href="#capitolo">Chimica di base</a></h3><p class="lib-meta">Tost · v1.0.0</p>
+        <span class="tag">{{icon:cloud}} Dal catalogo</span>
+      </li>
+      <li>
+        <div class="cover geometria"><span class="cover-subject">Geometria</span>{{include:art-geometria}}<span class="cover-title">Geometria e algebra lineare</span><span class="cover-author">Dip. di Matematica</span></div>
+        <h3><a href="#capitolo">Geometria e algebra lineare</a></h3><p class="lib-meta">Dip. di Matematica · v2.0</p>
+        <span class="tag">{{icon:file}} Importato qui</span>
+      </li>
+      <li>
+        <div class="cover esempio"><span class="cover-subject">Esempio</span>{{include:art-esempio}}<span class="cover-title">Guida di esempio</span><span class="cover-author">PoliTost</span></div>
+        <h3><a href="#capitolo">Guida di esempio</a></h3><p class="lib-meta">PoliTost · v1.0.1</p>
+        <span class="tag">{{icon:book}} Incluso nell’app</span>
+      </li>
+    </ul>
+  </main>
+  <footer class="foot">
+    <span>Smartbook · un progetto PoliTost</span>
+    <nav aria-label="Note legali"><a href="#home">Guida</a><a href="#home">Privacy</a><a href="#home">Termini</a></nav>
+  </footer>
+</div>
+
+<!-- CHAPTER -->
+<div data-view="capitolo">
+  <div class="r-shell">
+    <aside class="r-side" aria-label="Libro">
+      <a class="r-back" href="#home" aria-label="Torna alla libreria">{{mark}}<span>Smartbook</span></a>
+      <div class="card r-bookcard">
+        <div class="cover fisica"><span class="cover-subject"></span><span class="cover-title" style="font-size:20cqi">F1</span></div>
+        <div><h2>Fisica 1</h2><p>Tost · 14 capitoli</p><div class="meter" role="meter" aria-label="Letto del libro" aria-valuemin="0" aria-valuemax="100" aria-valuenow="9"><span style="width:9%"></span></div></div>
+      </div>
+      <div class="card">{{include:index}}</div>
+    </aside>
+    <div class="r-col">
+      <header class="r-top">
+        <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice">{{icon:menu}}</button>
+        <p class="r-title">Fisica 1</p>
+        <nav class="tabs" aria-label="Sezioni del libro">
+          <a href="#capitolo" aria-current="page">{{icon:book}} Capitoli</a>
+          <a href="#capitolo">{{icon:sigma}} Formulario</a>
+          <a href="#esercizio">{{icon:pencil}} Esercizi</a>
+          <a href="#capitolo">{{icon:cap}} Prove d’esame</a>
+          <a href="#capitolo">{{icon:terminal}} Laboratorio</a>
+          <a href="#capitolo">{{icon:chart}} Grafici</a>
+        </nav>
+        <div class="r-tools">
+          <button class="icon-btn" type="button" aria-label="Stampa">{{icon:printer}}</button>
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+        </div>
+      </header>
+      <div class="r-grid">
+        <main class="sheet">{{include:chapter}}</main>
+        {{include:outline}}
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-bar" aria-label="Sezioni del libro">
+    <a href="#capitolo" aria-current="page">{{icon:book}} Capitoli</a>
+    <a href="#capitolo">{{icon:sigma}} Formule</a>
+    <a href="#esercizio">{{icon:pencil}} Esercizi</a>
+    <a href="#capitolo">{{icon:more}} Altro</a>
+  </nav>
+</div>
+
+<!-- EXERCISES -->
+<div data-view="esercizio">
+  <div class="r-shell">
+    <aside class="r-side" aria-label="Libro">
+      <a class="r-back" href="#home" aria-label="Torna alla libreria">{{mark}}<span>Smartbook</span></a>
+      <div class="card r-bookcard">
+        <div class="cover fisica"><span class="cover-subject"></span><span class="cover-title" style="font-size:20cqi">F1</span></div>
+        <div><h2>Fisica 1</h2><p>Tost · 14 capitoli</p><div class="meter" role="meter" aria-label="Letto del libro" aria-valuemin="0" aria-valuemax="100" aria-valuenow="9"><span style="width:9%"></span></div></div>
+      </div>
+      <div class="card">{{include:index}}</div>
+    </aside>
+    <div class="r-col">
+      <header class="r-top">
+        <button class="icon-btn r-menu" type="button" data-drawer-open aria-label="Indice">{{icon:menu}}</button>
+        <p class="r-title">Fisica 1</p>
+        <nav class="tabs" aria-label="Sezioni del libro">
+          <a href="#capitolo">{{icon:book}} Capitoli</a>
+          <a href="#capitolo">{{icon:sigma}} Formulario</a>
+          <a href="#esercizio" aria-current="page">{{icon:pencil}} Esercizi</a>
+          <a href="#capitolo">{{icon:cap}} Prove d’esame</a>
+          <a href="#capitolo">{{icon:terminal}} Laboratorio</a>
+          <a href="#capitolo">{{icon:chart}} Grafici</a>
+        </nav>
+        <div class="r-tools">
+          <button class="icon-btn" type="button" aria-label="Stampa">{{icon:printer}}</button>
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Cambia tema">{{icon:moon}}</button>
+        </div>
+      </header>
+      <main class="sheet">{{include:exercises}}</main>
+    </div>
+  </div>
+  <nav class="bottom-bar" aria-label="Sezioni del libro">
+    <a href="#capitolo">{{icon:book}} Capitoli</a>
+    <a href="#capitolo">{{icon:sigma}} Formule</a>
+    <a href="#esercizio" aria-current="page">{{icon:pencil}} Esercizi</a>
+    <a href="#capitolo">{{icon:more}} Altro</a>
+  </nav>
+</div>
+
+{{include:mockbar}}
+<script>{{js:shared}}</script>
+</body>
+</html>

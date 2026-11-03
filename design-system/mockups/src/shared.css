@@ -1,0 +1,28 @@
+/* Mockup-only chrome and helpers shared by the three directions. Not part of any design. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg { display: block; }
+.i { flex: none; }
+[data-view] { display: none; }
+[data-view].is-active { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+.katex { font-size: 1.08em; }
+.katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+.mockbar {
+  position: fixed; z-index: 1000; left: 50%; bottom: 14px; transform: translateX(-50%);
+  display: flex; gap: 6px; align-items: center; padding: 5px;
+  font: 500 12px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0;
+  background: rgba(20, 20, 20, .86); color: #eee; border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+.mockbar-group { display: flex; gap: 2px; padding-right: 6px; border-right: 1px solid rgba(255,255,255,.18); }
+.mockbar a, .mockbar button { color: #ddd; text-decoration: none; padding: 7px 9px; border-radius: 6px; border: 0; background: none; font: inherit; cursor: pointer; white-space: nowrap; }
+.mockbar a:hover, .mockbar button:hover { background: rgba(255,255,255,.12); }
+.mockbar a[aria-current="true"] { background: #fff; color: #111; }
+.mockbar a:focus-visible, .mockbar button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.shot .mockbar { display: none; }
+@media (max-width: 560px) { .mockbar { font-size: 11px; bottom: 8px; } .mockbar a, .mockbar button { padding: 6px 6px; } }
