@@ -19,31 +19,9 @@ export function FormulaRef({ formulaId, formulas }: FormulaRefProps) {
 
   if (!formula) return <span className="formula-missing">({formulaId})</span>;
 
-  const content = open ? (
-    <div className="sb-fref-pop">
-      <div className="sb-fref-pop-head">
-        <b>({formula.id})</b>
-        <span>{formula.label}</span>
-      </div>
-      <div
-        className="sb-fref-pop-math"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(formula.latex)) }}
-      />
-      {bookId && (
-        <div className="sb-fref-pop-foot">
-          <button
-            type="button"
-            className="sb-btn sb-btn-ghost sb-btn-sm"
-            // A tap would move focus off the chip, and the focus trigger would close the popover before the click.
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => navigate(`/libro/${bookId}/formulario#${formula.id}`)}
-          >
-            Apri nel formulario
-          </button>
-        </div>
-      )}
-    </div>
-  ) : null;
+  // Always pass content: antd never opens a popover whose content is empty, so hover and focus did nothing.
+  // The popup itself renders only once opened, so KaTeX still runs on demand.
+  const content = <FormulaPreview formula={formula} bookId={bookId} onOpen={(href) => navigate(href)} />;
 
   return (
     <Popover
@@ -60,5 +38,33 @@ export function FormulaRef({ formulaId, formulas }: FormulaRefProps) {
         ({formula.id})
       </button>
     </Popover>
+  );
+}
+
+function FormulaPreview({ formula, bookId, onOpen }: { formula: FormulaRefData; bookId?: string; onOpen: (href: string) => void }) {
+  return (
+    <div className="sb-fref-pop">
+      <div className="sb-fref-pop-head">
+        <b>({formula.id})</b>
+        <span>{formula.label}</span>
+      </div>
+      <div
+        className="sb-fref-pop-math"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(formula.latex)) }}
+      />
+      {bookId && (
+        <div className="sb-fref-pop-foot">
+          <button
+            type="button"
+            className="sb-btn sb-btn-ghost sb-btn-sm"
+            // A tap would move focus off the chip, and the focus trigger would close the popover before the click.
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onOpen(`/libro/${bookId}/formulario#${formula.id}`)}
+          >
+            Apri nel formulario
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
