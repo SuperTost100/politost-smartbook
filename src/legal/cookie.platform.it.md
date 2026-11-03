@@ -20,7 +20,7 @@ Non sono cookie e non tracciano la navigazione fra siti.
 
 **`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni. Serve solo a non ripetere l'avviso.
 
-**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto su quel browser salva l'ultimo capitolo e paragrafo letto, con numero e titolo di entrambi, quanto del capitolo hai letto e quando, così la home può proporti «Riprendi» partendo dal libro letto per ultimo. Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» e l'uscita dall'account cancellano anche la posizione dei libri che tolgono.
+**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto su quel browser salva l'ultimo capitolo letto, con numero e titolo, e, se avevi superato il primo paragrafo, anche il paragrafo a cui eri arrivato, sempre con numero e titolo. Salva inoltre quanto del capitolo hai letto e quando, così la home può proporti «Riprendi» partendo dal libro letto per ultimo. Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» e l'uscita dall'account cancellano anche la posizione dei libri che tolgono.
 
 **IndexedDB `politost-smartbook`.** Contiene i file `.ptsb` che importi. Restano su quel browser. «Rimuovi da questo dispositivo» cancella un libro. Uscendo dall'account cancelliamo le copie collegate al tuo utente.
 

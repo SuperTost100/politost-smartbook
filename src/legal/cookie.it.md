@@ -10,7 +10,7 @@ Nessuna di queste chiavi arriva al server o traccia la navigazione fra siti.
 
 **`politost-theme`.** Chiave in localStorage, valore `light` o `dark`. La scriviamo solo quando usi il pulsante del tema. Finché non lo usi, il reader segue il tema del sistema.
 
-**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto salva l'ultimo capitolo e paragrafo letto, con numero e titolo di entrambi, quanto del capitolo hai letto e quando, così la home può proporti «Riprendi» partendo dal libro letto per ultimo. Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» cancella anche la posizione di quel libro.
+**`politost-last-read`.** Chiave in localStorage. Per ogni libro aperto salva l'ultimo capitolo letto, con numero e titolo, e, se avevi superato il primo paragrafo, anche il paragrafo a cui eri arrivato, sempre con numero e titolo. Salva inoltre quanto del capitolo hai letto e quando, così la home può proporti «Riprendi» partendo dal libro letto per ultimo. Resta sul browser e non arriva al server. «Rimuovi da questo dispositivo» cancella anche la posizione di quel libro.
 
 **`pwa-install-snooze-until`.** Se chiudi l'avviso di installazione sul telefono, salviamo fino a quando non mostrarlo di nuovo. L'intervallo è 14 giorni.
 
