@@ -25,7 +25,7 @@ interface ReaderShellProps {
 }
 
 const DESKTOP = '(min-width: 1024px)';
-const RAIL = '(min-width: 1280px)';
+const RAIL = '(min-width: 1360px)';
 const COMPACT_TABS = '(max-width: 1239px)';
 
 /**
@@ -74,7 +74,7 @@ export function ReaderShell(props: ReaderShellProps) {
           </Link>
           <p className="sb-header-title">{props.bookTitle}</p>
         </div>
-        <SectionTabs items={props.sections} value={props.activeSection} compact={isDesktop && compactTabs} />
+        {isDesktop && <SectionTabs items={props.sections} value={props.activeSection} compact={compactTabs} />}
         <div className="sb-rtop-tools">
           {props.onPrint && (
             <Tooltip title="Versione stampabile">
@@ -86,6 +86,8 @@ export function ReaderShell(props: ReaderShellProps) {
           <ThemeToggle />
         </div>
       </header>
+      {/* Right after the header, so keyboard users reach it before the page; outside it, see .sb-segmented-bottom. */}
+      {!isDesktop && <SectionTabs items={props.sections} value={props.activeSection} bottom />}
 
       <div className={bodyClass}>
         {isDesktop && toc}
