@@ -4,21 +4,21 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
-  --transition-fast: 0.15s ease;
-  --transition-smooth: 0.15s ease;
+  --transition-fast: 0.15s ease-out;
+  --transition-smooth: 0.15s ease-out;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + var(--space-4)); }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--ink);
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 16px;
+  line-height: 24px;
   transition: background-color var(--transition-smooth), color var(--transition-smooth);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -26,10 +26,11 @@ body {
 
 a { color: var(--link); transition: color var(--transition-fast); }
 a:hover { color: var(--primary-hover); }
+::selection { background: color-mix(in srgb, var(--star) 28%, transparent); }
 
 :where(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

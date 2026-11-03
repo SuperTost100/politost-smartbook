@@ -9,14 +9,14 @@ async function assertNoHorizontalOverflow(page: import('@playwright/test').Page)
 }
 
 test.describe('Mobile (iPhone 13 viewport)', () => {
-  test('home catalog renders in single column without horizontal scroll', async ({ page }) => {
+  test('home catalog renders in two columns without horizontal scroll', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'I tuoi libri', exact: true })).toBeVisible();
 
     const columnCount = await page.locator('.book-grid').evaluate(
       (el) => getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length,
     );
-    expect(columnCount).toBe(1);
+    expect(columnCount).toBe(2);
 
     await assertNoHorizontalOverflow(page);
   });
@@ -61,8 +61,7 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
 
   test('hides the lab but keeps graphs in the section nav', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
-    // on phones the section switcher lives in the drawer next to the chapter index
-    await page.getByRole('button', { name: /Apri indice capitoli/ }).click();
+    // on phones the section switcher is a bar at the bottom of the screen
     const sectionNav = page.getByRole('navigation', { name: 'Sezioni del libro' });
     await expect(sectionNav.getByRole('link', { name: 'Formulario' })).toBeVisible();
     await expect(sectionNav.getByRole('link', { name: 'Laboratorio' })).toHaveCount(0);

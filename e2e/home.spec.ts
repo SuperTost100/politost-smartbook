@@ -7,7 +7,7 @@ test.describe('Home', () => {
       if (/\/(api|auth|users)\//.test(new URL(request.url()).pathname)) platformRequests.push(request.url());
     });
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'I tuoi libri', exact: true })).toBeVisible();
 
     await expect(page.getByRole('link', { name: /Guida di esempio/ })).toBeVisible();
     await expect(page.locator('.sb-book')).toHaveCount(1);

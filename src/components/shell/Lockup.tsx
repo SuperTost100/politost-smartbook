@@ -1,35 +1,36 @@
-import lockupLight from '../../../design-system/logo/ptsb-lockup-light.svg';
-import lockupDark from '../../../design-system/logo/ptsb-lockup-dark.svg';
-import markLight from '../../../design-system/logo/ptsb-mark-light.svg';
-import markDark from '../../../design-system/logo/ptsb-mark-dark.svg';
-import markSmallLight from '../../../design-system/logo/ptsb-mark-small-light.svg';
-import markSmallDark from '../../../design-system/logo/ptsb-mark-small-dark.svg';
-import { useTheme } from '../../context/ThemeContext';
-
-interface LockupProps {
-  className?: string;
-  /** Mark height in px; the lockup is 28px tall in the header. */
+interface MarkProps {
+  /** Height in px; the mark is about 1.3 times as wide as it is tall. */
   size?: number;
+  className?: string;
 }
 
-/** Mark + "Smartbook" wordmark (theme aware). */
-export function Lockup({ className, size = 28 }: LockupProps) {
-  const { theme } = useTheme();
+/** The open-book mark: three page strokes in the text colour and the ribbon in `--star`. */
+export function Mark({ size = 24, className }: MarkProps) {
   return (
-    <img
-      className={className}
-      src={theme === 'dark' ? lockupDark : lockupLight}
-      alt="Smartbook"
+    <svg
+      className={['sb-mark', className].filter(Boolean).join(' ')}
+      viewBox="10 24 80 60"
       height={size}
-      style={{ height: size, width: 'auto', display: 'block' }}
-    />
+      width={Math.round((size * 80) / 60)}
+      aria-hidden
+      focusable="false"
+    >
+      <path d="M45.5,63 H54.5 V81 L50,76.5 L45.5,81 Z" fill="var(--star)" />
+      <g fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14,29 C30,27 42,29 50,37 C58,29 70,27 86,29" opacity="0.5" />
+        <path d="M14,41 C30,39 42,41 50,49 C58,41 70,39 86,41" opacity="0.7" />
+        <path d="M14,53 C30,51 42,53 50,61 C58,53 70,51 86,53" opacity="0.9" />
+      </g>
+    </svg>
   );
 }
 
-/** Mark alone; below 32px the two-page small mark is used. */
-export function Mark({ size = 44, className }: { size?: number; className?: string }) {
-  const { theme } = useTheme();
-  const dark = theme === 'dark';
-  const src = size < 32 ? (dark ? markSmallDark : markSmallLight) : dark ? markDark : markLight;
-  return <img className={className} src={src} alt="" aria-hidden width={size} height={size} />;
+/** Mark and the "Smartbook" wordmark, set in the serif. */
+export function Lockup({ className }: { className?: string }) {
+  return (
+    <span className={['sb-lockup', className].filter(Boolean).join(' ')}>
+      <Mark size={26} />
+      <span className="sb-lockup-word">Smartbook</span>
+    </span>
+  );
 }

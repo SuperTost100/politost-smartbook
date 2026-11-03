@@ -8,7 +8,7 @@ test.describe('Accessibility landmarks', () => {
   test('home has a main landmark', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('main#main-content')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'I tuoi libri', exact: true })).toBeVisible();
   });
 
   test('auth page has a main landmark and tab panel', async ({ page }) => {
@@ -69,7 +69,7 @@ test.describe('Dark mode', () => {
     const lightBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
     );
-    expect(lightBg).toBe('#f6f5f1');
+    expect(lightBg).toBe('#e8e0d3');
 
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -77,7 +77,7 @@ test.describe('Dark mode', () => {
     const darkBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
     );
-    expect(darkBg).toBe('#0d1015');
+    expect(darkBg).toBe('#26211d');
   });
 
   test('theme toggle updates body colors on reader', async ({ page }) => {
@@ -89,13 +89,13 @@ test.describe('Dark mode', () => {
       .poll(async () =>
         page.evaluate(() => getComputedStyle(document.body).backgroundColor),
       )
-      .toBe('rgb(13, 16, 21)');
+      .toBe('rgb(38, 33, 29)');
 
     const textColor = await page.evaluate(() => {
       const paragraph = document.querySelector('.content-paragraph');
       return paragraph ? getComputedStyle(paragraph).color : getComputedStyle(document.body).color;
     });
-    expect(textColor).toBe('rgb(232, 234, 239)');
+    expect(textColor).toBe('rgb(238, 228, 214)');
   });
 
   test('formulario and difficulty badges stay readable in dark mode', async ({ page }) => {
@@ -105,7 +105,7 @@ test.describe('Dark mode', () => {
     const formulaColor = await page.evaluate(() =>
       getComputedStyle(document.querySelector('.sb-fcard-math .katex')!).color,
     );
-    expect(formulaColor).toBe('rgb(232, 234, 239)');
+    expect(formulaColor).toBe('rgb(238, 228, 214)');
 
     await page.goto('/libro/esempio/esercizi');
     await page.getByRole('button', { name: 'Attiva tema scuro' }).click();
@@ -126,12 +126,12 @@ test.describe('Dark mode', () => {
       .poll(async () =>
         page.evaluate(() => getComputedStyle(document.querySelector('.print-page-shell')!).backgroundColor),
       )
-      .toBe('rgb(13, 16, 21)');
+      .toBe('rgb(38, 33, 29)');
 
     const titleColor = await page.evaluate(() =>
       getComputedStyle(document.querySelector('.print-toolbar-title')!).color,
     );
-    expect(titleColor).toBe('rgb(232, 234, 239)');
+    expect(titleColor).toBe('rgb(238, 228, 214)');
 
     // The sheet is what gets printed, so it stays white and its text dark.
     const sheet = await page.evaluate(() => {

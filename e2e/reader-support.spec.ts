@@ -17,7 +17,7 @@ test('promotions stay inside books, rotate on reopening and never contact destin
   await page.goto(chapter);
   const banner = page.getByRole('complementary', { name: 'Promozione PoliTost' });
   await expect(banner.getByRole('link')).toHaveAttribute('href', 'https://politost.it/pyxis/');
-  await page.getByTitle('Formulario', { exact: true }).click();
+  await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Formulario' }).click();
   await expect(banner.getByRole('link')).toHaveAttribute('href', 'https://politost.it/pyxis/');
   await page.locator('.sb-header-brand').click();
   await expect(banner).toHaveCount(0);

@@ -1,32 +1,34 @@
-import { Anchor, Progress } from 'antd';
 import { useReaderProgress } from '../../context/ReaderProgressContext';
+import { Meter } from '../ds/Meter';
 
-/** Right-hand list of the chapter's paragraphs, with the current one marked and a reading meter. */
+/** Right-hand outline of the chapter's paragraphs, with the current one pressed in and a reading meter. */
 export function ParagraphRail() {
   const { paragraphs, activeParagraphId, progress, jumpTo } = useReaderProgress();
 
   return (
     <aside className="sb-rail" aria-label="Paragrafi del capitolo">
-      <span className="sb-eyebrow">In questo capitolo</span>
-      <Anchor
-        targetOffset={88}
-        getCurrentAnchor={() => (activeParagraphId ? `#${activeParagraphId}` : '')}
-        onClick={(e, link) => {
-          e.preventDefault();
-          jumpTo(link.href.slice(1));
-        }}
-        items={paragraphs.map((p) => ({
-          key: p.id,
-          href: `#${p.id}`,
-          title: (
-            <span className="sb-rail-item">
+      <h2 className="sb-panel-label">In questo capitolo</h2>
+      <ol>
+        {paragraphs.map((p) => (
+          <li key={p.id}>
+            <a
+              href={`#${p.id}`}
+              aria-current={p.id === activeParagraphId ? 'location' : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                jumpTo(p.id);
+              }}
+            >
               <span className="sb-rail-num">{p.number}</span>
               <span>{p.title}</span>
-            </span>
-          ),
-        }))}
-      />
-      <Progress percent={progress} size="small" format={(p) => `${p} %`} aria-label="Avanzamento nel capitolo" />
+            </a>
+          </li>
+        ))}
+      </ol>
+      <div className="sb-rail-progress">
+        <Meter value={progress} label="Avanzamento nel capitolo" />
+        <span>{progress} %</span>
+      </div>
     </aside>
   );
 }

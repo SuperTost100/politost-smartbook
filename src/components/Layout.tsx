@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import type { SectionKey, SmartbookConfig } from '../types/smartbook';
 import { ReaderProgressProvider } from '../context/ReaderProgressContext';
@@ -46,7 +45,6 @@ function LayoutInner({
   activeChapterId,
   children,
 }: LayoutProps) {
-  const navigate = useNavigate();
   const print = usePrintMode();
   const isMobile = useMediaQuery(MOBILE_LAYOUT_QUERY);
 
@@ -91,11 +89,9 @@ function LayoutInner({
   return (
     <>
     <ReaderShell
-      subject={config.subject}
       bookTitle={config.title}
       sections={sections}
       activeSection={activeSection}
-      onSection={(key) => navigate(sectionPath(bookId, key))}
       chapters={chapters}
       activeChapterId={activeChapterId}
       onPrint={onPrint}

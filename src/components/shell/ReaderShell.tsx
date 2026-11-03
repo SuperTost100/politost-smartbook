@@ -1,14 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Drawer, Tooltip } from 'antd';
-import { ProConfigProvider, ProLayout } from '@ant-design/pro-components';
-import { PanelLeft, Printer } from 'lucide-react';
-import { ptsbLayout, ptsbProLayoutToken } from '../../../design-system/theme/ptsb-theme';
-import { useTheme } from '../../context/ThemeContext';
+import { Drawer, Tooltip } from 'antd';
+import { Menu, Printer } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { usePrintShortcut } from '../../hooks/usePrintShortcut';
 import { ThemeToggle } from '../ThemeToggle';
-import { Lockup } from './Lockup';
+import { Mark } from './Lockup';
 import { SectionTabs, type SectionItem } from './SectionTabs';
 import { ChapterToc, type TocChapter } from './ChapterToc';
 import { ParagraphRail } from './ParagraphRail';
@@ -16,12 +13,10 @@ import { useReaderParagraphs } from '../../context/ReaderProgressContext';
 import type { SectionKey } from '../../types/smartbook';
 
 interface ReaderShellProps {
-  subject: string;
   bookTitle: string;
   sections: SectionItem[];
   activeSection: SectionKey;
-  onSection: (key: SectionKey) => void;
-  /** Chapter index; shown in the sider (drawer on small screens) only when provided. */
+  /** Chapter index; an inset panel on the left (a drawer on small screens), only when provided. */
   chapters?: TocChapter[];
   activeChapterId?: string;
   onPrint?: () => void;
@@ -31,11 +26,14 @@ interface ReaderShellProps {
 
 const DESKTOP = '(min-width: 1024px)';
 const RAIL = '(min-width: 1280px)';
-const COMPACT_TABS = '(max-width: 1179px)';
+const COMPACT_TABS = '(max-width: 1239px)';
 
-/** Reader shell on ProLayout `mix`: 64px header, chapter TOC sider, reading column, paragraph rail. */
+/**
+ * Reader shell: a sticky header on the desk (book, section switcher, tools), the chapter index in an
+ * inset panel, the reading column and the paragraph outline. Below 1024px the index moves into a
+ * drawer and the section switcher becomes a bar at the bottom of the screen.
+ */
 export function ReaderShell(props: ReaderShellProps) {
-  const { theme } = useTheme();
   const isDesktop = useMediaQuery(DESKTOP);
   const showRailWidth = useMediaQuery(RAIL);
   const compactTabs = useMediaQuery(COMPACT_TABS);
@@ -44,115 +42,74 @@ export function ReaderShell(props: ReaderShellProps) {
   usePrintShortcut(props.onPrint);
 
   const hasToc = !!props.chapters?.length;
-  const siderVisible = isDesktop && hasToc;
   const showRail = showRailWidth && props.activeSection === 'smartbook' && paragraphs.length > 0;
-  const menuLabel = hasToc ? 'Apri indice capitoli' : 'Apri sezioni del libro';
 
   const toc = hasToc ? (
     <ChapterToc
-      subject={props.subject}
-      bookTitle={props.bookTitle}
       chapters={props.chapters!}
       activeChapterId={props.activeChapterId}
       onNavigate={() => setDrawerOpen(false)}
     />
   ) : null;
 
-  return (
-    <ProConfigProvider dark={theme === 'dark'} hashed={false}>
-      <ProLayout
-        layout="mix"
-        fixedHeader
-        fixSiderbar
-        siderWidth={ptsbLayout.siderWidth}
-        breakpoint={false}
-        disableMobile
-        collapsed={false}
-        navTheme={theme === 'dark' ? 'realDark' : 'light'}
-        token={ptsbProLayoutToken(theme)}
-        title={false}
-        pure={false}
-        menuHeaderRender={false}
-        menuRender={siderVisible ? undefined : false}
-        menuContentRender={() => toc}
-        collapsedButtonRender={false}
-        headerTitleRender={() => (
-          <div className="sb-header-start">
-            {!isDesktop && (
-              <Button
-                shape="circle"
-                type="text"
-                aria-label={menuLabel}
-                aria-expanded={drawerOpen}
-                icon={<PanelLeft size={20} strokeWidth={1.75} />}
-                onClick={() => setDrawerOpen(true)}
-              />
-            )}
-            <Link to="/" className="sb-header-brand" aria-label="Smartbook, catalogo">
-              <Lockup />
-            </Link>
-            {!isDesktop && <p className="sb-header-title">{props.bookTitle}</p>}
-          </div>
-        )}
-        headerContentRender={() =>
-          isDesktop ? (
-            <div className="sb-header-center">
-              <SectionTabs
-                items={props.sections}
-                value={props.activeSection}
-                onChange={props.onSection}
-                compact={compactTabs}
-              />
-            </div>
-          ) : null
-        }
-        actionsRender={() => [
-          props.onPrint ? (
-            <Tooltip key="print" title="Versione stampabile">
-              <Button
-                shape="circle"
-                type="text"
-                aria-label="Versione stampabile"
-                icon={<Printer size={20} strokeWidth={1.75} />}
-                onClick={props.onPrint}
-              />
-            </Tooltip>
-          ) : null,
-          <ThemeToggle key="theme" />,
-        ]}
-        footerRender={false}
-      >
-        <div className={`sb-reader-body${showRail ? ' has-rail' : ''}`}>
-          <main id="main-content" className="app-main">
-            {props.children}
-          </main>
-          {showRail && <ParagraphRail />}
-        </div>
-        {props.footer}
-      </ProLayout>
+  const bodyClass = ['sb-reader-body', isDesktop && hasToc && 'has-toc', showRail && 'has-rail'].filter(Boolean).join(' ');
 
-      {!isDesktop && (
+  return (
+    <div className="sb-reader">
+      <header className="sb-rtop no-print">
+        <div className="sb-rtop-start">
+          {!isDesktop && hasToc && (
+            <button
+              type="button"
+              className="sb-icon-btn"
+              aria-label="Apri indice capitoli"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen(true)}
+            >
+              <Menu size={20} strokeWidth={1.75} aria-hidden />
+            </button>
+          )}
+          <Link to="/" className="sb-header-brand" aria-label="Smartbook, torna alla libreria">
+            <Mark size={24} />
+          </Link>
+          <p className="sb-header-title">{props.bookTitle}</p>
+        </div>
+        <SectionTabs items={props.sections} value={props.activeSection} compact={isDesktop && compactTabs} />
+        <div className="sb-rtop-tools">
+          {props.onPrint && (
+            <Tooltip title="Versione stampabile">
+              <button type="button" className="sb-icon-btn" aria-label="Versione stampabile" onClick={props.onPrint}>
+                <Printer size={20} strokeWidth={1.75} aria-hidden />
+              </button>
+            </Tooltip>
+          )}
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <div className={bodyClass}>
+        {isDesktop && toc}
+        <main id="main-content" className="app-main">
+          {props.children}
+        </main>
+        {showRail && <ParagraphRail />}
+      </div>
+      {props.footer}
+
+      {!isDesktop && hasToc && (
         <Drawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           placement="left"
           size={320}
-          title={null}
+          title={props.bookTitle}
           closable
           className="sb-drawer"
-          aria-label={menuLabel}
+          aria-label="Indice capitoli"
         >
-          <div className="sb-drawer-sections">
-            <SectionTabs
-              items={props.sections}
-              value={props.activeSection}
-              onChange={() => setDrawerOpen(false)}
-              vertical
-            />
-          </div>
           {toc}
         </Drawer>
       )}
-    </ProConfigProvider>
+    </div>
   );
 }

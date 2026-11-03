@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Segmented } from 'antd';
 import { BookOpen, ChartLine, GraduationCap, PencilLine, Sigma, Terminal, type LucideIcon } from 'lucide-react';
 import type { SectionKey } from '../../types/smartbook';
 
@@ -21,50 +20,23 @@ export interface SectionItem {
 interface SectionTabsProps {
   items: SectionItem[];
   value: SectionKey;
-  onChange: (key: SectionKey) => void;
-  /** Icons only; the label stays available to assistive tech. */
+  /** Icons only; the label stays available to assistive tech and as a tooltip. */
   compact?: boolean;
-  vertical?: boolean;
 }
 
-/** Book sections as a pill switcher (antd Segmented), inside a labelled nav landmark. */
-export function SectionTabs({ items, value, onChange, compact = false, vertical = false }: SectionTabsProps) {
-  if (vertical) {
-    return (
-      <nav aria-label="Sezioni del libro" className="sb-section-list">
-        <ul>
-          {items.map(({ key, label, href }) => {
-            const Icon = SECTION_ICONS[key];
-            return (
-              <li key={key}>
-                <Link to={href} aria-current={key === value ? 'page' : undefined} onClick={() => onChange(key)}>
-                  {Icon && <Icon size={16} strokeWidth={1.75} aria-hidden />}
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    );
-  }
-
+/** Book sections as a pressed segmented track: the current one is raised out of it. */
+export function SectionTabs({ items, value, compact = false }: SectionTabsProps) {
   return (
-    <nav aria-label="Sezioni del libro" className="sb-section-tabs">
-      <Segmented<SectionKey>
-        shape="round"
-        value={value}
-        onChange={onChange}
-        options={items.map(({ key, label }) => {
-          const Icon = SECTION_ICONS[key];
-          return {
-            value: key,
-            title: label,
-            icon: Icon ? <Icon size={16} strokeWidth={1.75} aria-hidden /> : undefined,
-            label: compact ? <span className="sb-sr">{label}</span> : label,
-          };
-        })}
-      />
+    <nav aria-label="Sezioni del libro" className={`sb-segmented${compact ? ' sb-segmented-compact' : ''}`}>
+      {items.map(({ key, label, href }) => {
+        const Icon = SECTION_ICONS[key];
+        return (
+          <Link key={key} to={href} aria-current={key === value ? 'page' : undefined} title={compact ? label : undefined}>
+            {Icon && <Icon size={16} strokeWidth={1.75} aria-hidden />}
+            <span className={compact ? 'sb-sr' : undefined}>{label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }
