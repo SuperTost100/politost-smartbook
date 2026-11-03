@@ -18,6 +18,8 @@ export function ResumePanel({ bookId, subject, bookTitle, authors, position }: R
   const href = readingPositionPath(bookId, position);
   const chapterHref = `/libro/${bookId}/capitolo/${position.chapterId}`;
   const where = position.paragraphNumber && position.paragraphTitle;
+  // Positions saved before the paragraph number and title were stored only have the id.
+  const midChapter = !!position.paragraphId;
 
   return (
     <section className="sb-resume" aria-labelledby="resume-title">
@@ -31,6 +33,8 @@ export function ResumePanel({ bookId, subject, bookTitle, authors, position }: R
           <strong>{bookTitle}</strong>, capitolo {position.chapterNumber}.
           {where ? (
             <> L’ultima volta eri al paragrafo {position.paragraphNumber}, <em>{position.paragraphTitle}</em>.</>
+          ) : midChapter ? (
+            <> L’ultima volta eri a metà del capitolo.</>
           ) : (
             <> L’ultima volta eri all’inizio del capitolo.</>
           )}
@@ -43,9 +47,9 @@ export function ResumePanel({ bookId, subject, bookTitle, authors, position }: R
         )}
         <div className="sb-resume-actions">
           <Link to={href} className="sb-btn sb-btn-primary">
-            {where ? `Riprendi dal paragrafo ${position.paragraphNumber}` : 'Riprendi il capitolo'}
+            {where ? `Riprendi dal paragrafo ${position.paragraphNumber}` : midChapter ? 'Riprendi da dove eri' : 'Riprendi il capitolo'}
           </Link>
-          {where && (
+          {midChapter && (
             <Link to={chapterHref} className="sb-btn">
               Dall’inizio del capitolo
             </Link>

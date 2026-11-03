@@ -1,6 +1,7 @@
 // Writes tokens.css and ../theme/ptsb-tokens.ts from tokens.json, so the CSS and the antd theme
 // cannot drift from the source. Run with `npm run tokens` after changing tokens.json.
-import { readFileSync, writeFileSync } from 'node:fs';
+// With --check it writes nothing and exits 1 when either file differs from what it would write.
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -90,6 +91,16 @@ export const ptsbLayout = {
 } as const;
 `;
 
-writeFileSync(join(here, 'tokens.css'), css);
-writeFileSync(join(here, '../theme/ptsb-tokens.ts'), ts);
+const outputs = [
+  [join(here, 'tokens.css'), css],
+  [join(here, '../theme/ptsb-tokens.ts'), ts],
+];
+
+if (process.argv.includes('--check')) {
+  const stale = outputs.filter(([file, text]) => !existsSync(file) || readFileSync(file, 'utf8') !== text);
+  for (const [file] of stale) console.error(`stale: ${file}. Run npm run tokens.`);
+  process.exit(stale.length ? 1 : 0);
+}
+
+for (const [file, text] of outputs) writeFileSync(file, text);
 console.log('wrote tokens.css and theme/ptsb-tokens.ts');

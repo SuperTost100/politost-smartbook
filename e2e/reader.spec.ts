@@ -102,6 +102,19 @@ test.describe('Reader', () => {
     await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
   });
 
+  test('Home resumes a position saved before paragraph titles were stored', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('politost-last-read', JSON.stringify({
+        esempio: { chapterId: 'nel-libro', chapterNumber: 2, chapterTitle: 'Cosa trovi nel libro', paragraphId: 'p3' },
+      }));
+    });
+    await page.goto('/');
+    await expect(page.getByText('L’ultima volta eri a metà del capitolo.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Dall’inizio del capitolo' })).toHaveAttribute('href', '/libro/esempio/capitolo/nel-libro');
+    await page.getByRole('link', { name: 'Riprendi da dove eri' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
+  });
+
   for (const path of ['/docs', '/libro/esempio/laboratorio']) {
     test(`footer sits at the bottom edge: ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 1600 });

@@ -1,12 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const dir = new URL('../../design-system/tokens/', import.meta.url);
 const tokens = JSON.parse(readFileSync(new URL('tokens.json', dir), 'utf8')) as {
   color: { tokens: { name: string; value?: Record<'light' | 'dark', string>; alias?: string }[]; covers: { name: string; cover: string; ink: string }[] };
 };
-const css = readFileSync(new URL('tokens.css', dir), 'utf8');
 
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => {
@@ -60,10 +61,8 @@ describe('design tokens', () => {
     for (const c of tokens.color.covers) assert.ok(contrast(c.ink, c.cover) >= 4.5, `${c.name}: ${contrast(c.ink, c.cover).toFixed(2)}`);
   });
 
-  it('has tokens.css generated from the current tokens.json', () => {
-    for (const t of tokens.color.tokens) {
-      if (t.alias) assert.ok(css.includes(`--${t.name}: var(--${t.alias});`), `${t.name} alias missing`);
-      else for (const mode of ['light', 'dark'] as const) assert.ok(css.includes(`--${t.name}: ${t.value![mode]};`), `${t.name} (${mode}) is stale: run npm run tokens`);
-    }
+  it('has tokens.css and ptsb-tokens.ts generated from the current tokens.json', () => {
+    const run = spawnSync(process.execPath, [fileURLToPath(new URL('build.mjs', dir)), '--check'], { encoding: 'utf8' });
+    assert.equal(run.status, 0, run.stderr);
   });
 });

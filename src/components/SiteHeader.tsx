@@ -19,7 +19,7 @@ export function SiteHeader() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
-    <header className="site-header">
+    <header className={`site-header${authEnabled ? ' site-header--account' : ''}`}>
       <Link to="/" className="site-header-brand" aria-label="Smartbook, catalogo">
         <Lockup />
       </Link>
