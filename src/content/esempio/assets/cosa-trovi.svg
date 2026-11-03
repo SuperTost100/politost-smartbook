@@ -1,16 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 280" role="img" aria-label="Schema delle sezioni di uno smartbook">
-  <rect width="480" height="280" fill="#f8fafc"/>
-  <rect x="20" y="20" width="440" height="50" rx="8" fill="#6366f1"/>
-  <text x="240" y="52" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-size="18" font-weight="600">Smartbook</text>
-  <rect x="40" y="90" width="120" height="70" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="100" y="130" text-anchor="middle" fill="#1e40af" font-family="system-ui,sans-serif" font-size="13">Capitoli</text>
-  <rect x="180" y="90" width="120" height="70" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="240" y="130" text-anchor="middle" fill="#166534" font-family="system-ui,sans-serif" font-size="13">Formulario</text>
-  <rect x="320" y="90" width="120" height="70" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
-  <text x="380" y="130" text-anchor="middle" fill="#92400e" font-family="system-ui,sans-serif" font-size="13">Esercizi</text>
-  <rect x="90" y="180" width="120" height="70" rx="6" fill="#fce7f3" stroke="#ec4899"/>
-  <text x="150" y="220" text-anchor="middle" fill="#9d174d" font-family="system-ui,sans-serif" font-size="13">Laboratorio</text>
-  <rect x="270" y="180" width="120" height="70" rx="6" fill="#e0e7ff" stroke="#6366f1"/>
-  <text x="330" y="215" text-anchor="middle" fill="#3730a3" font-family="system-ui,sans-serif" font-size="12">Grafici</text>
-  <text x="330" y="232" text-anchor="middle" fill="#3730a3" font-family="system-ui,sans-serif" font-size="12">&amp; Calcoli</text>
+  <g fill="none" stroke="#857360" stroke-width="1.5">
+    <path d="M240 70v14M100 84h280M100 84v6M240 84v6M380 84v6"/>
+    <path d="M170 84v88h-20v8M310 84v88h20v8"/>
+  </g>
+  <rect x="140" y="20" width="200" height="50" rx="12" fill="#2f2620"/>
+  <text x="240" y="52" text-anchor="middle" fill="#fbf3e6" font-family="Georgia,'Times New Roman',serif" font-size="20" font-weight="600">Smartbook</text>
+  <g font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#fbf3e6">
+    <rect x="40" y="90" width="120" height="70" rx="10" fill="#a24a31"/>
+    <text x="100" y="130">Capitoli</text>
+    <rect x="180" y="90" width="120" height="70" rx="10" fill="#56705c"/>
+    <text x="240" y="130">Formulario</text>
+    <rect x="320" y="90" width="120" height="70" rx="10" fill="#3d5d79"/>
+    <text x="380" y="130">Esercizi</text>
+    <rect x="90" y="180" width="120" height="70" rx="10" fill="#3f6b6a"/>
+    <text x="150" y="220">Laboratorio</text>
+    <rect x="270" y="180" width="120" height="70" rx="10" fill="#74566f"/>
+    <text x="330" y="212">Grafici</text>
+    <text x="330" y="230">e calcoli</text>
+  </g>
 </svg>

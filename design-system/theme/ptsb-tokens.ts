@@ -3,6 +3,7 @@ export const ptsbColors = {
   "light": {
     "bg": "#e8e0d3",
     "page": "#fbf8f2",
+    "figurePlate": "#fbf8f2",
     "surface": "#efe8dc",
     "surfaceRaised": "#e1d8c9",
     "surfaceOverlay": "#fbf8f2",
@@ -38,6 +39,7 @@ export const ptsbColors = {
   "dark": {
     "bg": "#26211d",
     "page": "#312a25",
+    "figurePlate": "#ddd3c4",
     "surface": "#2c2622",
     "surfaceRaised": "#1f1b18",
     "surfaceOverlay": "#3a322c",

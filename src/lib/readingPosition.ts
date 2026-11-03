@@ -87,6 +87,15 @@ export function forgetReadingPosition(bookId: string): void {
   writeStore(store);
 }
 
+/** Forgets every book's position, so the next person on a shared browser does not see where the last one stopped. */
+export function forgetAllReadingPositions(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Storage disabled: there is nothing saved to forget.
+  }
+}
+
 export function readingPositionPath(bookId: string, position: ReadingPosition): string {
   const base = `/libro/${bookId}/capitolo/${position.chapterId}`;
   return position.paragraphId ? `${base}#${position.paragraphId}` : base;
