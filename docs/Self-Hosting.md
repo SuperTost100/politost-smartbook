@@ -23,7 +23,7 @@ Works on Cloudflare Pages, Netlify, GitHub Pages, nginx, any CDN.
 |---------|-------|
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node version | 22.13+ |
+| Node version | 22.22.2+ or 24.15+ |
 
 For a subfolder, see [Subfolder](#subfolder).
 

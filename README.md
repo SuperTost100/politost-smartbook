@@ -45,7 +45,7 @@ The interface is in Italian, with light and dark themes. This repository ships o
 
 ## Start
 
-You need Node.js 22.13 or newer. CI uses 24.
+You need Node.js 22.22.2 or newer on the 22 line, or 24.15 or newer. CI uses 24.
 
 ```bash
 git clone https://github.com/SuperTost100/politost-smartbook.git

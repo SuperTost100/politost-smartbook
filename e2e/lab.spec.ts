@@ -99,8 +99,8 @@ test.describe('Lab', () => {
     await expect(figure).toBeVisible();
     expect(await figure.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(600);
 
-    // A loop inside eval goes through numbl's JIT, which the CSP blocks.
-    await expect(await run(page, "eval('s = 0; for k = 1:5, s = s + k; end, disp(s)')")).toContainText('eval con cicli non è disponibile');
+    // Since numbl 0.4.22 a loop inside eval runs under the CSP too.
+    await expect(await run(page, "eval('s = 0; for k = 1:5, s = s + k; end, disp(s)')")).toHaveText('15');
     await expect(await run(page, 'while true\nend')).toContainText('Tempo scaduto', { timeout: 20_000 });
     await expect(await run(page, "disp('di nuovo')")).toHaveText('di nuovo');
   });
