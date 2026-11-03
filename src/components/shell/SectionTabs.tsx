@@ -29,7 +29,7 @@ interface SectionTabsProps {
 /** Book sections as a pressed segmented track: the current one is raised out of it. */
 export function SectionTabs({ items, value, compact = false, bottom = false }: SectionTabsProps) {
   return (
-    <nav aria-label="Sezioni del libro" className={`sb-segmented${compact ? ' sb-segmented-compact' : ''}${bottom ? ' sb-segmented-bottom' : ''}`}>
+    <nav aria-label="Sezioni del libro" className={`sb-segmented${compact ? ' sb-segmented-compact' : ''}${bottom ? ' sb-segmented-bottom no-print' : ''}`}>
       {items.map(({ key, label, href }) => {
         const Icon = SECTION_ICONS[key];
         return (

@@ -86,6 +86,8 @@ export function ReaderShell(props: ReaderShellProps) {
           <ThemeToggle />
         </div>
       </header>
+      {/* Right after the header, so keyboard users reach it before the page; outside it, see .sb-segmented-bottom. */}
+      {!isDesktop && <SectionTabs items={props.sections} value={props.activeSection} bottom />}
 
       <div className={bodyClass}>
         {isDesktop && toc}
@@ -95,7 +97,6 @@ export function ReaderShell(props: ReaderShellProps) {
         {showRail && <ParagraphRail />}
       </div>
       {props.footer}
-      {!isDesktop && <SectionTabs items={props.sections} value={props.activeSection} bottom />}
 
       {!isDesktop && hasToc && (
         <Drawer
