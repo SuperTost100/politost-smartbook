@@ -29,6 +29,11 @@ jobs:
       - run: npx playwright install --with-deps chromium
       # Builds and serves the app itself (webServer in playwright.config.ts).
       - run: npx playwright test
+      # The account specs skip in the public build, so a second build with the platform on runs them.
+      - run: npx playwright test e2e/auth.spec.ts e2e/a11y.spec.ts --project=chromium
+        env:
+          VITE_PLATFORM_ENABLED: 'true'
+          PLAYWRIGHT_PORT: '4174'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
