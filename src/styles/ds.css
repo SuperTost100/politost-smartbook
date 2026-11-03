@@ -295,8 +295,9 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-code-status-ok { color: var(--success); } .sb-code-status-error { color: var(--danger); } .sb-code-status-running { color: var(--ink-muted); }
 .sb-code-out pre { margin: 0; padding: 0 var(--space-5) var(--space-4); font: 400 14px/22px var(--font-mono); color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
 .sb-code-figures { display: flex; flex-direction: column; gap: var(--space-3); padding: 0 var(--space-5) var(--space-4); }
-/* Figures keep matplotlib's white page, so they read the same in the dark theme. */
-.sb-code-figures img { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fff; }
+/* Plots come out on white. Like chapter figures, they are multiplied onto the plate, so dark mode shows no white box. */
+.sb-code-plate { align-self: flex-start; max-width: 100%; overflow: hidden; background: var(--figure-plate); border-radius: var(--radius-sm); box-shadow: 0 0 0 1px var(--border); isolation: isolate; }
+.sb-code-plate img { display: block; max-width: 100%; height: auto; mix-blend-mode: multiply; }
 .sb-code-out-error { background: var(--danger-soft); }
 .sb-code-out-error pre { color: var(--danger); }
 .sb-code-status-running svg { animation: sb-spin 1s linear infinite; }
