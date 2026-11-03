@@ -48,6 +48,12 @@ test.describe('Reader', () => {
     await expect.poll(siderMatchesTheme).toBe(true);
   });
 
+  test('hovering a formula reference previews the formula', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await page.locator('.sb-fref-chip').first().hover();
+    await expect(page.locator('.sb-fref-pop')).toBeVisible();
+  });
+
   test('lists render bold and italic, not asterisks', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/benvenuto');
     const prose = page.locator('.sb-prose').first();

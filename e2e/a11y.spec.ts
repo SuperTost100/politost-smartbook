@@ -19,6 +19,37 @@ test.describe('Accessibility landmarks', () => {
     await expect(page.locator('#auth-panel[role="tabpanel"]')).toBeVisible();
   });
 
+  test('keyboard focus is visible on links and buttons', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.locator('.smartbook-view .paragraph-section').first()).toBeVisible();
+    for (const target of [page.getByRole('link', { name: 'Formulario' }).first(), page.locator('.sb-fref-chip').first()]) {
+      await target.focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await expect(target).toBeFocused();
+      await expect(target).toHaveCSS('outline-style', 'solid');
+    }
+  });
+
+  test('a formula preview action is reachable from the keyboard', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    const chip = page.locator('.sb-fref-chip').first();
+    await chip.focus();
+    await expect(page.locator('.sb-fref-pop')).toBeVisible();
+    await page.keyboard.press('Enter');
+    const action = page.getByRole('button', { name: 'Apri nel formulario' });
+    await expect(action).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(chip).toBeFocused();
+    await expect(chip).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('Enter');
+    await expect(chip).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Enter');
+    await expect(action).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/libro\/esempio\/formulario#2\.1$/);
+  });
+
   test('reader chapter has a main landmark', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     await expect(page.locator('main.app-main')).toBeVisible();

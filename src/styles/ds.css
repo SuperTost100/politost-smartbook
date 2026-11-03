@@ -391,6 +391,8 @@ a.sb-book-link:hover { color: var(--primary-text); }
 .sb-book-meta { margin: 4px 0 0; color: var(--ink-subtle); font-size: 14px; }
 .sb-book-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .sb-book-foot { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+/* Phone cards are narrower than the buttons' one-line labels, so these may wrap. */
+.sb-book-foot .sb-btn { max-width: 100%; white-space: normal; text-align: start; }
 
 /* BookCover: matte cloth, page edges on the right, line drawing, title scaled to the cover width. */
 .sb-cover { container-type: inline-size; position: relative; display: flex; flex-direction: column; aspect-ratio: 2 / 3; padding: 14px 14px 16px 18px; border-radius: 3px 8px 8px 3px; color: var(--cover-ink, #fbf3e6); background: var(--cover, #a24a31); box-shadow: inset 5px 0 7px -3px rgba(0, 0, 0, .35), inset -1px 0 0 rgba(255, 255, 255, .18), 2px 1px 0 var(--pages), 3px 2px 0 var(--pages-line), 5px 3px 0 var(--pages), 6px 4px 0 var(--pages-line), 8px 5px 0 var(--pages), 9px 6px 0 var(--pages-line), 14px 16px 22px -6px rgba(70, 50, 25, .45); }
