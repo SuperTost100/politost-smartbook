@@ -1,5 +1,5 @@
 import { Upload } from 'antd';
-import { CircleAlert, CircleCheck, FileArchive } from 'lucide-react';
+import { CircleAlert, CircleCheck, Upload as UploadIcon } from 'lucide-react';
 
 export type DropState = 'idle' | 'busy' | 'success' | 'error';
 
@@ -29,7 +29,8 @@ interface ImportDropzoneProps {
   onFile: (file: File) => void;
 }
 
-/** The .ptsb import area of the library (antd Upload.Dragger, restyled). */
+/** The .ptsb drop area of the library (antd Upload.Dragger, restyled). The whole area is one
+ * button; "Scegli il file" only looks like one, so there is no button inside a button. */
 export function ImportDropzone({ state, message, warnings = [], onFile }: ImportDropzoneProps) {
   return (
     <div className="sb-drop-wrap">
@@ -44,11 +45,11 @@ export function ImportDropzone({ state, message, warnings = [], onFile }: Import
           return false;
         }}
       >
-        <span className="sb-drop-icon" aria-hidden>
-          <FileArchive size={22} strokeWidth={1.75} />
+        <span className="sb-drop-inner">
+          <UploadIcon size={24} strokeWidth={1.75} aria-hidden className="sb-drop-icon" />
+          <span className="sb-drop-text">{state === 'busy' ? 'Caricamento in corso…' : 'Trascina qui il file .ptsb'}</span>
+          <span className="sb-btn sb-btn-sm sb-drop-pick">Scegli il file</span>
         </span>
-        <h3>{state === 'busy' ? 'Caricamento in corso…' : 'Scegli o trascina un file .ptsb'}</h3>
-        <p>Il file resta nel tuo browser: non viene inviato a nessun server.</p>
       </Upload.Dragger>
       {message && state !== 'idle' && (
         <div className={`sb-drop-status sb-drop-status-${state}`} role={state === 'error' ? 'alert' : 'status'}>

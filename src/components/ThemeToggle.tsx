@@ -1,4 +1,4 @@
-import { Button, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,14 +8,14 @@ export function ThemeToggle() {
 
   return (
     <Tooltip title={dark ? 'Tema chiaro' : 'Tema scuro'}>
-      <Button
-        shape="circle"
-        type="text"
-        className="theme-toggle"
+      <button
+        type="button"
+        className="sb-icon-btn theme-toggle"
         onClick={toggleTheme}
         aria-label={dark ? 'Attiva tema chiaro' : 'Attiva tema scuro'}
-        icon={dark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
-      />
+      >
+        {dark ? <Sun size={20} strokeWidth={1.75} aria-hidden /> : <Moon size={20} strokeWidth={1.75} aria-hidden />}
+      </button>
     </Tooltip>
   );
 }

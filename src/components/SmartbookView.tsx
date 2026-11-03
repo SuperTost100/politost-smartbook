@@ -14,6 +14,7 @@ import { analyticsPage } from '../lib/monetization';
 import { getCatalog } from '../lib/loader';
 import { parseAnalyticsChoice, privacySnapshot } from '../lib/privacyPreferences';
 import { saveReadingPosition } from '../lib/readingPosition';
+import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
 interface SmartbookViewProps {
   bookId: string;
@@ -45,9 +46,9 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
   }, [chapter, setParagraphs, setActiveParagraphId]);
 
   useEffect(() => {
-    // header (64px) + breathing room. The band runs to 55% of the viewport:
+    // header + breathing room. The band runs to 55% of the viewport:
     // scrolling a heading clear of the header can land it just below 40%.
-    const bandTop = 64 + 24;
+    const bandTop = ptsbLayout.headerHeight + 24;
     const bandBottomCut = 45;
     const bandBottomShare = (100 - bandBottomCut) / 100;
 
@@ -82,11 +83,15 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
   useEffect(() => {
     const index = chapter.paragraphs.findIndex((p) => p.id === activeParagraphId);
     if (index < 0) return;
+    const paragraph = chapter.paragraphs[index];
     saveReadingPosition(bookId, {
       chapterId: chapter.meta.id,
       chapterNumber: chapter.meta.number,
       chapterTitle: chapter.meta.title,
       paragraphId: index > 0 ? activeParagraphId : undefined,
+      paragraphNumber: index > 0 ? `${chapter.meta.number}.${index + 1}` : undefined,
+      paragraphTitle: index > 0 ? paragraph.title : undefined,
+      progress: Math.round(((index + 1) / chapter.paragraphs.length) * 100),
     });
   }, [bookId, chapter, activeParagraphId]);
 

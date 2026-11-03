@@ -1,8 +1,8 @@
 /* Print tokens — the light design-system tokens, ink on white paper. No fills. */
 
 :root {
-  --print-font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
-  --print-font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --print-font-serif: Newsreader, 'Iowan Old Style', Georgia, serif;
+  --print-font-sans: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --print-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --print-size-body: 11pt;

@@ -6,6 +6,13 @@ export interface ReadingPosition {
   chapterTitle: string;
   /** Unset at the top of the chapter. */
   paragraphId?: string;
+  /** "2.2" and the paragraph title, so Home can name where the reader stopped. */
+  paragraphNumber?: string;
+  paragraphTitle?: string;
+  /** 0-100, how far into the chapter the current paragraph is. */
+  progress?: number;
+  /** When the position last changed (ms since epoch); Home resumes the newest book. */
+  readAt?: number;
 }
 
 const STORAGE_KEY = 'politost-last-read';
@@ -18,7 +25,11 @@ function isPosition(value: unknown): value is ReadingPosition {
   return typeof v.chapterId === 'string'
     && typeof v.chapterNumber === 'number'
     && typeof v.chapterTitle === 'string'
-    && (v.paragraphId === undefined || typeof v.paragraphId === 'string');
+    && (v.paragraphId === undefined || typeof v.paragraphId === 'string')
+    && (v.paragraphNumber === undefined || typeof v.paragraphNumber === 'string')
+    && (v.paragraphTitle === undefined || typeof v.paragraphTitle === 'string')
+    && (v.progress === undefined || (typeof v.progress === 'number' && v.progress >= 0 && v.progress <= 100))
+    && (v.readAt === undefined || typeof v.readAt === 'number');
 }
 
 function readStore(): Store {
@@ -48,13 +59,25 @@ export function getReadingPosition(bookId: string): ReadingPosition | undefined 
   return readStore()[bookId];
 }
 
-export function saveReadingPosition(bookId: string, position: ReadingPosition): void {
+export function saveReadingPosition(bookId: string, position: Omit<ReadingPosition, 'readAt'>, now = Date.now()): void {
   const store = readStore();
   const prev = store[bookId];
   if (prev && prev.chapterId === position.chapterId && prev.paragraphId === position.paragraphId
-    && prev.chapterTitle === position.chapterTitle && prev.chapterNumber === position.chapterNumber) return;
-  store[bookId] = position;
+    && prev.chapterTitle === position.chapterTitle && prev.chapterNumber === position.chapterNumber
+    && prev.paragraphTitle === position.paragraphTitle && prev.progress === position.progress) return;
+  store[bookId] = { ...position, readAt: now };
   writeStore(store);
+}
+
+/** The most recently read of these books. Positions saved before `readAt` existed count as oldest. */
+export function lastReadingPosition(bookIds: Iterable<string>): { bookId: string; position: ReadingPosition } | undefined {
+  const store = readStore();
+  let best: { bookId: string; position: ReadingPosition } | undefined;
+  for (const bookId of bookIds) {
+    const position = store[bookId];
+    if (position && (!best || (position.readAt ?? 0) > (best.position.readAt ?? 0))) best = { bookId, position };
+  }
+  return best;
 }
 
 export function forgetReadingPosition(bookId: string): void {

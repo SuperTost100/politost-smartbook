@@ -20,10 +20,10 @@
     "test:print": "npm run prepare:e2e && playwright test e2e/print.spec.ts",
     "test:e2e": "npm run prepare:e2e && playwright test",
     "test:e2e:ui": "npm run prepare:e2e && playwright test --ui",
-    "test:mobile": "npm run prepare:e2e && playwright test e2e/mobile.spec.ts --project=mobile"
+    "test:mobile": "npm run prepare:e2e && playwright test e2e/mobile.spec.ts --project=mobile",
+    "tokens": "node design-system/tokens/build.mjs"
   },
   "dependencies": {
-    "@ant-design/pro-components": "3.1.15-3",
     "@monaco-editor/react": "^4.7.0",
     "@politost/content-core": "file:packages/content-core",
     "@tanstack/react-query": "^5.101.0",

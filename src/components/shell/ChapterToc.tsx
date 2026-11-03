@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useReaderProgress } from '../../context/ReaderProgressContext';
-import { subjectTone } from '../../lib/subjectTone';
 
 export interface TocChapter {
   id: string;
@@ -10,25 +9,19 @@ export interface TocChapter {
 }
 
 interface ChapterTocProps {
-  subject: string;
-  bookTitle: string;
   chapters: TocChapter[];
   activeChapterId?: string;
   /** Called after a navigation (closes the drawer on small screens). */
   onNavigate?: () => void;
 }
 
-/** Book block, then the chapters; the current chapter expands to its paragraphs. */
-export function ChapterToc({ subject, bookTitle, chapters, activeChapterId, onNavigate }: ChapterTocProps) {
+/** The chapters in an inset panel; the open chapter is raised and lists its paragraphs. */
+export function ChapterToc({ chapters, activeChapterId, onNavigate }: ChapterTocProps) {
   const { paragraphs, activeParagraphId, jumpTo } = useReaderProgress();
 
   return (
     <aside className="sb-toc" aria-label="Indice capitoli">
-      <div className="sb-toc-book">
-        <span className={`sb-tag sb-tag-subject sb-tone-${subjectTone(subject)}`}>{subject}</span>
-        <h2>{bookTitle}</h2>
-      </div>
-      <span className="sb-eyebrow">Indice</span>
+      <h2 className="sb-panel-label">Indice</h2>
       <ol>
         {chapters.map((ch) => {
           const active = ch.id === activeChapterId;

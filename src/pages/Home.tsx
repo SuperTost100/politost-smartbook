@@ -6,10 +6,11 @@ import { getCatalog, initUploadedBooks, registerUploadedBook, unregisterUploaded
 import { whenCloudBooksReady } from '../lib/cloudLoader';
 import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
-import { forgetReadingPosition, getReadingPosition, readingPositionPath } from '../lib/readingPosition';
+import { forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import { SiteHeader } from '../components/SiteHeader';
 import { Footer } from '../components/Footer';
 import { BookCard } from '../components/ds/BookCard';
+import { ResumePanel } from '../components/ds/ResumePanel';
 import { ImportDropzone } from '../components/ds/ImportDropzone';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
@@ -113,22 +114,38 @@ export function Home() {
   }
 
   const dropState = uploading ? 'busy' : uploadError ? 'error' : uploadStatus ? 'success' : 'idle';
+  const last = lastReadingPosition(catalog.map((b) => b.id));
+  const lastBook = last && catalog.find((b) => b.id === last.bookId);
+  const countLabel = catalog.length === 1 ? '1 libro' : `${catalog.length} libri`;
+  const intro = 'Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.';
 
   return (
     <div className="site-page home-page">
       <SiteHeader />
 
       <main id="main-content" className="home-main">
-        <section className="home-hero">
-          <h1>I tuoi libri di testo, interattivi</h1>
-          <p>
-            Capitoli con formule, formulario, esercizi con soluzioni passo passo, grafici interattivi e laboratorio, in un unico libro digitale.
-          </p>
-        </section>
+        {last && lastBook ? (
+          <ResumePanel
+            bookId={lastBook.id}
+            subject={lastBook.subject}
+            bookTitle={lastBook.title}
+            authors={lastBook.authors?.join(', ')}
+            position={last.position}
+          />
+        ) : (
+          <section className="home-hero">
+            <h1>I tuoi libri di testo, interattivi</h1>
+            <p>{intro}</p>
+          </section>
+        )}
 
-        <section className="home-catalog">
-          <h2>Smartbook disponibili</h2>
-          <div className="book-grid">
+        <section className="home-catalog" aria-labelledby="home-catalog-title">
+          <div className="home-catalog-head">
+            <h2 id="home-catalog-title">I tuoi libri</h2>
+            <span className="home-catalog-count">{countLabel}</span>
+          </div>
+          {last && lastBook && <p className="home-catalog-note">{intro}</p>}
+          <ul className="book-grid">
             {catalog.map((book) => {
               const position = getReadingPosition(book.id);
               return (
@@ -136,25 +153,29 @@ export function Home() {
                   key={book.id}
                   subject={book.subject}
                   title={book.title}
+                  authors={book.authors?.join(', ')}
                   meta={[book.authors?.join(', '), book.version && `v${book.version}`].filter(Boolean).join(' · ') || undefined}
                   href={`/libro/${book.id}`}
-                  cloud={book.source === 'cloud'}
-                  uploaded={book.source === 'uploaded'}
+                  source={book.source}
                   licensed={book.access === 'licensed'}
+                  reading={book.id === lastBook?.id}
                   resume={position && {
                     href: readingPositionPath(book.id, position),
                     label: `Capitolo ${position.chapterNumber} · ${position.chapterTitle}`,
+                    short: `Cap. ${position.chapterNumber}`,
                   }}
                   onRemove={book.source === 'uploaded' ? () => confirmRemove(book.id, book.title) : undefined}
                 />
               );
             })}
-          </div>
+          </ul>
         </section>
 
         <section className="home-import no-print" aria-labelledby="home-import-title">
-          <h2 id="home-import-title">Hai un libro digitale?</h2>
-          <p>Se hai ricevuto un file dal tuo docente o dall&apos;editore, importalo qui: il libro resterà disponibile su questo dispositivo.</p>
+          <div className="home-import-copy">
+            <h2 id="home-import-title">Hai un libro digitale?</h2>
+            <p>Se hai ricevuto un file dal docente o dall&apos;editore, importalo qui. Il libro resta su questo dispositivo e non viene inviato a nessun server.</p>
+          </div>
           <ImportDropzone
             state={dropState}
             message={uploadError ?? uploadStatus}

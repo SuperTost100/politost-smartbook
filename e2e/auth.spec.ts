@@ -81,6 +81,6 @@ test.describe('Auth form', () => {
     await page.locator('form.auth-form').getByRole('button', { name: 'Accedi' }).click();
 
     await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { name: 'Smartbook disponibili' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'I tuoi libri', exact: true })).toBeVisible();
   });
 });

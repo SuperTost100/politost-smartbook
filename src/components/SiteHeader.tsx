@@ -19,24 +19,24 @@ export function SiteHeader() {
   const { auth: authEnabled } = useReaderFeatures();
 
   return (
-    <header className="site-header">
+    <header className={`site-header${authEnabled ? ' site-header--account' : ''}`}>
       <Link to="/" className="site-header-brand" aria-label="Smartbook, catalogo">
         <Lockup />
       </Link>
       <div className="site-header-actions">
         {authEnabled && (
           <>
-            <Link to="/redeem" className="sb-btn sb-btn-ghost sb-btn-sm" aria-label="Riscatta codice">
+            <Link to="/redeem" className="sb-btn sb-btn-sm" aria-label="Riscatta codice">
               <span className="site-header-long">Riscatta codice</span>
               <span className="site-header-short">Codice</span>
             </Link>
             {user ? (
-              <Link to="/auth" className="sb-btn sb-btn-secondary sb-btn-sm" aria-label="Account">
+              <Link to="/auth" className="sb-btn sb-btn-sm" aria-label="Account">
                 <User size={16} strokeWidth={1.75} aria-hidden />
                 <span className="site-header-long">{truncateEmail(user.email)}</span>
               </Link>
             ) : (
-              <Link to="/auth" className="sb-btn sb-btn-secondary sb-btn-sm" aria-label="Accedi">
+              <Link to="/auth" className="sb-btn sb-btn-sm" aria-label="Accedi">
                 <LogIn size={16} strokeWidth={1.75} aria-hidden />
                 <span className="site-header-label">Accedi</span>
               </Link>

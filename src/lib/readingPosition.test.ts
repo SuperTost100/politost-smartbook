@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { forgetReadingPosition, getReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
+import { forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
 
 const data = new Map<string, string>();
 Object.defineProperty(globalThis, 'localStorage', {
@@ -18,9 +18,9 @@ describe('readingPosition', () => {
   beforeEach(() => data.clear());
 
   it('saves and reads one position per book', () => {
-    saveReadingPosition('esempio', pos);
+    saveReadingPosition('esempio', pos, 1000);
     saveReadingPosition('altro', { ...pos, chapterId: 'intro', paragraphId: undefined });
-    assert.deepEqual(getReadingPosition('esempio'), pos);
+    assert.deepEqual(getReadingPosition('esempio'), { ...pos, readAt: 1000 });
     assert.equal(getReadingPosition('altro')?.chapterId, 'intro');
     assert.equal(getReadingPosition('nessuno'), undefined);
   });
@@ -34,9 +34,10 @@ describe('readingPosition', () => {
   it('ignores corrupt or foreign data', () => {
     data.set('politost-last-read', 'not json');
     assert.equal(getReadingPosition('esempio'), undefined);
-    data.set('politost-last-read', JSON.stringify({ esempio: { chapterId: 3 }, ok: pos }));
+    data.set('politost-last-read', JSON.stringify({ esempio: { chapterId: 3 }, ok: pos, far: { ...pos, progress: 140 } }));
     assert.equal(getReadingPosition('esempio'), undefined);
     assert.deepEqual(getReadingPosition('ok'), pos);
+    assert.equal(getReadingPosition('far'), undefined);
     data.set('politost-last-read', '[1,2]');
     assert.equal(getReadingPosition('0'), undefined);
   });
@@ -45,6 +46,24 @@ describe('readingPosition', () => {
     data.set('politost-last-read', '{"__proto__":{"chapterId":"x","chapterNumber":1,"chapterTitle":"X"}}');
     assert.equal(getReadingPosition('__proto__')?.chapterId, 'x');
     assert.equal(getReadingPosition('chapterId'), undefined);
+  });
+
+  it('resumes the most recently read book, and old positions without a time count as oldest', () => {
+    data.set('politost-last-read', JSON.stringify({ vecchio: pos }));
+    saveReadingPosition('fisica', { ...pos, chapterId: 'cinematica' }, 2000);
+    saveReadingPosition('esempio', pos, 3000);
+    assert.equal(lastReadingPosition(['vecchio', 'fisica', 'esempio'])?.bookId, 'esempio');
+    saveReadingPosition('fisica', { ...pos, chapterId: 'dinamica' }, 4000);
+    assert.equal(lastReadingPosition(['vecchio', 'fisica', 'esempio'])?.bookId, 'fisica');
+    assert.equal(lastReadingPosition(['vecchio', 'esempio'])?.bookId, 'esempio');
+    assert.equal(lastReadingPosition(['vecchio'])?.bookId, 'vecchio');
+    assert.equal(lastReadingPosition(['nessuno']), undefined);
+  });
+
+  it('keeps the time when nothing changed', () => {
+    saveReadingPosition('esempio', pos, 1000);
+    saveReadingPosition('esempio', pos, 5000);
+    assert.equal(getReadingPosition('esempio')?.readAt, 1000);
   });
 
   it('builds the chapter path, with the paragraph as hash', () => {

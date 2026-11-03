@@ -28,8 +28,8 @@ test.describe('Reader', () => {
   test('reader shell follows the theme after toggling on Home and reopening a book', async ({ page }) => {
     const siderMatchesTheme = () =>
       page.evaluate(() => {
-        const sider = document.querySelector('.ant-pro-sider');
-        const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+        const sider = document.querySelector('.sb-toc');
+        const bg = getComputedStyle(document.documentElement).getPropertyValue('--surface-raised').trim();
         const probe = document.createElement('div');
         probe.style.backgroundColor = bg;
         document.body.appendChild(probe);
@@ -44,7 +44,7 @@ test.describe('Reader', () => {
     await page.locator('.sb-header-brand').click();
     await page.locator('.theme-toggle').click();
     await page.getByRole('link', { name: 'Apri Guida di esempio' }).click();
-    await expect(page.locator('.ant-pro-sider')).toBeVisible();
+    await expect(page.locator('.sb-toc')).toBeVisible();
     await expect.poll(siderMatchesTheme).toBe(true);
   });
 
@@ -89,11 +89,30 @@ test.describe('Reader', () => {
     await expect.poll(() => page.evaluate(() => localStorage.getItem('politost-last-read'))).toContain('"paragraphId":"p3"');
 
     await page.locator('.sb-header-brand').click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Cosa trovi nel libro' })).toBeVisible();
+    await expect(page.getByText('L’ultima volta eri al paragrafo 2.3')).toBeVisible();
     const resume = page.getByRole('link', { name: 'Riprendi Guida di esempio: Capitolo 2 · Cosa trovi nel libro' });
     await expect(resume).toBeVisible();
     await resume.click();
     await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
     await expect(page.locator('#p3')).toBeInViewport();
+
+    await page.locator('.sb-header-brand').click();
+    await page.getByRole('link', { name: 'Riprendi dal paragrafo 2.3' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
+  });
+
+  test('Home resumes a position saved before paragraph titles were stored', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('politost-last-read', JSON.stringify({
+        esempio: { chapterId: 'nel-libro', chapterNumber: 2, chapterTitle: 'Cosa trovi nel libro', paragraphId: 'p3' },
+      }));
+    });
+    await page.goto('/');
+    await expect(page.getByText('L’ultima volta eri a metà del capitolo.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Dall’inizio del capitolo' })).toHaveAttribute('href', '/libro/esempio/capitolo/nel-libro');
+    await page.getByRole('link', { name: 'Riprendi da dove eri' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
   });
 
   for (const path of ['/docs', '/libro/esempio/laboratorio']) {
