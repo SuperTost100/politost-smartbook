@@ -48,7 +48,7 @@ The origin chip reads "Incluso nell’app", "Dal catalogo", "Dal tuo account" or
 | `RevealBlock` | `ds/RevealBlock.tsx` | A raised button that opens a hint (`star-soft`) or a solution (`success-soft`) panel, which can be closed again. Focus moves to the button that replaces the one pressed |
 | `DifficultyTag` | `ds/DifficultyTag.tsx` | A pressed chip with one to three bars and the word, so it reads in greyscale and print |
 | `FormulaCard` | `ds/FormulaCard.tsx` | A chapter's formulas in a raised card, one row per formula, each linking back to the chapter |
-| `CodeCell` | `ds/CodeCell.tsx` | The lab editor in a raised card, with the output under it. Run is the one primary button |
+| `CodeCell` | `ds/CodeCell.tsx` | The lab editor in a raised card, with the output under it and each plot on a `figure-plate`, like a `Figure`. Run is the one primary button |
 | `GraphPanel` | `ds/GraphPanel.tsx` | A raised card with the plot on paper and the legend below |
 
 ## Buttons

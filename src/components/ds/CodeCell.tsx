@@ -61,7 +61,9 @@ export function CodeCell({ title, language, description, children, status, outpu
         {figures.length > 0 && (
           <div className="sb-code-figures">
             {figures.map((png, i) => (
-              <img key={i} src={`data:image/png;base64,${png}`} alt={`Figura ${i + 1} prodotta dallo script`} />
+              <div key={i} className="sb-code-plate">
+                <img src={`data:image/png;base64,${png}`} alt={`Figura ${i + 1} prodotta dallo script`} />
+              </div>
             ))}
           </div>
         )}
