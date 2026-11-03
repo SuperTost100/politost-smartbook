@@ -102,7 +102,7 @@ Account, accettazione, licenze, riscatti, token Google e registro di apertura de
 
 La cancellazione dell'account elimina anche le righe collegate: accettazione, licenze, riscatti, registro di apertura e token Google.
 
-I file importati restano nel browser finché li togli, esci dall'account, o cancelli i dati del sito. Il cookie di sessione scade secondo la durata impostata sul server, oppure quando esci. In sviluppo la durata predefinita è 7 giorni. In produzione il server non accetta una durata di 7 giorni o più, quindi l'operatore ne imposta una più breve. Le preferenze cookie nel browser durano circa 6 mesi.
+I file importati restano nel browser finché li togli, esci dall'account, o cancelli i dati del sito. Il cookie di sessione scade secondo la durata impostata sul server, oppure quando esci. In sviluppo la durata predefinita è 7 giorni. In produzione il server non accetta una durata di 7 giorni o più, quindi l'operatore ne imposta una più breve.
 
 I log dell'hosting seguono i tempi del fornitore.
 

@@ -74,7 +74,7 @@ Importing a book, running code in the lab and plotting graphs send nothing anywh
 - **Opening a catalog book.** The reader downloads its `.ptsb` from the same site once, checks its size and sha256, and keeps a copy in IndexedDB. Later visits open it from that copy, offline.
 - **Using the platform (`VITE_PLATFORM_ENABLED=true`).** Sign-in, registration, terms consent, license keys, book access checks and the opening of a licensed chapter go to the API at `VITE_API_URL`. It is off by default and the public reader doesn't use it.
 
-The reader has no analytics or telemetry.
+The public reader has no analytics or telemetry.
 
 ## Configuration
 
