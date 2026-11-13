@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
 import { getCatalog, initUploadedBooks, registerUploadedBook, unregisterUploadedBook, whenRemoteBooksReady } from '../lib/loader';
 import { whenCloudBooksReady } from '../lib/cloudLoader';
-import { parsePtsbFile, isEncryptedPtsb } from '../lib/ptsb';
 import { removeUploaded, saveUploaded } from '../lib/ptsbStore';
 import { forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import { SiteHeader } from '../components/SiteHeader';
@@ -65,7 +64,8 @@ export function Home() {
     setUploadError(null);
     setUploadStatus('Lettura file…');
     try {
-      const buf = await file.arrayBuffer();
+      // Package parsing brings the validator and KaTeX, so it loads only when a file is imported.
+      const [buf, { parsePtsbFile, isEncryptedPtsb }] = await Promise.all([file.arrayBuffer(), import('../lib/ptsb')]);
       if (isEncryptedPtsb(buf) && !user) {
         setUploadError(
           authEnabled

@@ -6,6 +6,7 @@ import { AntdProvider } from './context/AntdProvider';
 import { ReaderConfigProvider } from './context/ReaderConfigContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { InstallBanner } from './components/InstallBanner';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { initBuiltinBooks, initRemoteBooks, initUploadedBooks } from './lib/loader';
 import { initCloudBooks } from './lib/cloudLoader';
 import { Home } from './pages/Home';
@@ -114,9 +115,11 @@ function AppRoutes() {
         <Route
           path="/libro/*"
           element={
-            <Suspense fallback={<div className="app-loading"><p>Caricamento libro…</p></div>}>
-              <SmartbookRouter />
-            </Suspense>
+            <RouteErrorBoundary>
+              <Suspense fallback={<div className="app-loading"><p>Caricamento libro…</p></div>}>
+                <SmartbookRouter />
+              </Suspense>
+            </RouteErrorBoundary>
           }
         />
         <Route path="*" element={<NotFoundPage />} />

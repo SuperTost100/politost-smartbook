@@ -6,11 +6,30 @@ const STORE = 'uploaded-books';
 /** Books downloaded from the remote catalog, keyed by `id@version`. */
 const REMOTE_STORE = 'remote-books';
 
+let connection: Promise<IDBDatabase> | null = null;
+
+/**
+ * One connection for the whole tab. It closes when another tab opens a newer DB_VERSION, so that
+ * upgrade is not blocked, and the next call here opens it again.
+ */
 function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (connection) return connection;
+  const opening = new Promise<IDBDatabase>((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onerror = () => reject(req.error);
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      const forget = () => {
+        if (connection === opening) connection = null;
+      };
+      db.onversionchange = () => {
+        db.close();
+        forget();
+      };
+      // The browser can close it too, for example when the user clears site data.
+      db.onclose = forget;
+      resolve(db);
+    };
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) {
@@ -21,6 +40,12 @@ function openDb(): Promise<IDBDatabase> {
       }
     };
   });
+  connection = opening;
+  // A failed open is tried again on the next call.
+  opening.catch(() => {
+    if (connection === opening) connection = null;
+  });
+  return opening;
 }
 
 function readAll(db: IDBDatabase): Promise<StoredBookBundle[]> {
@@ -51,16 +76,6 @@ export async function removeUploadedForUser(userId: string): Promise<string[]> {
   const ids = (await readAll(db)).filter((row) => row.userId === userId).map((row) => row.config.id);
   await Promise.all(ids.map((id) => removeUploaded(id)));
   return ids;
-}
-
-export async function getUploaded(id: string): Promise<StoredBookBundle | undefined> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readonly');
-    const req = tx.objectStore(STORE).get(id);
-    req.onsuccess = () => resolve(req.result as StoredBookBundle | undefined);
-    req.onerror = () => reject(req.error);
-  });
 }
 
 export async function saveUploaded(bundle: StoredBookBundle): Promise<void> {

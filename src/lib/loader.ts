@@ -1,7 +1,9 @@
 import type { SmartbookConfig, Chapter, Exercise, IdeSnippet, GraficoConfig } from '../types/smartbook';
 import type { StoredBookBundle } from '../types/ptsb';
-import { buildAssetUrlMap, revokeAssetUrls } from './assetResolver';
-import { parseChapterMarkdown, parseExercises } from './parser';
+// The content-core modules themselves, not the barrel: the barrel brings KaTeX, markdown-it and
+// DOMPurify into the library page. The package exports only its root, so the path is relative.
+import { buildAssetUrlMap, revokeAssetUrls } from '../../packages/content-core/src/assetResolver';
+import { parseChapterMarkdown, parseExercises } from '../../packages/content-core/src/parser';
 import { cachedByBundle } from './bundleCache';
 import { listUploaded } from './ptsbStore';
 import { booksBaseUrl, fetchRemoteBook, fetchRemoteCatalog, type RemoteCatalogEntry } from './remoteCatalog';
@@ -231,16 +233,32 @@ function storedToBundle(
 }
 
 let uploadedInitGeneration = 0;
+/** The user whose books the registry holds, or is loading. Import and removal update it in place. */
+let uploadedLoad: { userId: string | null; job: Promise<void> } | null = null;
 
-export async function initUploadedBooks(userId: string | null): Promise<void> {
+/**
+ * Read the user's imported books from IndexedDB, once per user. A second call for the same user
+ * returns the first load, because reloading would revoke the blob URLs of a book that is open.
+ */
+export function initUploadedBooks(userId: string | null): Promise<void> {
+  if (uploadedLoad?.userId === userId) return uploadedLoad.job;
   const generation = ++uploadedInitGeneration;
-  const items = await listUploaded(userId);
-  // A newer user's load owns the registry. Do not create blob URLs for stale results.
-  if (generation !== uploadedInitGeneration) return;
-  for (const urls of uploadedAssetUrls.values()) revokeAssetUrls(urls);
-  uploadedAssetUrls.clear();
-  uploadedRegistry = new Map(items.map((s) => [s.config.id, storedToBundle(s)]));
-  dataCache.clear();
+  const job = (async () => {
+    const items = await listUploaded(userId);
+    // A newer user's load owns the registry. Do not create blob URLs for stale results.
+    if (generation !== uploadedInitGeneration) return;
+    for (const urls of uploadedAssetUrls.values()) revokeAssetUrls(urls);
+    uploadedAssetUrls.clear();
+    uploadedRegistry = new Map(items.map((s) => [s.config.id, storedToBundle(s)]));
+    dataCache.clear();
+  })();
+  const load = { userId, job };
+  uploadedLoad = load;
+  // A failed read is retried by the next call.
+  job.catch(() => {
+    if (uploadedLoad === load) uploadedLoad = null;
+  });
+  return job;
 }
 
 export function registerUploadedBook(stored: StoredBookBundle): void {
@@ -328,10 +346,6 @@ function bundleToData(bundle: BookBundle): SmartbookData {
     grafici,
     assets,
   };
-}
-
-export function smartbookExists(id: string): boolean {
-  return loadBundle(id) !== undefined || remoteRegistry.has(id);
 }
 
 export function loadSmartbook(id: string): SmartbookData | null {

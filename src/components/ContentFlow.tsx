@@ -1,6 +1,7 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 import type { FormulaRef } from '../types/smartbook';
-import { parseContentBlocks, type ContentBlock, type InlineSegment } from '../lib/renderContent';
+import type { ContentBlock, InlineSegment } from '../lib/renderContent';
+import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/formulaRender';
 import { refLabel } from '../lib/chapterNav';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
@@ -161,15 +162,18 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
   }
 }
 
-/** Renders smartbook text with inline refs, links and block formulas */
-export function ContentFlow({
+/**
+ * Renders smartbook text with inline refs, links and block formulas. Memoized, because a chapter
+ * re-renders whenever the active paragraph changes and its paragraphs' props stay the same.
+ */
+export const ContentFlow = memo(function ContentFlow({
   content,
   formulaIndex,
   resolveAsset,
   onRefClick,
   variant = 'screen',
 }: ContentFlowProps) {
-  const blocks = useMemo(() => parseContentBlocks(content), [content]);
+  const blocks = useMemo(() => cachedContentBlocks(content), [content]);
   const ctx: RenderContext = { formulaIndex, resolveAsset, variant };
 
   return (
@@ -180,4 +184,4 @@ export function ContentFlow({
       <Blocks blocks={blocks} ctx={ctx} />
     </div>
   );
-}
+});

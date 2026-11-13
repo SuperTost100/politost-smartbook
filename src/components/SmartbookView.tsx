@@ -31,6 +31,9 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
   const print = usePrintMode();
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
+  // The chapter re-renders on every change of the active paragraph, so the text work runs once per chapter.
+  const minutes = useMemo(() => readingMinutes(chapter), [chapter]);
+  const contents = useMemo(() => chapter.paragraphs.map((p) => preprocessContent(p.content)), [chapter]);
 
   useEffect(() => {
     setParagraphs(
@@ -106,7 +109,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         number={chapter.meta.number}
         title={chapter.meta.title}
         paragraphs={chapter.paragraphs.length}
-        minutes={readingMinutes(chapter)}
+        minutes={minutes}
         onPrint={
           chapter.meta.printable
             ? () => print({ bookId, section: 'capitolo', chapterId: chapter.meta.id })
@@ -128,7 +131,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
             </ParagraphHeading>
             <div className="paragraph-body">
               <ContentFlow
-                content={preprocessContent(para.content)}
+                content={contents[i]}
                 formulaIndex={formulaIndex}
                 resolveAsset={resolveAsset}
                 onRefClick={handleRefClick}

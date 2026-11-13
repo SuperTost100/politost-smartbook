@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRemoteCatalog } from './remoteCatalog.ts';
+import { PTSB_ZIP_LIMITS } from '@politost/content-core';
+import { MAX_PACKAGE_BYTES, packageTimeoutMs, parseRemoteCatalog } from './remoteCatalog.ts';
 
 const BASE = 'https://books.example.org';
 const SHA = 'a'.repeat(64);
@@ -56,7 +57,7 @@ test('package timeout rejects even when response headers arrive but the body han
   const [entry] = parseRemoteCatalog(catalog(book()), BASE);
   const controller = new AbortController();
   t.mock.method(AbortSignal, 'timeout', (milliseconds: number) => {
-    assert.equal(milliseconds, 10_000);
+    assert.equal(milliseconds, packageTimeoutMs(entry.bytes));
     return controller.signal;
   });
   t.mock.method(globalThis, 'fetch', async (_url: unknown, options?: RequestInit) => {
@@ -69,4 +70,15 @@ test('package timeout rejects even when response headers arrive but the body han
     }));
   });
   await assert.rejects(fetchRemoteBook(entry), { name: 'TimeoutError' });
+});
+
+test('the package download gets 10 s plus 1 s per 100 kB', () => {
+  assert.equal(packageTimeoutMs(1), 11_000);
+  assert.equal(packageTimeoutMs(834_221), 19_000);
+  // A 15 MB book on a 1 Mbit/s line needs about 2 minutes.
+  assert.equal(packageTimeoutMs(15_000_000), 160_000);
+});
+
+test('the catalog size limit matches the unzip limit of content-core', () => {
+  assert.equal(MAX_PACKAGE_BYTES, PTSB_ZIP_LIMITS.maxCompressedBytes);
 });
