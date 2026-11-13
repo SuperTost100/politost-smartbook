@@ -1,7 +1,9 @@
 import { isSafeNextPath } from '../lib/safeNext';
 import { CHAPTER_PARAM, DIFFICULTY_PARAM, type Difficulty, type ExerciseScope } from '../lib/exerciseNav';
+import { PRINT_PARAMS } from '../lib/printOptions';
 
-export type PrintSection = 'capitolo' | 'formulario' | 'esercizi' | 'esami';
+/** What a print route prints: one chapter, the whole book, the formula sheet, the exercises or the exam questions. */
+export type PrintSection = 'capitolo' | 'libro' | 'formulario' | 'esercizi' | 'esami';
 
 export interface PrintTarget {
   bookId: string;
@@ -23,6 +25,9 @@ export function buildPrintUrl(
       if (!options?.chapterId) throw new Error('chapterId required for capitolo print');
       path = `/libro/${bookId}/stampa/capitolo/${options.chapterId}`;
       break;
+    case 'libro':
+      path = `/libro/${bookId}/stampa/libro`;
+      break;
     case 'formulario':
       path = `/libro/${bookId}/stampa/formulario`;
       break;
@@ -35,6 +40,7 @@ export function buildPrintUrl(
   }
 
   const params = new URLSearchParams();
+  if (section === 'libro' && options?.chapterId) params.set(PRINT_PARAMS.from, options.chapterId);
   if (options?.scope != null) params.set(CHAPTER_PARAM, String(options.scope));
   if (options?.difficulty) params.set(DIFFICULTY_PARAM, options.difficulty);
   if (options?.returnTo) params.set('return', options.returnTo);

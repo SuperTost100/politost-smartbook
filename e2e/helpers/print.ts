@@ -5,6 +5,8 @@ export interface PrintRoute {
   url: string;
   /** Assert chapter body: paragraphs + KaTeX */
   expectChapterContent?: boolean;
+  /** The whole book opens with a cover instead of the opener. */
+  expectCover?: boolean;
 }
 
 export const PRINT_ROUTES: PrintRoute[] = [
@@ -14,12 +16,22 @@ export const PRINT_ROUTES: PrintRoute[] = [
     expectChapterContent: true,
   },
   {
+    name: 'esempio / tutto il libro',
+    url: '/libro/esempio/stampa/libro',
+    expectChapterContent: true,
+    expectCover: true,
+  },
+  {
     name: 'esempio / formulario',
     url: '/libro/esempio/stampa/formulario',
   },
   {
     name: 'esempio / esercizi',
     url: '/libro/esempio/stampa/esercizi',
+  },
+  {
+    name: 'esempio / prove d\'esame',
+    url: '/libro/esempio/stampa/esami',
   },
 ];
 
@@ -39,7 +51,7 @@ async function assertUniqueFormulaIds(page: Page): Promise<void> {
 export async function assertPrintPreview(page: Page, route: PrintRoute): Promise<void> {
   const sheet = page.locator('.print-sheet');
   await expect(sheet).toBeVisible();
-  await expect(sheet.locator('.print-opener-title')).toBeVisible();
+  await expect(sheet.locator(route.expectCover ? '.print-cover-title' : '.print-opener-title')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
 
   if (route.expectChapterContent) {
@@ -53,6 +65,17 @@ export async function assertPrintPreview(page: Page, route: PrintRoute): Promise
     }
     await assertUniqueFormulaIds(page);
   }
+  await assertUniqueIds(page);
+}
+
+/** One document can hold an exercise in a chapter and in the exam appendix: ids must still be unique. */
+export async function assertUniqueIds(page: Page): Promise<void> {
+  const duplicates = await page.locator('.print-sheet').evaluate((sheet) => {
+    const counts = new Map<string, number>();
+    for (const el of sheet.querySelectorAll('[id]')) counts.set(el.id, (counts.get(el.id) ?? 0) + 1);
+    return [...counts.entries()].filter(([, count]) => count > 1);
+  });
+  expect(duplicates).toEqual([]);
 }
 
 /** In print media only the sheet is visible. */

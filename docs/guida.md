@@ -35,7 +35,13 @@ Alla fine di ogni capitolo, «Esercitati» porta agli esercizi di quel capitolo.
 
 ## Stampa
 
-L'icona della stampante in alto, **Versione stampabile**, apre l'anteprima del capitolo, del formulario, degli esercizi o delle prove, dove il libro lo consente. Dagli esercizi stampi quello che vedi: il capitolo scelto, o tutti, con la difficoltà scelta. In stampa i suggerimenti e le soluzioni sono visibili. Laboratorio e grafici non si stampano.
+L'icona della stampante in alto, **Versione stampabile**, apre l'anteprima del capitolo, del formulario, degli esercizi o delle prove, dove il libro lo consente. Dagli esercizi stampi quello che vedi: il capitolo scelto, o tutti, con la difficoltà scelta. Laboratorio e grafici non si stampano.
+
+Accanto all'anteprima, o sotto **Opzioni** su un telefono, scegli cosa stampare. **Questo capitolo** stampa il capitolo che stavi leggendo, e puoi aggiungere i suoi esercizi alla fine. **Tutto il libro** stampa una copertina, un indice e ogni capitolo su una pagina nuova: togli i capitoli che non ti servono e, se vuoi, aggiungi gli esercizi alla fine di ogni capitolo, il formulario e le prove d'esame in fondo. Gli esercizi puoi stamparli tutti oppure 3, 5 o 10 per capitolo, scelti tra facili, medi e difficili e sempre gli stessi. L'indice non ha i numeri di pagina, perché le pagine le decide il browser al momento della stampa.
+
+Gli esercizi e le prove si stampano con le domande prima e le soluzioni in fondo, sotto lo stesso numero, così puoi provare senza vedere la risposta. Se le soluzioni non ti servono, spegnile nelle opzioni. I suggerimenti non si stampano. Le scelte restano nell'indirizzo della pagina, quindi un link salvato riapre la stessa stampa.
+
+Per un libro intero il browser impiega qualche secondo a preparare l'anteprima: il pulsante **Stampa o salva PDF** si attiva quando il documento è pronto. I libri che si leggono un capitolo alla volta, dopo l'accesso, si stampano solo per capitolo.
 
 Se hai fatto l'accesso, la pagina e la stampa possono riportare una filigrana con la tua email. Non coprirla. I dettagli sono nei [termini](/termini).
 

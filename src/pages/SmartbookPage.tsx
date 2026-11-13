@@ -216,6 +216,14 @@ function BookRoutes() {
           }
         />
         <Route
+          path="stampa/libro"
+          element={
+            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+              <PrintPage kind="libro" />
+            </Suspense>
+          }
+        />
+        <Route
           path="stampa/formulario"
           element={
             <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
