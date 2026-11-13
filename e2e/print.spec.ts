@@ -210,6 +210,36 @@ test.describe('Print shortcut', () => {
     release();
     await expect.poll(prints).toBe(1);
   });
+
+  test('a queued Ctrl+P is dropped when no chapter is left to print', async ({ page }) => {
+    await page.addInitScript(() => {
+      const counter = window as unknown as { prints: number };
+      counter.prints = 0;
+      window.print = () => {
+        counter.prints += 1;
+      };
+    });
+    const prints = () => page.evaluate(() => (window as unknown as { prints: number }).prints);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(/cosa-trovi.*\.svg$/, async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/libro/esempio/stampa/libro', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.print-sheet')).toHaveAttribute('aria-busy', 'true');
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, cancelable: true, bubbles: true }));
+    });
+
+    await page.getByRole('button', { name: 'Deseleziona tutti' }).click();
+    await expect(page.locator('.print-sheet')).toHaveCount(0);
+    release();
+    await page.waitForTimeout(500);
+    expect(await prints()).toBe(0);
+  });
 });
 
 test.describe('Print preview of a book loaded one chapter at a time', () => {
