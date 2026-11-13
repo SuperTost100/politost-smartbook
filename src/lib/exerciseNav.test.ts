@@ -14,6 +14,7 @@ import {
   parseScope,
   practiceCounts,
   exerciseRedirect,
+  linkedExerciseId,
 } from './exerciseNav.ts';
 import { buildPrintUrl } from '../print/routes.ts';
 
@@ -151,4 +152,13 @@ test('a link to one exercise opens its chapter without a difficulty; a bare URL 
   assert.equal(exerciseRedirect(exams, exercises[4]), '');
   assert.equal(exerciseRedirect({ ...exams, difficulty: null }, exercises[4]), null);
   assert.equal(exerciseRedirect(exams, undefined), null);
+});
+
+test('a hash names an exercise only when it is a readable #ex- link', () => {
+  assert.equal(linkedExerciseId('#ex-E3.4'), 'E3.4');
+  assert.equal(linkedExerciseId('#ex-E%203'), 'E 3');
+  assert.equal(linkedExerciseId('#p2'), null);
+  assert.equal(linkedExerciseId(''), null);
+  assert.equal(linkedExerciseId('#ex-%'), null);
+  assert.equal(linkedExerciseId('#ex-%E0%A4%A'), null);
 });

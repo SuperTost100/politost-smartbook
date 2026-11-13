@@ -112,6 +112,17 @@ export function defaultScope(index: ExerciseIndex, lastReadChapter?: number): En
   return (last ?? withExercises[0]).scope;
 }
 
+/** The exercise id a `#ex-<id>` hash points at. A hash that is not one, or cannot be decoded, gives null. */
+export function linkedExerciseId(hash: string): string | null {
+  if (!hash.startsWith('#ex-')) return null;
+  try {
+    return decodeURIComponent(hash.slice('#ex-'.length));
+  } catch {
+    // A broken escape such as "#ex-%" is not a link to any exercise.
+    return null;
+  }
+}
+
 /**
  * The search the page should replace its URL with, or null when the URL is fine as it is.
  * A link to one exercise (`#ex-E3.4`) opens its chapter with the difficulty filter cleared;

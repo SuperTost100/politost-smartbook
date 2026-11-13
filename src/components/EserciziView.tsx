@@ -18,6 +18,7 @@ import {
   difficultyCounts,
   entryScopeOf,
   exerciseRedirect,
+  linkedExerciseId,
   exerciseSearch,
   exercisesInScope,
   filterByDifficulty,
@@ -124,7 +125,7 @@ export function EserciziView({
     titleRef.current?.focus({ preventScroll: true });
   }, [scope, location.hash]);
 
-  const linkedId = location.hash.startsWith('#ex-') ? decodeURIComponent(location.hash.slice('#ex-'.length)) : null;
+  const linkedId = linkedExerciseId(location.hash);
   const linked = linkedId ? exercises.find((ex) => ex.id === linkedId) : undefined;
   const redirect = exerciseRedirect(view, linked, index && scope == null && !linked ? lastReadChapter(bookId, chapters) : undefined);
   if (redirect != null) return <Navigate replace to={{ search: redirect, hash: location.hash }} />;
