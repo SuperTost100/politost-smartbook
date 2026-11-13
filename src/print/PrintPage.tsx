@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useCloudChapter } from '../hooks/useCloudChapter';
 import { usePrintShortcut } from '../hooks/usePrintShortcut';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -393,6 +393,18 @@ export function PrintPage({ kind }: PrintPageProps) {
     };
   }, [data, view]);
 
+  const handlePrint = useCallback(async () => {
+    setPrinting(true);
+    try {
+      const sheet = document.querySelector('.print-sheet');
+      if (sheet) await waitForImages(sheet);
+      await document.fonts?.ready;
+      window.print();
+    } finally {
+      setPrinting(false);
+    }
+  }, []);
+
   // The document is ready to print once every part is mounted and its images and fonts have loaded.
   const parts = doc?.parts ?? [];
   const { mounted, pending } = useProgressiveParts(parts.map((p) => p.key));
@@ -400,6 +412,9 @@ export function PrintPage({ kind }: PrintPageProps) {
   const complete = Boolean(doc) && pending === undefined && !stale;
   const signature = `${kind}|${parts.map((p) => p.key).join(',')}|${JSON.stringify(docOptions)}`;
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
+  // print the parts mounted so far.
+  const printQueued = useRef(false);
   useEffect(() => {
     if (!complete) return;
     let cancelled = false;
@@ -407,12 +422,17 @@ export function PrintPage({ kind }: PrintPageProps) {
       const sheet = document.querySelector('.print-sheet');
       if (sheet) await waitForImages(sheet);
       await document.fonts?.ready;
-      if (!cancelled) setLoadedFor(signature);
+      if (cancelled) return;
+      setLoadedFor(signature);
+      if (printQueued.current) {
+        printQueued.current = false;
+        void handlePrint();
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [complete, signature]);
+  }, [complete, signature, handlePrint]);
   const ready = complete && loadedFor === signature;
   const pendingPart = parts.find((p) => p.key === pending);
   const progress = ready
@@ -471,28 +491,15 @@ export function PrintPage({ kind }: PrintPageProps) {
     [bookId, chapterId, kind, navigate, options, printableChapters, printableNumbers, searchParams],
   );
 
-  const handlePrint = useCallback(async () => {
-    setPrinting(true);
-    try {
-      const sheet = document.querySelector('.print-sheet');
-      if (sheet) await waitForImages(sheet);
-      await document.fonts?.ready;
-      window.print();
-    } finally {
-      setPrinting(false);
-    }
-  }, []);
-
   const canPrint = Boolean(view?.printable) && !view?.message && !(cloud && (cloudLoading || cloudError));
-  // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
-  // print the parts mounted so far.
-  const [printQueued, setPrintQueued] = useState(false);
-  usePrintShortcut(canPrint ? () => (ready ? void handlePrint() : setPrintQueued(true)) : undefined);
-  useEffect(() => {
-    if (!printQueued || !ready) return;
-    setPrintQueued(false);
-    if (canPrint) void handlePrint();
-  }, [printQueued, ready, canPrint, handlePrint]);
+  usePrintShortcut(
+    canPrint
+      ? () => {
+          if (ready) void handlePrint();
+          else printQueued.current = true;
+        }
+      : undefined,
+  );
 
   if (!bookId || !data) return <BookNotFound />;
 
