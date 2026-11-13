@@ -59,6 +59,9 @@ a.sb-btn { color: var(--ink); }
 .sb-segmented-bottom a[aria-current="page"] { background: var(--surface-raised); border-color: transparent; box-shadow: var(--pressed); }
 
 /* Reader body: index panel, reading column, outline. */
+/* The index and the outline are sticky inside the body, which ends where the footer starts. Once it does, a panel taller than the
+   screen minus the footer is pushed up under the header, so its height leaves room for the footer (padding 24 + a line + 48). */
+.sb-reader { --footer-height: calc(var(--space-6) + 20px + var(--space-12)); --sticky-panel-height: calc(100dvh - var(--header-height) - var(--space-2) - var(--footer-height)); }
 .sb-reader-body { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 var(--space-6); padding: var(--space-2) var(--space-5) 0; }
 .sb-reader-body.has-toc { grid-template-columns: var(--sider-width) minmax(0, 1fr); }
 .sb-reader-body.has-rail { grid-template-columns: minmax(0, 1fr) var(--rail-width); }
@@ -66,7 +69,7 @@ a.sb-btn { color: var(--ink); }
 .app-main { min-width: 0; width: 100%; max-width: var(--wide-width); margin: 0 auto; padding: var(--space-6) 0 var(--space-16); }
 
 /* ChapterToc: an inset panel. */
-.sb-toc { position: sticky; top: calc(var(--header-height) + var(--space-2)); align-self: start; max-height: calc(100dvh - var(--header-height) - var(--space-6)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-control) transparent; padding: 22px 14px; border-radius: var(--radius-xl); background: var(--surface-raised); box-shadow: var(--pressed-lg); }
+.sb-toc { position: sticky; top: calc(var(--header-height) + var(--space-2)); align-self: start; max-height: var(--sticky-panel-height); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-control) transparent; padding: 22px 14px; border-radius: var(--radius-xl); background: var(--surface-raised); box-shadow: var(--pressed-lg); }
 .sb-toc .sb-panel-label { margin: 0 8px 12px; }
 .sb-toc ol { list-style: none; margin: 0; padding: 0; }
 .sb-toc-ch { display: flex; align-items: baseline; gap: 10px; padding: 9px 12px; border: 1px solid transparent; border-radius: 12px; color: var(--ink-muted); font: 500 15px/20px var(--font-sans); text-decoration: none; }
@@ -91,7 +94,7 @@ a.sb-btn { color: var(--ink); }
 .sb-toc-ch[aria-disabled="true"], .sb-toc-ch[aria-disabled="true"]:hover { color: var(--ink-subtle); }
 
 /* ParagraphRail: a raised card with the outline. */
-.sb-rail { position: sticky; top: calc(var(--header-height) + var(--space-2)); align-self: start; max-height: calc(100dvh - var(--header-height) - var(--space-6)); overflow-y: auto; margin-top: var(--space-2); padding: 22px 18px; border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--raised); }
+.sb-rail { position: sticky; top: calc(var(--header-height) + var(--space-2)); align-self: start; max-height: var(--sticky-panel-height); overflow-y: auto; margin-top: var(--space-2); padding: 22px 18px; border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--raised); }
 .sb-rail .sb-panel-label { margin: 0 8px 12px; }
 .sb-rail ol { list-style: none; margin: 0; padding: 0; }
 .sb-rail a { display: flex; gap: 10px; padding: 6px 8px; border-radius: 10px; color: var(--ink-muted); font: 400 14px/19px var(--font-sans); text-decoration: none; }
@@ -167,6 +170,13 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-prose blockquote { margin: 0 0 var(--space-5); padding: var(--space-1) 0 var(--space-1) var(--space-5); border-left: 3px solid var(--star); color: var(--ink-muted); font-style: italic; }
 .sb-prose h3, .sb-prose h4, .sb-prose .content-subheading { margin: 34px 0 10px; font: 700 17px/1.3 var(--font-sans); }
 .sb-prose .katex { font-size: 1.05em; }
+/* A formula and the punctuation after it stay on one line (see glueMathPunctuation). */
+.math-glue { white-space: nowrap; }
+/* An inline formula wider than the text (flagged by useScrollableInlineMath) scrolls inside its line.
+   The padding takes the formula's few pixels of vertical overflow, the negative margin keeps the line height. */
+.sb-prose .katex[data-wide] { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: bottom; padding-block: 0.3em; margin-block: -0.3em; scrollbar-width: thin; }
+.sb-prose .katex[data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.math-glue:has(> .katex[data-wide]) { white-space: normal; }
 .sb-prose mark { background: var(--star-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
 .sb-prose > :last-child { margin-bottom: 0; }
 
@@ -182,7 +192,9 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-fref-chip { display: inline-flex; align-items: center; padding: 0 6px; border: 0; border-radius: 7px; background: color-mix(in srgb, var(--star) 14%, transparent); color: var(--primary-text); font: 700 0.8em/1.5 var(--font-sans); font-variant-numeric: tabular-nums; cursor: pointer; text-decoration: none; vertical-align: baseline; }
 .sb-fref-chip:hover, .sb-fref-chip[aria-expanded="true"] { background: color-mix(in srgb, var(--star) 26%, transparent); }
 .sb-fref-popover .ant-popover-inner { padding: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-overlay); box-shadow: var(--shadow-overlay); }
-.sb-fref-pop { width: 320px; max-width: calc(100vw - 32px); padding: var(--space-3) var(--space-4) var(--space-4); font: 400 14px/20px var(--font-sans); color: var(--ink); text-align: left; }
+/* The transparent padding is what keeps the card 16px from the screen edge when antd shifts the popover to fit. */
+.sb-fref-popover { padding-inline: var(--space-4); }
+.sb-fref-pop { width: 320px; max-width: calc(100vw - 56px); padding: var(--space-3) var(--space-4) var(--space-4); font: 400 14px/20px var(--font-sans); color: var(--ink); text-align: left; }
 .sb-fref-pop-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); color: var(--ink-muted); }
 .sb-fref-pop-head b { order: 2; font: 700 13px/16px var(--font-sans); color: var(--primary-text); }
 .sb-fref-pop-math { padding: var(--space-2) 0; text-align: center; font-size: 17px; overflow-x: auto; }
@@ -241,7 +253,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-fcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--raised); overflow: hidden; }
 .sb-fcard-head { display: flex; align-items: baseline; gap: var(--space-3); padding: 18px var(--space-6); border-bottom: 1px dashed var(--border-control); }
 .sb-fcard-head h2 { margin: 0; font: 600 21px/1.2 var(--font-serif); color: var(--ink); }
-.sb-fcard-head .sb-eyebrow { color: var(--primary-text); }
+.sb-fcard-head .sb-eyebrow { flex: none; white-space: nowrap; color: var(--primary-text); }
 .sb-fcard-empty { margin: 0; padding: var(--space-4) var(--space-6); color: var(--ink-muted); font-style: italic; }
 .sb-fcard-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; gap: var(--space-4); padding: 14px var(--space-6); border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
 .sb-fcard-row:last-child { border-bottom: 0; }
@@ -249,6 +261,10 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-fcard-num { justify-self: start; padding: 5px 8px; border-radius: 9px; background: var(--page); box-shadow: var(--raised-sm); font: 700 13px/1 var(--font-sans); font-variant-numeric: tabular-nums; color: var(--primary-text); }
 .sb-fcard-label { font: 400 16px/22px var(--font-sans); color: var(--ink); }
 .sb-fcard-math { font-size: 17px; overflow-x: auto; color: var(--ink); }
+/* A formula a few pixels taller than its line makes overflow-x: auto scroll vertically too, and Chrome then gives every cell a Tab stop.
+   The padding takes that overflow, and the negative margin keeps the row height, so only a formula wider than its cell is focusable. */
+.sb-fcard-math { padding-block: 0.6em; margin-block: -0.6em; }
+.sb-fcard-math:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 .sb-fcard-math .katex-display { margin: 0; text-align: left; }
 .sb-fcard-math .katex-display > .katex { text-align: left; }
 .sb-fcard-math .formula-prose { margin: 0; font: 400 15px/22px var(--font-serif); }
@@ -359,10 +375,9 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 /* Pages outside the reader */
 .site-page { display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg); }
 .site-page > main { flex: 1; }
-.book-not-found, .license-locked, .page-not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); min-height: 40vh; padding: var(--space-8); text-align: center; color: var(--ink-muted); }
-.book-not-found { min-height: 100dvh; }
-.book-not-found h2, .license-locked h2, .page-not-found h1 { margin: 0; font: 500 30px/36px var(--font-serif); color: var(--ink); }
-.license-locked p, .book-not-found p, .page-not-found p { margin: 0; max-width: 46ch; }
+.license-locked, .page-not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); min-height: 40vh; padding: var(--space-8); text-align: center; color: var(--ink-muted); }
+.license-locked h2, .page-not-found h1 { margin: 0; font: 500 30px/36px var(--font-serif); color: var(--ink); }
+.license-locked p, .page-not-found p { margin: 0; max-width: 46ch; }
 .page-error-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
 .license-locked-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-2); }
 .license-locked-catalog-link { display: inline-flex; align-items: center; height: var(--control-md); padding: 0 var(--space-3); color: var(--primary-text); }

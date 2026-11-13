@@ -1,3 +1,4 @@
+import { chapterProgress } from '../lib/chapterProgress';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 export interface ParagraphItem {
@@ -32,7 +33,7 @@ export function ReaderProgressProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ReaderProgress>(() => {
     const idx = paragraphs.findIndex((p) => p.id === activeParagraphId);
-    const progress = paragraphs.length && idx >= 0 ? Math.round(((idx + 1) / paragraphs.length) * 100) : 0;
+    const progress = chapterProgress(idx, paragraphs.length);
     return { paragraphs, setParagraphs, activeParagraphId, setActiveParagraphId, progress, jumpTo };
   }, [paragraphs, activeParagraphId, jumpTo]);
 

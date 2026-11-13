@@ -9,7 +9,7 @@ export interface ReadingPosition {
   /** "2.2" and the paragraph title, so Home can name where the reader stopped. */
   paragraphNumber?: string;
   paragraphTitle?: string;
-  /** 0-100, how far into the chapter the current paragraph is. */
+  /** 0-100, see chapterProgress. */
   progress?: number;
   /** When the position last changed (ms since epoch); Home resumes the newest book. */
   readAt?: number;

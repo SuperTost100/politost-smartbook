@@ -31,6 +31,51 @@ test.describe('Accessibility landmarks', () => {
     }
   });
 
+  test('the skip link is the first Tab stop and moves focus to the content', async ({ page }) => {
+    for (const path of ['/libro/esempio/capitolo/nel-libro#p2', '/', '/docs']) {
+      await page.goto(path);
+      await expect(page.locator('main#main-content')).toBeVisible();
+      await page.keyboard.press('Tab');
+      const skip = page.getByRole('link', { name: 'Vai al contenuto' });
+      await expect(skip).toBeFocused();
+      await expect(skip).toBeInViewport();
+      const url = page.url();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('main#main-content')).toBeFocused();
+      expect(page.url()).toBe(url);
+      await page.keyboard.press('Tab');
+      await expect(page.locator('main#main-content').locator(':focus')).toHaveCount(1);
+    }
+  });
+
+  test('the skip link stays out of sight until it has focus', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.getByRole('link', { name: 'Vai al contenuto' })).not.toBeInViewport();
+  });
+
+  test('formula sheet cells are Tab stops only when they scroll sideways', async ({ page }) => {
+    await page.goto('/libro/esempio/formulario');
+    await expect(page.locator('.sb-fcard-math .katex').first()).toBeVisible();
+    const scrollsDown = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.sb-fcard-math')].filter((el) => el.scrollHeight > el.clientHeight).length,
+    );
+    expect(scrollsDown).toBe(0);
+  });
+
+  test('the guide only describes accounts and codes when the platform is on', async ({ page }) => {
+    await page.goto('/docs');
+    const guide = page.locator('.docs-content');
+    await expect(guide.getByRole('heading', { name: 'Guida al reader' })).toBeVisible();
+    if (process.env.VITE_PLATFORM_ENABLED === 'true') {
+      await expect(guide.getByRole('heading', { name: 'Account e codice di attivazione' })).toBeVisible();
+      await expect(guide.getByRole('link', { name: 'Riscatta codice' })).toBeVisible();
+    } else {
+      await expect(guide).not.toContainText(/Accedi|Riscatta|filigrana|licenza/);
+      await expect(guide.getByRole('heading', { name: 'Account e codice di attivazione' })).toHaveCount(0);
+    }
+    await expect(guide.getByRole('heading', { name: 'Libreria' })).toBeVisible();
+  });
+
   test('a formula preview action is reachable from the keyboard', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     const chip = page.locator('.sb-fref-chip').first();

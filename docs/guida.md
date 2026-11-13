@@ -2,18 +2,20 @@
 
 PoliTost Smartbook è il programma con cui leggi gli smartbook. Da qui apri un libro, importi un file che ti hanno dato e usi formulario, esercizi, laboratorio e stampa.
 
-Per account, licenze e dati personali vedi i [Termini](/termini), l'[informativa privacy](/privacy) e la [cookie policy](/cookie).
+Per i dati personali vedi i [Termini](/termini), l'[informativa privacy](/privacy) e la [cookie policy](/cookie).
 
-## Catalogo
+## Libreria
 
 La home elenca i libri disponibili.
 
-- Un libro senza badge si apre dal catalogo.
-- **Cloud** indica un libro servito dal server.
-- **Importato** indica un file `.ptsb` caricato su questo browser.
+- **Incluso nell'app** e **Dal catalogo** indicano libri che si aprono senza altro.
+- **Importato qui** indica un file `.ptsb` caricato su questo browser.
+<!-- platform -->
+- **Dal tuo account** indica un libro servito dal server.
 - **Richiede accesso** indica un libro con licenza. Senza account e senza licenza il testo protetto non si apre.
+<!-- /platform -->
 
-Se hai già letto un libro su questo browser, la sua scheda mostra l'ultimo capitolo aperto e il pulsante «Riprendi», che riapre il paragrafo dove eri. «Apri» parte sempre dal primo capitolo.
+Se hai già letto un libro su questo browser, la sua scheda mostra l'ultimo capitolo aperto e il pulsante «Riprendi», che riapre il paragrafo dove eri. «Apri» e la sezione dei capitoli riaprono il capitolo dove eri rimasto, oppure il primo se non hai ancora letto quel libro.
 
 ## Dentro un libro
 
@@ -25,7 +27,7 @@ In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutt
 - **Laboratorio.** Frammenti Python, eseguiti nel browser, e MATLAB con un interprete compatibile (cicli, funzioni, matrici, grafici 2D). Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib. In tutti e due i linguaggi i grafici compaiono sotto l'output.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
-Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano. L'elenco capitoli sta sotto le schede di sezione.
+Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano, e l'indice dei capitoli o degli esercizi si apre dal pulsante con il menu, in alto a sinistra.
 
 Un riferimento a una formula, nel testo, ne mostra il contenuto al passaggio o al tocco.
 
@@ -41,9 +43,11 @@ Accanto all'anteprima, o sotto **Opzioni** su un telefono, scegli cosa stampare.
 
 Gli esercizi e le prove si stampano con le domande prima e le soluzioni in fondo, sotto lo stesso numero, così puoi provare senza vedere la risposta. Se le soluzioni non ti servono, spegnile nelle opzioni. I suggerimenti non si stampano. Le scelte restano nell'indirizzo della pagina, quindi un link salvato riapre la stessa stampa.
 
-Per un libro intero il browser impiega qualche secondo a preparare l'anteprima: il pulsante **Stampa o salva PDF** si attiva quando il documento è pronto. I libri che si leggono un capitolo alla volta, dopo l'accesso, si stampano solo per capitolo.
+Per un libro intero il browser impiega qualche secondo a preparare l'anteprima: il pulsante **Stampa o salva PDF** si attiva quando il documento è pronto.
 
-Se hai fatto l'accesso, la pagina e la stampa possono riportare una filigrana con la tua email. Non coprirla. I dettagli sono nei [termini](/termini).
+<!-- platform -->
+I libri che si leggono un capitolo alla volta, dopo l'accesso, si stampano solo per capitolo. Se hai fatto l'accesso, la pagina e la stampa possono riportare una filigrana con la tua email. Non coprirla. I dettagli sono nei [termini](/termini).
+<!-- /platform -->
 
 ## Importare un file
 
@@ -51,6 +55,7 @@ Se hai ricevuto un file `.ptsb` dal docente o dall'editore, aprilo dalla sezione
 
 Il libro resta su questo browser, non su un altro dispositivo. Per toglierlo usa **Rimuovi da questo dispositivo**.
 
+<!-- platform -->
 Un file protetto chiede l'accesso. Un libro con licenza chiede anche una licenza attiva sull'account. Se esci, le copie importate con quell'account spariscono da questo browser.
 
 ## Account e codice di attivazione
@@ -61,7 +66,9 @@ La registrazione chiede di accettare termini e privacy. Con Google la stessa acc
 
 Un codice di attivazione si inserisce in [Riscatta codice](/redeem), dopo l'accesso. Il codice è legato al tuo account e a un libro. Se è scaduto, esaurito o revocato, il riscatto non va a buon fine.
 
-I libri pubblici del catalogo non hanno bisogno di account.
+I libri pubblici della libreria non hanno bisogno di account.
+
+<!-- /platform -->
 
 ## Tema, cookie e installazione
 
@@ -71,8 +78,12 @@ Sul telefono può comparire l'invito a installare il reader come app. Se lo chiu
 
 ## Se qualcosa non si apre
 
+<!-- platform -->
 - Libro protetto e nessun account. Entra da **Accedi**, poi riapri il file.
 - Account presente ma libro bloccato. Controlla di aver riscattato il codice di quel libro. Una licenza revocata non si riattiva da sola.
-- File rifiutato perché l'identificativo esiste già. Quel libro è già nel catalogo integrato. Aprilo da lì, non dal file.
+<!-- /platform -->
+- File rifiutato perché l'identificativo esiste già. Quel libro è già nella libreria. Aprilo da lì, non dal file.
 - Laboratorio lento la prima volta. Python viene caricato nel browser, e il primo script con numpy o matplotlib scarica anche quelle librerie. Le volte successive, sullo stesso dispositivo, è più rapido.
+<!-- platform -->
 - Dopo «Esci» non vedi più un libro importato. È previsto. Reimporta il file se ti serve ancora, con l'account con cui vuoi leggerlo.
+<!-- /platform -->

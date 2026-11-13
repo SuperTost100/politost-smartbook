@@ -31,6 +31,6 @@ Con la {{formula:3.1}} e il laboratorio puoi calcolare l'area di un cerchio per 
 
 Ogni capitolo ha una **versione stampabile**: layout da foglio A4, pronta per salvare in PDF o mandare in stampa.
 
-Cerca il pulsante «Versione stampabile» quando leggi un capitolo. Questo libro di esempio serve anche a verificare che la stampa funzioni bene.
+Per aprirla, usa l'icona della stampante nella barra in alto. Nell'anteprima, il pannello «Cosa stampare» ti fa scegliere tra questo capitolo e tutto il libro. Questo libro di esempio serve anche a verificare che la stampa funzioni bene.
 
 Hai visto le funzioni principali. Da qui puoi esplorare le altre sezioni liberamente — è tutto a portata di clic.

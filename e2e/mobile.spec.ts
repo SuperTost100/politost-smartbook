@@ -42,6 +42,30 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await expect(page).toHaveURL(/\/libro\/esempio\/formulario#2\.1$/);
   });
 
+  test('a formula popover keeps 16px from both screen edges', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    // Push the first reference to the right edge, where antd shifts the popover to fit.
+    await page.addStyleTag({ content: '.sb-fref-chip { display: block; width: fit-content; margin-left: auto; }' });
+    await page.locator('.sb-fref-chip').first().tap();
+    const card = page.locator('.ant-popover-container').first();
+    await expect(card).toBeVisible();
+    const width = page.viewportSize()!.width;
+    // The popover slides into place, so poll until it settles.
+    const right = async () => {
+      const box = await card.boundingBox();
+      return box ? box.x + box.width : Infinity;
+    };
+    await expect.poll(right, { timeout: 3000 }).toBeLessThanOrEqual(width - 16);
+    expect((await card.boundingBox())!.x).toBeGreaterThanOrEqual(16);
+  });
+
+  test('chapter labels in the formula sheet stay on one line', async ({ page }) => {
+    await page.goto('/libro/esempio/formulario');
+    const label = page.locator('.sb-fcard-head .sb-eyebrow').first();
+    await expect(label).toBeVisible();
+    await expect(label).toHaveCSS('white-space', 'nowrap');
+  });
+
   test('chapter content is visible without scrolling past chapter drawer chrome', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
 

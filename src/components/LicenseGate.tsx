@@ -81,7 +81,7 @@ export function LicenseGate({ bookId, access = 'public', children }: LicenseGate
         </p>
         <div className="license-locked-actions">
           <Link to="/redeem" className="sb-btn sb-btn-primary">Riscatta codice attivazione</Link>
-          <Link to="/" className="license-locked-catalog-link">Torna al catalogo</Link>
+          <Link to="/" className="license-locked-catalog-link">Torna alla libreria</Link>
         </div>
       </div>
     );

@@ -24,7 +24,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/chapter-dark.png">
-  <img alt="Chapter 2 of the example book, 'Cosa trovi nel libro': the chapter index on the left, numbered formula 2.1 for average velocity, and a progress bar at 33% on the right." src="docs/screenshots/chapter-light.png">
+  <img alt="Chapter 2 of the example book, 'Cosa trovi nel libro': the chapter index on the left, numbered formula 2.1 for average velocity, and the chapter's paragraphs with a reading meter on the right." src="docs/screenshots/chapter-light.png">
 </picture>
 
 ## What it does

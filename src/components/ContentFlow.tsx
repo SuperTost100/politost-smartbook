@@ -1,9 +1,11 @@
-import { Fragment, memo, useMemo } from 'react';
+import { Fragment, memo, useMemo, useRef } from 'react';
 import type { FormulaRef } from '../types/smartbook';
 import type { ContentBlock, InlineSegment } from '../lib/renderContent';
 import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/formulaRender';
 import { refLabel } from '../lib/chapterNav';
+import { glueMathPunctuation } from '../lib/mathGlue';
+import { useScrollableInlineMath } from '../hooks/useScrollableInlineMath';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
 import { Formula } from './ds/Formula';
 import { Figure } from './ds/Figure';
@@ -33,7 +35,7 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
         switch (seg.type) {
           case 'text':
             return (
-              <span key={i} className="content-flow-inline" dangerouslySetInnerHTML={{ __html: seg.html }} />
+              <span key={i} className="content-flow-inline" dangerouslySetInnerHTML={{ __html: glueMathPunctuation(seg.html) }} />
             );
           case 'strong':
             return <strong key={i}><InlineFlow segments={seg.children} ctx={ctx} /></strong>;
@@ -175,9 +177,12 @@ export const ContentFlow = memo(function ContentFlow({
 }: ContentFlowProps) {
   const blocks = useMemo(() => cachedContentBlocks(content), [content]);
   const ctx: RenderContext = { formulaIndex, resolveAsset, variant };
+  const rootRef = useRef<HTMLDivElement>(null);
+  useScrollableInlineMath(rootRef, variant !== 'print');
 
   return (
     <div
+      ref={rootRef}
       className={`content-flow${variant === 'print' ? ' content-flow--print' : ' sb-prose'}`}
       onClick={variant === 'print' ? undefined : onRefClick}
     >

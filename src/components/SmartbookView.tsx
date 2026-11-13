@@ -10,6 +10,7 @@ import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
+import { chapterProgress } from '../lib/chapterProgress';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
 interface SmartbookViewProps {
@@ -90,7 +91,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
       paragraphId: index > 0 ? activeParagraphId : undefined,
       paragraphNumber: index > 0 ? `${chapter.meta.number}.${index + 1}` : undefined,
       paragraphTitle: index > 0 ? paragraph.title : undefined,
-      progress: Math.round(((index + 1) / chapter.paragraphs.length) * 100),
+      progress: chapterProgress(index, chapter.paragraphs.length),
     });
   }, [bookId, chapter, activeParagraphId]);
 

@@ -19,13 +19,17 @@ const CONFIG = {
   chapters: [{ id: 'primo', number: 1, title: 'Primo capitolo', file: '01-primo.md', printable: true }],
 };
 
-const PACKAGE = zipSync({
+function pack(chapter: string) {
+  return zipSync({
   'ptsb.json': strToU8(JSON.stringify({
     formatVersion: 1, packageType: 'smartbook', encrypted: false, access: 'public', createdAt: '2026-10-12T00:00:00Z',
   })),
   'smartbook.json': strToU8(JSON.stringify(CONFIG)),
-  'chapters/01-primo.md': strToU8('## p1 | Dal sito dei libri\n\nQuesto capitolo arriva dal catalogo remoto, con $E = mc^2$.\n'),
-});
+  'chapters/01-primo.md': strToU8(chapter),
+  });
+}
+
+const PACKAGE = pack('## p1 | Dal sito dei libri\n\nQuesto capitolo arriva dal catalogo remoto, con $E = mc^2$.\n');
 
 function catalog(overrides: Record<string, unknown> = {}) {
   return {
@@ -63,6 +67,24 @@ test.describe('Remote books', () => {
     await page.getByRole('link', { name: 'Apri Libro remoto' }).click();
     await expect(page.getByText('Questo capitolo arriva dal catalogo remoto')).toBeVisible();
     await expect(page.locator('.katex').first()).toBeVisible();
+  });
+
+  test('a long inline formula scrolls inside its line and punctuation stays with its formula', async ({ page }) => {
+    const equation = String.raw`\mathrm{Ca_3(PO_4)_2 + SiO_2 + C \to P_4 + CaSiO_3 + CO + CO_2 + Ca_3(PO_4)_2}`;
+    const wide = pack(`## p1 | Prova\n\nBilancia l'equazione $${equation}$. Poi $x = 1$, e basta.\n`);
+    await serveBooks(page, catalog({ bytes: wide.byteLength, sha256: createHash('sha256').update(wide).digest('hex') }), wide);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/libro/remoto/capitolo/primo');
+    await expect(page.locator('.katex').first()).toBeVisible();
+
+    const wideMath = page.locator('.katex[data-wide]');
+    await expect(wideMath).toHaveCount(1);
+    expect(await wideMath.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    // The short formula stays ordinary text, tied to the comma after it.
+    const glued = page.locator('.math-glue:has(.katex:not([data-wide]))');
+    await expect(glued).toHaveCount(1);
+    expect((await glued.textContent())?.endsWith(',')).toBe(true);
   });
 
   test('keeps the builtin books when the catalog is unreachable', async ({ page }) => {
