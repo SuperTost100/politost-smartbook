@@ -17,7 +17,7 @@ export function Home() {
   const { user, isLoading: authLoading } = useAuth();
   const { auth: authEnabled } = useReaderFeatures();
   const { modal } = App.useApp();
-  useDocumentTitle('Biblioteca');
+  useDocumentTitle('Libreria');
   const [catalog, setCatalog] = useState(() => getCatalog());
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);

@@ -41,7 +41,9 @@ function ConsentGate({ children }: { children: ReactNode }) {
 
 /**
  * A new page opens at the top (the router keeps the old scroll otherwise, so "next chapter"
- * opened at the bottom). Back/forward and links to an anchor (#p2, #formula-2.1) are left alone.
+ * opened at the bottom). The jump is instant: html has smooth scrolling for in-page links, and a
+ * page change should not slide up from thousands of pixels. Back/forward and links to an anchor
+ * (#p2, #formula-2.1) are left alone.
  */
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
@@ -51,7 +53,7 @@ function ScrollToTop() {
     // Only a new path: switching graph rewrites the query and must keep the scroll.
     if (lastPath.current === pathname) return;
     lastPath.current = pathname;
-    if (navigationType !== 'POP' && !hash) window.scrollTo(0, 0);
+    if (navigationType !== 'POP' && !hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [pathname, hash, navigationType]);
   return null;
 }

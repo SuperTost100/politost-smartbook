@@ -108,6 +108,51 @@ test.describe('Reader', () => {
     await expect(page).toHaveURL(/\/capitolo\/nel-libro#p3$/);
   });
 
+  test('the chapter outline is listed once: on the right when it fits, in the index when it does not', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.getByRole('complementary', { name: 'Paragrafi del capitolo' })).toBeVisible();
+    await expect(page.locator('.sb-toc-para')).toHaveCount(0);
+    // The top of a chapter is 0 % read, not the first paragraph's share.
+    await expect(page.locator('.sb-rail-progress')).toContainText('0 %');
+
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await expect(page.getByRole('complementary', { name: 'Paragrafi del capitolo' })).toHaveCount(0);
+    await expect(page.locator('.sb-toc-para').first()).toBeVisible();
+  });
+
+  test('the index and the outline stay below the header at the end of the page', async ({ page }) => {
+    // Short enough that the panels fill the space between the header and the footer.
+    await page.setViewportSize({ width: 1440, height: 260 });
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.locator('.sb-rail')).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    const headerBottom = await page.locator('.sb-rtop').evaluate((el) => el.getBoundingClientRect().bottom);
+    for (const panel of ['.sb-toc', '.sb-rail']) {
+      expect(await page.locator(panel).evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(headerBottom);
+    }
+  });
+
+  test('the Capitoli tab returns to the chapter you were reading', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await page.goto('/libro/esempio/capitolo/prova-tu');
+    await page.locator('#p2').scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, -80));
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('politost-last-read'))).toContain('"chapterId":"prova-tu"');
+
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page).toHaveURL(/\/esercizi/);
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Capitoli' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/prova-tu(#p2)?$/);
+  });
+
+  test('the Capitoli tab opens the first chapter when nothing is saved', async ({ page }) => {
+    await page.goto('/libro/esempio/formulario');
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Capitoli' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/benvenuto$/);
+  });
+
   test('Home resumes a position saved before paragraph titles were stored', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('politost-last-read', JSON.stringify({
@@ -175,6 +220,45 @@ test.describe('Reader', () => {
     await expect(page).toHaveURL(/capitolo\/prova-tu$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     await expect(page).toHaveTitle('3. Prova tu · Guida di esempio · PoliTost Smartbook');
+  });
+
+  test('changing section jumps to the top instead of sliding there', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 400 });
+    await page.goto('/libro/esempio/capitolo/nel-libro');
+    await expect(page.getByRole('heading', { name: /Cosa trovi nel libro/ })).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    const from = await page.evaluate(() => window.scrollY);
+    expect(from).toBeGreaterThan(800);
+    await page.evaluate(() => {
+      const seen: number[] = [];
+      (window as unknown as { __seen: number[] }).__seen = seen;
+      window.addEventListener('scroll', () => seen.push(window.scrollY));
+    });
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Formulario' }).click();
+    await expect(page).toHaveURL(/\/formulario$/);
+    await expect(page.locator('.formulario-view')).toBeVisible();
+    await page.waitForTimeout(800);
+    // A slide would leave positions between where the reader was and the top.
+    const seen = await page.evaluate(() => (window as unknown as { __seen: number[] }).__seen);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(seen.filter((y) => y > 0 && y < from - 50)).toEqual([]);
+  });
+
+  test('an unknown chapter, book or address each show the same notice with a way on', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/non-esiste');
+    await expect(page.getByRole('heading', { level: 1, name: 'Capitolo non trovato' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Sezioni del libro' })).toBeVisible();
+    await page.getByRole('link', { name: 'Vai al primo capitolo' }).click();
+    await expect(page).toHaveURL(/\/capitolo\/benvenuto$/);
+
+    for (const [path, title] of [['/libro/non-esiste', 'Smartbook non trovato'], ['/non-esiste', 'Pagina non trovata']]) {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+      await expect(page.getByRole('banner')).toBeVisible();
+      await expect(page.getByRole('contentinfo')).toBeVisible();
+      await page.getByRole('link', { name: 'Torna alla libreria' }).click();
+      await expect(page).toHaveURL(/\/$/);
+    }
   });
 
   test('an unknown address shows a not-found page', async ({ page }) => {

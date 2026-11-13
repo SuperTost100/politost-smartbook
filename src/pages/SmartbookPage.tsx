@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, Link, useParams, Outlet, useLocation } from 'react-router-dom';
 import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
 import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
@@ -7,6 +7,7 @@ import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
 import { buildFormulaIndex } from '../lib/parser';
 import { exerciseSearch, plural, practiceCounts } from '../lib/exerciseNav';
 import { sectionPath } from '../lib/sectionRoutes';
+import { getReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import type { PracticeLink } from '../components/ds/PracticeLinks';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +18,7 @@ import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
 import { BookNotFound } from '../components/BookNotFound';
+import { NoticeBlock } from '../components/NoticePage';
 import { NotFoundPage } from './NotFoundPage';
 import type { SectionKey } from '../types/smartbook';
 import type { SmartbookData } from '../lib/loader';
@@ -147,7 +149,14 @@ function ChapterContent() {
   if (!data) return <BookNotFound />;
   if (cloudLoading) return <p className="empty-note">Caricamento capitolo…</p>;
   if (cloudError) return <p className="empty-note" role="alert">{cloudError}</p>;
-  if (!chapter) return <p className="empty-note">Capitolo non trovato.</p>;
+  if (!chapter) {
+    const first = firstChapterPath(bookId ?? '', data.config.chapters);
+    return (
+      <NoticeBlock title="Capitolo non trovato" text="Questo libro non ha un capitolo con questo indirizzo. Forse il link è incompleto.">
+        <Link to={first ?? '/'} className="sb-btn sb-btn-primary">{first ? 'Vai al primo capitolo' : 'Torna alla libreria'}</Link>
+      </NoticeBlock>
+    );
+  }
 
   const allChapters = cloud ? withLoadedChapter(data.chapters, chapter) : data.chapters;
   return (
@@ -166,7 +175,10 @@ function FirstChapterRedirect() {
   const { bookId } = useParams<{ bookId: string }>();
   const data = useBookData();
   if (!data || !bookId) return <BookNotFound />;
-  const target = firstChapterPath(bookId, data.config.chapters);
+  // Back where the reader stopped, unless that chapter is gone from the book.
+  const saved = getReadingPosition(bookId);
+  const resume = saved && data.config.chapters.some((ch) => ch.id === saved.chapterId) ? saved : undefined;
+  const target = resume ? readingPositionPath(bookId, resume) : firstChapterPath(bookId, data.config.chapters);
   if (!target) return <p className="empty-note">Questo smartbook non ha capitoli.</p>;
   return <Navigate to={target} replace />;
 }

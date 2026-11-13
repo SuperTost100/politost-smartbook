@@ -5,6 +5,7 @@ import { Menu, Printer } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { usePrintShortcut } from '../../hooks/usePrintShortcut';
 import { ThemeToggle } from '../ThemeToggle';
+import { SkipLink } from '../SkipLink';
 import { Mark } from './Lockup';
 import { SectionTabs, type SectionItem } from './SectionTabs';
 import { IndexDrawerContext, type IndexDrawer } from './indexDrawer';
@@ -26,8 +27,8 @@ interface ReaderShellProps {
 export interface ReaderIndex {
   /** Names the drawer and its menu button, e.g. "Indice capitoli". */
   label: string;
-  /** `onNavigate` closes the drawer after a choice. */
-  render: (onNavigate: () => void) => ReactNode;
+  /** `onNavigate` closes the drawer after a choice. `railVisible`: the paragraph outline already sits on the right. */
+  render: (onNavigate: () => void, railVisible: boolean) => ReactNode;
 }
 
 const DESKTOP = '(min-width: 1024px)';
@@ -57,12 +58,13 @@ export function ReaderShell(props: ReaderShellProps) {
     () => ({ open: inDrawer ? openDrawer : undefined, expanded: drawerOpen }),
     [inDrawer, openDrawer, drawerOpen],
   );
-  const toc = props.index?.render(closeDrawer) ?? null;
+  const toc = props.index?.render(closeDrawer, showRail) ?? null;
 
   const bodyClass = ['sb-reader-body', isDesktop && hasToc && 'has-toc', showRail && 'has-rail'].filter(Boolean).join(' ');
 
   return (
     <div className="sb-reader">
+      <SkipLink />
       <header className="sb-rtop no-print">
         <div className="sb-rtop-start">
           {inDrawer && (

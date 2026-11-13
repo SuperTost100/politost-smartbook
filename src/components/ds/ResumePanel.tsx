@@ -39,7 +39,7 @@ export function ResumePanel({ bookId, subject, bookTitle, authors, position }: R
             <> L’ultima volta eri all’inizio del capitolo.</>
           )}
         </p>
-        {position.progress != null && (
+        {!!position.progress && (
           <div className="sb-resume-progress">
             <Meter value={position.progress} label="Letto del capitolo" />
             <span>{position.progress} % del capitolo</span>

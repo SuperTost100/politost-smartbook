@@ -13,10 +13,12 @@ interface ChapterTocProps {
   activeChapterId?: string;
   /** Called after a navigation (closes the drawer on small screens). */
   onNavigate?: () => void;
+  /** False when the paragraph outline is already shown on the right. */
+  showParagraphs?: boolean;
 }
 
-/** The chapters in an inset panel; the open chapter is raised and lists its paragraphs. */
-export function ChapterToc({ chapters, activeChapterId, onNavigate }: ChapterTocProps) {
+/** The chapters in an inset panel; the open chapter is raised and lists its paragraphs, unless the right outline does. */
+export function ChapterToc({ chapters, activeChapterId, onNavigate, showParagraphs = true }: ChapterTocProps) {
   const { paragraphs, activeParagraphId, jumpTo } = useReaderProgress();
 
   return (
@@ -36,7 +38,7 @@ export function ChapterToc({ chapters, activeChapterId, onNavigate }: ChapterToc
                 <span className="sb-toc-num">{ch.number}</span>
                 <span>{ch.title}</span>
               </Link>
-              {active && paragraphs.length > 0 && (
+              {active && showParagraphs && paragraphs.length > 0 && (
                 <ol className="sb-toc-paras">
                   {paragraphs.map((p) => (
                     <li key={p.id}>

@@ -32,6 +32,10 @@ a:hover { color: var(--primary-hover); }
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
+/* The skip link sits off screen until it takes focus; the main it targets is only focused by script. */
+.sb-skip-link { position: fixed; top: var(--space-3); left: var(--space-3); z-index: 1000; transform: translateY(-300%); }
+.sb-skip-link:focus { transform: none; }
+#main-content:focus { outline: none; }
 /* antd resets links with a:focus { outline: 0 }, which outranks the :where() rule above.
    .sb-book-link is left out because its card draws the ring instead. */
 a:focus-visible:not(.sb-book-link) {

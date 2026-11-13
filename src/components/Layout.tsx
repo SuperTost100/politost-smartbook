@@ -80,7 +80,9 @@ function LayoutInner({
       }));
       return {
         label: 'Indice capitoli',
-        render: (onNavigate) => <ChapterToc chapters={chapters} activeChapterId={activeChapterId} onNavigate={onNavigate} />,
+        render: (onNavigate, railVisible) => (
+          <ChapterToc chapters={chapters} activeChapterId={activeChapterId} onNavigate={onNavigate} showParagraphs={!railVisible} />
+        ),
       };
     }
     if (exerciseIndex) {

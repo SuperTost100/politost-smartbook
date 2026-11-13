@@ -3,6 +3,7 @@ import { LogIn, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
 import { ThemeToggle } from './ThemeToggle';
+import { SkipLink } from './SkipLink';
 import { Lockup } from './shell/Lockup';
 
 function truncateEmail(email: string, max = 20): string {
@@ -20,7 +21,8 @@ export function SiteHeader() {
 
   return (
     <header className={`site-header${authEnabled ? ' site-header--account' : ''}`}>
-      <Link to="/" className="site-header-brand" aria-label="Smartbook, catalogo">
+      <SkipLink />
+      <Link to="/" className="site-header-brand" aria-label="Smartbook, libreria">
         <Lockup />
       </Link>
       <div className="site-header-actions">

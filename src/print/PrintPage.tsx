@@ -124,7 +124,7 @@ function PrintToolbar({
   const title = documentTitle ? `${bookTitle} · ${documentTitle}` : bookTitle;
   return (
     <header className="print-toolbar no-print" aria-label="Barra strumenti anteprima di stampa">
-      <Link to="/" className="print-toolbar-brand" aria-label="Catalogo PoliTost Smartbook">
+      <Link to="/" className="print-toolbar-brand" aria-label="Libreria PoliTost Smartbook">
         <Lockup />
       </Link>
 

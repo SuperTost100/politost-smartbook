@@ -1,6 +1,6 @@
 # Reader — politost-smartbook
 
-Il **reader** è l’applicazione web con cui studenti e docenti aprono gli smartbook: catalogo, lettura capitoli, formulario, esercizi, laboratorio, grafici e stampa PDF.
+Il **reader** è l’applicazione web con cui studenti e docenti aprono gli smartbook: libreria, lettura capitoli, formulario, esercizi, laboratorio, grafici e stampa PDF.
 
 Codice: cartella [standalone reader](../).
 
@@ -29,7 +29,7 @@ Pacchetti distribuiti: [ptsb.md](ptsb.md).
 
 - Elenco smartbook **integrati** (`src/content/`) e **importati** (`.ptsb` da IndexedDB)
 - Upload drag-and-drop di file `.ptsb`
-- Il libro dimostrativo **Guida di esempio** (`/libro/esempio`) è il primo in catalogo
+- Il libro dimostrativo **Guida di esempio** (`/libro/esempio`) è il primo della libreria
 - «Riprendi» sulla scheda di un libro già aperto riporta all'ultimo capitolo e paragrafo letto (`src/lib/readingPosition.ts`, chiave `politost-last-read` in localStorage)
 
 ### Navigazione libro
