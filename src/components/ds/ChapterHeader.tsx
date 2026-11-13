@@ -6,17 +6,15 @@ interface ChapterHeaderProps {
   title: string;
   paragraphs?: number;
   minutes?: number;
-  onPrint?: () => void;
   eyebrow?: string;
 }
 
-/** Top of a chapter: eyebrow, title, reading facts and the print action. */
-export function ChapterHeader({ number, title, paragraphs, minutes, onPrint, eyebrow = 'Capitolo' }: ChapterHeaderProps) {
+/** Top of a chapter: eyebrow, title and reading facts. */
+export function ChapterHeader({ number, title, paragraphs, minutes, eyebrow = 'Capitolo' }: ChapterHeaderProps) {
   return (
     <SectionHeader
       eyebrow={`${eyebrow} ${number}`}
       title={title}
-      onPrint={onPrint}
       meta={
         <>
           {paragraphs != null && (

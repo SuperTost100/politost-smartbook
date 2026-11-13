@@ -5,6 +5,9 @@ import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
 import { buildFormulaIndex } from '../lib/parser';
+import { exerciseSearch, plural, practiceCounts } from '../lib/exerciseNav';
+import { sectionPath } from '../lib/sectionRoutes';
+import type { PracticeLink } from '../components/ds/PracticeLinks';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useReaderFeatures } from '../context/ReaderConfigContext';
@@ -75,6 +78,7 @@ function BookShell({
       activeSection={activeSection}
       showChapterIndex={showChapterIndex}
       activeChapterId={chapterId}
+      exercises={activeSection === 'esercizi' ? data.esercizi : undefined}
     >
       <Outlet />
     </Layout>
@@ -102,6 +106,38 @@ function ChapterContent() {
   const staticChapter = data?.chapters.find((c) => c.meta.id === chapterId);
   const chapter = cloud ? cloudChapter : staticChapter;
 
+  const practice = useMemo<PracticeLink[]>(() => {
+    if (!data || !bookId || !chapter) return [];
+    const { config } = data;
+    const number = chapter.meta.number;
+    const { exercises, exams } = practiceCounts(number, config.chapters.at(-1)?.id === chapter.meta.id, {
+      esercizi: data.esercizi,
+      esami: data.esami,
+      exercisesEnabled: config.sections.esercizi.enabled,
+      examsEnabled: config.sections.esami.enabled,
+    });
+    const links: PracticeLink[] = [];
+    if (exercises > 0) {
+      links.push({
+        kind: 'esercizi',
+        label: 'Esercizi di questo capitolo',
+        count: exercises,
+        countLabel: plural(exercises, 'esercizio', 'esercizi'),
+        href: `${sectionPath(bookId, 'esercizi')}${exerciseSearch(number, null)}`,
+      });
+    }
+    if (exams > 0) {
+      links.push({
+        kind: 'esami',
+        label: config.sections.esami.label,
+        count: exams,
+        countLabel: plural(exams, 'prova', 'prove'),
+        href: sectionPath(bookId, 'esami'),
+      });
+    }
+    return links;
+  }, [data, bookId, chapter]);
+
   useEffect(() => {
     if (audit && user && bookId && data?.config.access === 'licensed' && chapterId && chapter) {
       void auditChapterOpen(bookId, chapterId).catch(() => undefined);
@@ -121,6 +157,7 @@ function ChapterContent() {
       chapter={chapter}
       allChapters={allChapters}
       resolveAsset={resolveAsset}
+      practice={practice}
     />
   );
 }
@@ -263,11 +300,11 @@ function EserciziRoute() {
   return (
     <EserciziView
       bookId={bookId!}
+      section="esercizi"
       exercises={esercizi}
       chapters={config.chapters}
       formulaIndex={formulaIndex}
       title={config.sections.esercizi.label}
-      printSection="esercizi"
       resolveAsset={resolveAsset}
     />
   );
@@ -287,11 +324,11 @@ function EsamiRoute() {
   return (
     <EserciziView
       bookId={bookId!}
+      section="esami"
       exercises={esami}
       chapters={config.chapters}
       formulaIndex={formulaIndex}
       title={config.sections.esami.label}
-      printSection="esami"
       resolveAsset={resolveAsset}
     />
   );

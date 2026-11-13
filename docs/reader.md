@@ -38,12 +38,27 @@ Pacchetti distribuiti: [ptsb.md](ptsb.md).
 |---------|-----|
 | Capitoli | `/libro/<id>/capitolo/<chapter-id>` |
 | Formulario | `/libro/<id>/formulario` |
-| Esercizi | `/libro/<id>/esercizi` |
-| Prove d'esame | `/libro/<id>/esami` |
+| Esercizi | `/libro/<id>/esercizi?capitolo=<n>&difficolta=<livello>` |
+| Prove d'esame | `/libro/<id>/esami?difficolta=<livello>` |
 | Laboratorio | `/libro/<id>/laboratorio` |
 | Grafici | `/libro/<id>/grafici` |
 
 Barra paragrafi sticky nei capitoli; formulario generato dalle formule numerate nei `.md`.
+
+### Esercizi e prove d'esame
+
+Gli esercizi si leggono un capitolo alla volta. Il pannello a sinistra (un drawer sotto i 1024px, aperto dal menu o dal pulsante «Capitolo 3 di 17» sopra il titolo) diventa l'indice degli esercizi: «Tutti» con il totale, poi ogni capitolo con il numero di esercizi. Il campo `chapter` di un esercizio è il numero del capitolo. Gli esercizi senza capitolo, o con un numero che il libro non ha, hanno l'ultima voce, «Senza capitolo». Un libro in cui nessun esercizio ha un capitolo non ha indice e mostra un solo elenco. Logica in `src/lib/exerciseNav.ts`.
+
+| Parametro | Valori |
+|-----------|--------|
+| `capitolo` | numero del capitolo, `tutti`, `altri` |
+| `difficolta` | `facile`, `medio`, `difficile`; assente per tutte |
+
+- `/libro/<id>/esercizi` senza `capitolo` porta al capitolo dell'ultima lettura (`readingPosition.ts`), o al primo capitolo con esercizi se non c'è o non ne ha.
+- `#ex-<id>` apre il capitolo di quell'esercizio senza filtro di difficoltà e scorre fino alla scheda.
+- La difficoltà resta quando si cambia capitolo dall'indice o dal pager in fondo, che salta i capitoli senza esercizi. Un capitolo senza esercizi di quel livello mostra «Mostra tutte le difficoltà».
+- Le prove d'esame sono un solo elenco con il filtro di difficoltà, senza indice.
+- In fondo a ogni capitolo, prima del pager, «Esercitati» porta agli esercizi del capitolo; dopo l'ultimo capitolo anche alle prove d'esame.
 
 ### Mobile (≤768px)
 
@@ -216,7 +231,7 @@ Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), 
 
 ## 7. Stampa
 
-Capitoli/esercizi con `printable: true` espongono **Versione stampabile**.
+L'icona della stampante nella barra in alto (**Versione stampabile**) apre l'anteprima della pagina; le intestazioni delle pagine non hanno un pulsante di stampa. Serve `printable: true` sul capitolo o sul file degli esercizi. Esercizi e prove stampano il capitolo e la difficoltà scelti (`?capitolo=3&difficolta=medio`, vedi [Print.md](Print.md)).
 
 | Contenuto | URL anteprima |
 |-----------|---------------|

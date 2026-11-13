@@ -161,7 +161,7 @@ test.describe('Reader', () => {
   });
 
   test('a formula reference in an exercise hint shows its number', async ({ page }) => {
-    await page.goto('/libro/esempio/esercizi');
+    await page.goto('/libro/esempio/esercizi?capitolo=3');
     const card = page.locator('[id="ex-E3.1"]');
     await card.getByRole('button', { name: 'Mostra suggerimento' }).click();
     await expect(card.locator('.sb-reveal-hint')).toContainText('nella formula (3.1)');

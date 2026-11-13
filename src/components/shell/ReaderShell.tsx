@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Drawer, Tooltip } from 'antd';
 import { Menu, Printer } from 'lucide-react';
@@ -7,7 +7,7 @@ import { usePrintShortcut } from '../../hooks/usePrintShortcut';
 import { ThemeToggle } from '../ThemeToggle';
 import { Mark } from './Lockup';
 import { SectionTabs, type SectionItem } from './SectionTabs';
-import { ChapterToc, type TocChapter } from './ChapterToc';
+import { IndexDrawerContext, type IndexDrawer } from './indexDrawer';
 import { ParagraphRail } from './ParagraphRail';
 import { useReaderParagraphs } from '../../context/ReaderProgressContext';
 import type { SectionKey } from '../../types/smartbook';
@@ -16,12 +16,18 @@ interface ReaderShellProps {
   bookTitle: string;
   sections: SectionItem[];
   activeSection: SectionKey;
-  /** Chapter index; an inset panel on the left (a drawer on small screens), only when provided. */
-  chapters?: TocChapter[];
-  activeChapterId?: string;
+  /** The index of chapters or of exercises: an inset panel on the left, a drawer on small screens. */
+  index?: ReaderIndex;
   onPrint?: () => void;
   footer?: ReactNode;
   children: ReactNode;
+}
+
+export interface ReaderIndex {
+  /** Names the drawer and its menu button, e.g. "Indice capitoli". */
+  label: string;
+  /** `onNavigate` closes the drawer after a choice. */
+  render: (onNavigate: () => void) => ReactNode;
 }
 
 const DESKTOP = '(min-width: 1024px)';
@@ -41,16 +47,17 @@ export function ReaderShell(props: ReaderShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   usePrintShortcut(props.onPrint);
 
-  const hasToc = !!props.chapters?.length;
+  const hasToc = !!props.index;
   const showRail = showRailWidth && props.activeSection === 'smartbook' && paragraphs.length > 0;
+  const inDrawer = !isDesktop && hasToc;
 
-  const toc = hasToc ? (
-    <ChapterToc
-      chapters={props.chapters!}
-      activeChapterId={props.activeChapterId}
-      onNavigate={() => setDrawerOpen(false)}
-    />
-  ) : null;
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const drawer = useMemo<IndexDrawer>(
+    () => ({ open: inDrawer ? openDrawer : undefined, expanded: drawerOpen }),
+    [inDrawer, openDrawer, drawerOpen],
+  );
+  const toc = props.index?.render(closeDrawer) ?? null;
 
   const bodyClass = ['sb-reader-body', isDesktop && hasToc && 'has-toc', showRail && 'has-rail'].filter(Boolean).join(' ');
 
@@ -58,13 +65,13 @@ export function ReaderShell(props: ReaderShellProps) {
     <div className="sb-reader">
       <header className="sb-rtop no-print">
         <div className="sb-rtop-start">
-          {!isDesktop && hasToc && (
+          {inDrawer && (
             <button
               type="button"
               className="sb-icon-btn"
-              aria-label="Apri indice capitoli"
+              aria-label={`Apri ${props.index!.label.toLowerCase()}`}
               aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen(true)}
+              onClick={openDrawer}
             >
               <Menu size={20} strokeWidth={1.75} aria-hidden />
             </button>
@@ -92,22 +99,26 @@ export function ReaderShell(props: ReaderShellProps) {
       <div className={bodyClass}>
         {isDesktop && toc}
         <main id="main-content" className="app-main">
-          {props.children}
+          <IndexDrawerContext.Provider value={drawer}>{props.children}</IndexDrawerContext.Provider>
         </main>
         {showRail && <ParagraphRail />}
       </div>
       {props.footer}
 
-      {!isDesktop && hasToc && (
+      {inDrawer && (
         <Drawer
           open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          onClose={closeDrawer}
+          afterOpenChange={(open) => {
+            // Start on the current entry, so a long index does not open at its top.
+            if (open) document.querySelector<HTMLElement>('.sb-drawer [aria-current="page"]')?.focus();
+          }}
           placement="left"
           size={320}
           title={props.bookTitle}
           closable
           className="sb-drawer"
-          aria-label="Indice capitoli"
+          aria-label={props.index!.label}
         >
           {toc}
         </Drawer>

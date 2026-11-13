@@ -1,6 +1,6 @@
 # Print Preview
 
-Printable sections expose **Versione stampabile** in the UI.
+The printer icon in the reader's top bar (**Versione stampabile**, or Ctrl+P / Cmd+P) opens the preview of the page on screen: the chapter, the formula sheet, the exercises or the exam questions. Page headers have no print button.
 
 ## Routes
 
@@ -12,6 +12,15 @@ Printable sections expose **Versione stampabile** in the UI.
 | Exams | `/libro/<id>/stampa/esami` |
 
 Requires `printable: true` on the chapter or exercise frontmatter.
+
+The exercise and exam routes take the filters of the page they were opened from, so the printout matches the screen:
+
+| Parameter | Values | Applies to |
+|-----------|--------|------------|
+| `capitolo` | a chapter number, `tutti`, or `altri` (exercises without a chapter) | `esercizi` |
+| `difficolta` | `facile`, `medio`, `difficile` | `esercizi`, `esami` |
+
+The document title, the running head and the saved PDF's name include them, for example `Esercizi · Capitolo 3. Formule e nomenclatura inorganica · Livello difficile`. A missing or unknown value prints everything.
 
 ## How it works
 

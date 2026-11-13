@@ -83,6 +83,12 @@ a.sb-btn { color: var(--ink); }
 .sb-drawer .ant-drawer-body { padding: var(--space-4); }
 .sb-drawer .ant-drawer-title { font: 600 19px/1.2 var(--font-serif); }
 .sb-drawer .sb-toc { position: static; max-height: none; }
+/* ExerciseToc: "Tutti" on top, then each chapter with its count. */
+.sb-toc-title { flex: 1; min-width: 0; }
+.sb-toc-count { flex: none; margin-left: auto; padding-left: var(--space-2); color: var(--ink-subtle); font: 500 13px/20px var(--font-sans); font-variant-numeric: tabular-nums; }
+.sb-toc-ch[aria-current="page"] .sb-toc-count { color: var(--primary-text); font-weight: 700; }
+.sb-toc-all { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-control); }
+.sb-toc-ch[aria-disabled="true"], .sb-toc-ch[aria-disabled="true"]:hover { color: var(--ink-subtle); }
 
 /* ParagraphRail: a raised card with the outline. */
 .sb-rail { position: sticky; top: calc(var(--header-height) + var(--space-2)); align-self: start; max-height: calc(100dvh - var(--header-height) - var(--space-6)); overflow-y: auto; margin-top: var(--space-2); padding: 22px 18px; border-radius: var(--radius-xl); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--raised); }
@@ -120,6 +126,16 @@ a.sb-btn { color: var(--ink); }
 .sb-chhead-actions { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
 /* Sections without the paper sheet (formulario, exercises, lab, graphs) put their header on the desk. */
 .app-main > .sb-page > .sb-chhead, .app-main > div > .sb-chhead { margin-inline: var(--space-2); }
+/* A control on the title's line (the difficulty filter): right-aligned, below a long title or on a narrow screen. */
+.sb-chhead-titleline { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+.sb-chhead-titleline > h1 { flex: 0 1 auto; min-width: 0; }
+.sb-chhead-titleline > :not(h1) { margin-left: auto; }
+.sb-chhead h1:focus:not(:focus-visible) { outline: none; }
+/* The chapter picker of the exercises on a phone: opens the index drawer. */
+.sb-chpicker { justify-content: space-between; width: 100%; margin-bottom: 14px; padding: 0 12px 0 14px; color: var(--primary-text); }
+.sb-chpicker > span { overflow: hidden; text-overflow: ellipsis; }
+.sb-chpicker > svg { flex: none; color: var(--ink-muted); }
+.esercizi-view > .sb-chhead { padding-bottom: 26px; }
 
 /* ParagraphHeading */
 .paragraph-section { scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
@@ -251,6 +267,36 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-pager a.next { grid-column: 2; text-align: right; align-items: flex-end; }
 .sb-pager small { display: inline-flex; align-items: center; gap: var(--space-1); font: 600 13px/16px var(--font-sans); color: var(--ink-subtle); }
 .sb-pager span { font: 500 18px/1.25 var(--font-serif); }
+
+/* Exercises: the empty result of a filter, and "Tutti" with a heading per chapter. */
+.sb-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); padding: var(--space-6); border-radius: var(--radius-xl); background: var(--surface-raised); box-shadow: var(--pressed-lg); }
+.sb-empty p { margin: 0; color: var(--ink-muted); font: 400 17px/1.5 var(--font-serif); }
+.sb-exgroup + .sb-exgroup { margin-top: 56px; }
+/* "Tutti" renders every card (216 in Chimica di base): the browser lays out only those near the screen.
+   `auto` keeps a card's real height once it has been on screen, so the scrollbar settles as you read. */
+.sb-exgroup .sb-ex { content-visibility: auto; contain-intrinsic-size: auto 280px; }
+.sb-exgroup-head { display: flex; align-items: baseline; gap: 12px; margin: 0 var(--space-2) 22px; font: 500 26px/32px var(--font-serif); letter-spacing: -0.01em; color: var(--ink); }
+.sb-exgroup-head .sb-phead-num { min-width: 40px; height: 28px; font-size: 13px; transform: translateY(-3px); }
+.sb-exgroup-head a { color: inherit; text-decoration: none; }
+.sb-exgroup-head a:hover { color: var(--primary-text); }
+.sb-exgroup-count { flex: none; margin-left: auto; padding-left: var(--space-3); color: var(--ink-subtle); font: 500 14px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .sb-exgroup-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; font-size: 22px; line-height: 28px; }
+  .sb-exgroup-count { grid-column: 2; margin-left: 0; padding-left: 0; }
+}
+
+/* PracticeLinks: "Esercitati" at the end of a chapter, before the pager. */
+.sb-practice { margin-top: 56px; padding-top: 30px; border-top: 1px dashed var(--border-control); }
+.sb-practice .sb-panel-label { margin-bottom: 14px; }
+.sb-practice-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.sb-practice-links a { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); text-decoration: none; box-shadow: var(--raised-sm); font: 600 15px/20px var(--font-sans); transition: box-shadow .15s ease-out, color .15s ease-out; }
+.sb-practice-links a:hover { color: var(--primary-text); }
+.sb-practice-links a:active { box-shadow: var(--pressed); }
+.sb-practice-links a > svg { flex: none; color: var(--primary-text); }
+.sb-practice-label { flex: 1; min-width: 0; }
+.sb-badge { flex: none; display: inline-grid; place-items: center; min-width: 34px; height: 26px; padding: 0 8px; border-radius: 9px; background: var(--bg); color: var(--primary-text); font: 700 13px/1 var(--font-sans); font-variant-numeric: tabular-nums; box-shadow: var(--raised-sm); }
+[data-theme="dark"] .sb-badge { background: var(--surface-raised); }
+.sb-practice + .sb-pager { margin-top: 28px; }
 
 /* Lab and graphs: an index in a well, the work on raised cards. */
 .ide-layout, .grafici-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
@@ -425,7 +471,19 @@ a.sb-book-link:hover { color: var(--primary-text); }
 .sb-tabs { display: inline-flex; gap: 4px; padding: 5px; border-radius: 16px; background: var(--surface-raised); box-shadow: var(--pressed); }
 .sb-tab { display: inline-flex; align-items: center; gap: var(--space-2); height: 38px; padding: 0 var(--space-4); border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--ink-muted); font: 500 15px/1 var(--font-sans); cursor: pointer; white-space: nowrap; transition: background-color .15s, color .15s, box-shadow .15s; }
 .sb-tab:hover { color: var(--ink); }
-.sb-tab[aria-selected="true"] { background: var(--surface); border-color: var(--border); box-shadow: var(--raised-sm); color: var(--primary-text); font-weight: 600; }
+.sb-tab[aria-selected="true"], .sb-tab[aria-pressed="true"] { background: var(--surface); border-color: var(--border); box-shadow: var(--raised-sm); color: var(--primary-text); font-weight: 600; }
+.sb-tab[disabled], .sb-tab[disabled]:hover { opacity: .5; color: var(--ink-muted); cursor: not-allowed; }
+/* DifficultyFilter: a row of pressed buttons with counts; it scrolls sideways rather than overflow the page. */
+.sb-filter { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.sb-filter::-webkit-scrollbar { display: none; }
+.sb-filter .sb-tab { height: 36px; padding: 0 13px; font-size: 14px; }
+.sb-filter-n { color: var(--ink-subtle); font-weight: 500; font-variant-numeric: tabular-nums; }
+.sb-tab[aria-pressed="true"] .sb-filter-n { color: inherit; }
+/* On a phone the four levels share the width, so "Difficile" is not cut off at the edge. */
+@media (max-width: 520px) {
+  .sb-filter { display: flex; width: 100%; }
+  .sb-filter .sb-tab { flex: 1 1 auto; justify-content: center; gap: 4px; padding: 0 8px; }
+}
 
 /* Account pages */
 .auth-shell { width: 100%; display: flex; justify-content: center; align-items: flex-start; padding: var(--space-12) var(--space-4) var(--space-16); }
@@ -509,6 +567,7 @@ a.sb-book-link:hover { color: var(--primary-text); }
   .sb-reader-body { padding: var(--space-1) var(--space-3) 0; }
   .app-main { padding-bottom: 96px; }
   .sb-reader > .site-footer { padding-bottom: 76px; }
+  .sb-chhead-titleline > :not(h1) { margin-left: 0; }
 }
 @media (max-width: 900px) {
   .sb-resume, .home-hero { grid-template-columns: 1fr; gap: 28px; padding: 28px 22px; border-radius: var(--radius-xl); }

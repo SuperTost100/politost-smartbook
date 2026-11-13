@@ -32,7 +32,7 @@ test.describe('Print preview', () => {
 
   test('back link returns to the chapter', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
-    await page.getByRole('button', { name: 'Versione stampabile' }).first().click();
+    await page.getByRole('banner').getByRole('button', { name: 'Versione stampabile' }).click();
     await expect(page).toHaveURL(/\/stampa\/capitolo\/nel-libro/);
     await assertPrintPreview(page, PRINT_ROUTES[0]);
     await page.getByRole('link', { name: 'Torna al libro' }).click();

@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { SectionHeader } from './ds/SectionHeader';
 import { FormulaCard } from './ds/FormulaCard';
-import { usePrintMode } from '../hooks/usePrintMode';
 
 interface FormularioViewProps {
   bookId: string;
@@ -12,7 +11,6 @@ interface FormularioViewProps {
 
 export function FormularioView({ bookId, chapters }: FormularioViewProps) {
   const location = useLocation();
-  const print = usePrintMode();
 
   useEffect(() => {
     if (location.hash) {
@@ -28,7 +26,6 @@ export function FormularioView({ bookId, chapters }: FormularioViewProps) {
       <SectionHeader
         title="Formulario"
         meta={<span>{total} {total === 1 ? 'formula' : 'formule'} · scegli una riga per aprirla nel capitolo</span>}
-        onPrint={() => print({ bookId, section: 'formulario' })}
       />
       <div className="sb-stack">
         {chapters.map((ch) => (
