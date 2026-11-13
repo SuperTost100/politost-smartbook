@@ -14,7 +14,6 @@ a.sb-btn { color: var(--ink); }
 .sb-btn:hover, a.sb-btn:hover { color: var(--primary-text); }
 .sb-btn:active, .sb-btn[aria-pressed="true"] { box-shadow: var(--pressed); }
 .sb-btn-sm { min-height: var(--control-sm); padding: 0 14px; border-radius: 12px; font-size: 14px; }
-.sb-btn-lg { min-height: var(--control-lg); padding: 0 var(--space-6); }
 .sb-btn-block { width: 100%; }
 .sb-btn-primary, a.sb-btn-primary { background: var(--primary); border-color: transparent; color: var(--on-primary); box-shadow: var(--raised-sm), inset 0 1px 0 rgba(255, 255, 255, .22); }
 .sb-btn-primary:hover, a.sb-btn-primary:hover { background: var(--primary-hover); color: var(--on-primary); }
@@ -22,8 +21,6 @@ a.sb-btn { color: var(--ink); }
 .sb-btn-ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-muted); }
 .sb-btn-ghost:hover { background: var(--surface-raised); color: var(--ink); }
 .sb-btn-ghost:active { box-shadow: var(--pressed-sm); }
-.sb-btn-danger { color: var(--danger); }
-.sb-btn-danger:hover { color: var(--danger); background: var(--danger-soft); }
 .sb-btn[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .sb-icon-btn { display: inline-grid; place-items: center; flex: none; width: var(--control-icon); height: var(--control-icon); padding: 0; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink-muted); box-shadow: var(--raised-sm); cursor: pointer; transition: box-shadow .15s ease-out, color .15s ease-out; }
 .sb-icon-btn:hover { color: var(--primary-text); }
@@ -32,9 +29,7 @@ a.sb-btn { color: var(--ink); }
 
 /* Chips and tags: small labels pressed into the surface. */
 .sb-chip, .sb-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; margin: 0; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--surface-raised); box-shadow: var(--pressed-sm); color: var(--ink-muted); font: 500 13px/18px var(--font-sans); white-space: nowrap; }
-.sb-chip-licensed, .sb-tag-licensed { background: var(--star-soft); color: var(--star-text); }
-.sb-tag-uploaded { background: var(--info-soft); color: var(--info); }
-.sb-tag-subject { color: var(--ink); }
+.sb-chip-licensed { background: var(--star-soft); color: var(--star-text); }
 .sb-tag-outline { background: transparent; box-shadow: inset 0 0 0 1px var(--border-control); }
 
 /* Meter: a groove filled with the ribbon colour. */
@@ -322,6 +317,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .book-not-found { min-height: 100dvh; }
 .book-not-found h2, .license-locked h2, .page-not-found h1 { margin: 0; font: 500 30px/36px var(--font-serif); color: var(--ink); }
 .license-locked p, .book-not-found p, .page-not-found p { margin: 0; max-width: 46ch; }
+.page-error-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
 .license-locked-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-2); }
 .license-locked-catalog-link { display: inline-flex; align-items: center; height: var(--control-md); padding: 0 var(--space-3); color: var(--primary-text); }
 
@@ -495,7 +491,6 @@ a.sb-book-link:hover { color: var(--primary-text); }
 .install-banner-later:hover { color: var(--ink); }
 @media (min-width: 769px) { .install-banner { display: none; } }
 
-.legal-actions { margin-top: 1.5rem; }
 .legal-contact { margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed var(--border-control); }
 
 /* antd pieces we restyle once, so every Modal and Drawer looks like paper on the desk. */

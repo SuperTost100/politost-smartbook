@@ -2,7 +2,8 @@ import type { Chapter, ChapterMeta } from '../types/smartbook';
 import { fetchCatalog, fetchChapterMarkdown } from './api';
 import { catalogAssets, catalogEntryToConfig, catalogPayloads } from './catalogConfig';
 import { assetMapFromChapter } from './cloudAssets';
-import { parseChapterMarkdown } from './parser';
+// Not the content-core barrel, which brings the renderer into the library page (see loader.ts).
+import { parseChapterMarkdown } from '../../packages/content-core/src/parser';
 import { clearCloudBooks, readCloudAssets, registerCloudBook, setCloudBookAssets } from './loader';
 
 let cloudReady: Promise<void> = Promise.resolve();

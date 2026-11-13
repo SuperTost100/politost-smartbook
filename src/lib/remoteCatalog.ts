@@ -1,6 +1,7 @@
-import { CONTENT_FORMAT_VERSION, PTSB_ZIP_LIMITS, compareSpecVersions, ptsbKind } from '@politost/content-core';
+// bookMeta, not the content-core barrel: the home page lists the catalog, and the barrel would bring
+// KaTeX, markdown-it and the validator with it. Package parsing loads when a book is downloaded.
+import { CONTENT_FORMAT_VERSION, compareSpecVersions } from '../../packages/content-core/src/bookMeta';
 import type { StoredBookBundle } from '../types/ptsb';
-import { parsePtsbFile } from './ptsb';
 import { getRemoteCached, saveRemoteCached } from './ptsbStore';
 
 /** One book in the books site's `catalog.json`. See docs/Books-Repo.md. */
@@ -17,6 +18,9 @@ export interface RemoteCatalogEntry {
   bytes: number;
   sha256: string;
 }
+
+/** `PTSB_ZIP_LIMITS.maxCompressedBytes` of content-core, which lives next to the unzip code. A test keeps them equal. */
+export const MAX_PACKAGE_BYTES = 50 * 1024 * 1024;
 
 const ID_RE = /^[a-z0-9-]+$/;
 const SHA256_RE = /^[0-9a-f]{64}$/;
@@ -56,7 +60,7 @@ export function parseRemoteCatalog(json: unknown, baseUrl: string): RemoteCatalo
       skip('campi mancanti');
       continue;
     }
-    if (typeof bytes !== 'number' || !Number.isInteger(bytes) || bytes <= 0 || bytes > PTSB_ZIP_LIMITS.maxCompressedBytes) {
+    if (typeof bytes !== 'number' || !Number.isInteger(bytes) || bytes <= 0 || bytes > MAX_PACKAGE_BYTES) {
       skip('dimensione non valida');
       continue;
     }
@@ -104,6 +108,14 @@ export async function fetchRemoteCatalog(baseUrl: string): Promise<RemoteCatalog
   return parseRemoteCatalog(await res.json(), baseUrl);
 }
 
+/**
+ * The `.ptsb` download gets 10 s plus 1 s per 100 kB, so a 15 MB book on a slow mobile line
+ * has time to arrive. A stalled download still ends with an error.
+ */
+export function packageTimeoutMs(bytes: number): number {
+  return CATALOG_TIMEOUT_MS + Math.ceil(bytes / 100_000) * 1000;
+}
+
 async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -118,12 +130,13 @@ export async function fetchRemoteBook(entry: RemoteCatalogEntry): Promise<Stored
   const cached = await getRemoteCached(key).catch(() => undefined);
   if (cached) return cached;
 
-  const res = await fetch(entry.packageUrl, { signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS) });
+  const res = await fetch(entry.packageUrl, { signal: AbortSignal.timeout(packageTimeoutMs(entry.bytes)) });
   if (!res.ok) throw new Error(`Download del libro non riuscito (HTTP ${res.status})`);
   const bytes = new Uint8Array(await res.arrayBuffer());
   if (bytes.byteLength !== entry.bytes || (await sha256Hex(bytes)) !== entry.sha256) {
     throw new Error('Il file scaricato non corrisponde al catalogo. Riprova più tardi.');
   }
+  const [{ parsePtsbFile }, { ptsbKind }] = await Promise.all([import('./ptsb'), import('@politost/content-core')]);
   // Remote books are public only. Never send an encrypted package to the platform for a key.
   if (ptsbKind(bytes) !== 'zip') throw new Error('Il catalogo contiene un libro protetto: non lo apro.');
 

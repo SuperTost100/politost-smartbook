@@ -47,7 +47,7 @@ test('uploaded registry ignores stale loads and releases only replaced URLs', as
     await initial;
     const oldUrl = created[0];
 
-    const stale = loader.initUploadedBooks(null);
+    const stale = loader.initUploadedBooks('other');
     const current = loader.initUploadedBooks('student');
     const [resolveStale, resolveCurrent] = store.pending.splice(0);
     assert.deepEqual(revoked, [], 'loading must not revoke the current book');
@@ -64,10 +64,102 @@ test('uploaded registry ignores stale loads and releases only replaced URLs', as
     assert.equal(created.length, 2, 'stale results must not allocate blob URLs');
     assert.deepEqual(revoked, [oldUrl]);
 
-    const next = loader.initUploadedBooks('student');
+    const next = loader.initUploadedBooks(null);
     store.pending.shift()([]);
     await next;
     assert.deepEqual(revoked, created, 'the winning load replaces and releases current URLs');
+  } finally {
+    await server.close();
+  }
+});
+
+test('a second load for the same user keeps the registry and its blob URLs', async (t) => {
+  const server = await createServer({
+    server: { middlewareMode: true }, optimizeDeps: { noDiscovery: true, include: [] },
+    plugins: [{
+      name: 'test-upload-store',
+      enforce: 'pre',
+      resolveId(id) { if (id === './ptsbStore') return '\0test-upload-store'; },
+      load(id) {
+        if (id === '\0test-upload-store') return `
+          export const calls = [];
+          export const listUploaded = async (userId) => { calls.push(userId); return [{
+            config: { id: 'kept', title: 'kept', subject: 'Fisica', chapters: [] },
+            chapterFiles: {}, eserciziRaw: '', esamiRaw: '', ide: [], grafici: [],
+            assets: { 'assets/image.svg': new TextEncoder().encode('<svg/>') }, importedAt: '',
+          }]; };
+          export const getRemoteCached = async () => undefined;
+          export const saveRemoteCached = async () => {};
+        `;
+      },
+    }],
+  });
+  try {
+    const store = await server.ssrLoadModule('\0test-upload-store');
+    const loader = await server.ssrLoadModule('/src/lib/loader.ts');
+    t.mock.method(URL, 'createObjectURL', () => 'blob:kept');
+    const revoked: string[] = [];
+    t.mock.method(URL, 'revokeObjectURL', (url: string) => revoked.push(url));
+
+    await loader.initUploadedBooks(null);
+    const opened = loader.loadSmartbook('kept');
+    assert.ok(opened);
+    await loader.initUploadedBooks(null);
+    assert.deepEqual(store.calls, [null], 'the same user must not read IndexedDB again');
+    assert.deepEqual(revoked, [], 'an open book keeps its image URLs');
+    assert.equal(loader.loadSmartbook('kept'), opened);
+
+    await loader.initUploadedBooks('student');
+    assert.deepEqual(store.calls, [null, 'student'], 'another user reloads');
+  } finally {
+    await server.close();
+  }
+});
+
+test('an uploaded copy shadows the remote one, and removing it brings the remote one back', async () => {
+  const server = await createServer({
+    server: { middlewareMode: true }, optimizeDeps: { noDiscovery: true, include: [] },
+    plugins: [{
+      name: 'test-remote-catalog',
+      enforce: 'pre',
+      resolveId(id) { if (id === './remoteCatalog') return '\0test-remote-catalog'; },
+      load(id) {
+        if (id === '\0test-remote-catalog') return `
+          export const fetched = [];
+          export const booksBaseUrl = () => 'https://books.test';
+          export const fetchRemoteCatalog = async () => [{
+            id: 'shared', title: 'Remote copy', subject: 'Fisica', version: '1.0.0',
+            packageUrl: 'https://books.test/shared.ptsb', bytes: 1, sha256: '',
+          }];
+          export const fetchRemoteBook = async (entry) => {
+            fetched.push(entry.id);
+            return { config: { id: 'shared', title: 'Remote copy', subject: 'Fisica', chapters: [] },
+              chapterFiles: {}, eserciziRaw: '', esamiRaw: '', ide: [], grafici: [], importedAt: '' };
+          };
+        `;
+      },
+    }],
+  });
+  try {
+    const remote = await server.ssrLoadModule('\0test-remote-catalog');
+    const loader = await server.ssrLoadModule('/src/lib/loader.ts');
+    const uploaded = book('shared');
+    uploaded.config.title = 'Uploaded copy';
+    loader.registerUploadedBook(uploaded);
+    await loader.initRemoteBooks();
+
+    const entry = () => loader.getCatalog().find((e: { id: string }) => e.id === 'shared');
+    assert.equal(entry().source, 'uploaded');
+    await loader.ensureBookContent('shared');
+    assert.equal(loader.loadSmartbook('shared').config.title, 'Uploaded copy');
+    assert.deepEqual(remote.fetched, [], 'the shadowed remote copy is not downloaded');
+
+    loader.unregisterUploadedBook('shared');
+    assert.equal(entry().source, 'remote');
+    assert.equal(entry().title, 'Remote copy');
+    await loader.ensureBookContent('shared');
+    assert.deepEqual(remote.fetched, ['shared']);
+    assert.equal(loader.loadSmartbook('shared').config.title, 'Remote copy');
   } finally {
     await server.close();
   }
