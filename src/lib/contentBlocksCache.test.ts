@@ -32,3 +32,11 @@ test('a text read recently stays when older ones leave', () => {
   }
   assert.notEqual(cachedContentBlocks(big('b0')), firstBig);
 });
+
+test('a text larger than the cache is not kept and pushes nothing out', () => {
+  const kept = cachedContentBlocks('Resta');
+  const huge = `\`\`\`\n${'y'.repeat(CONTENT_BLOCKS_CACHE_CHARS)}\n\`\`\``;
+  const first = cachedContentBlocks(huge);
+  assert.notEqual(cachedContentBlocks(huge), first);
+  assert.equal(cachedContentBlocks('Resta'), kept);
+});

@@ -35,10 +35,12 @@ export function cachedContentBlocks(content: string): ContentBlock[] {
   }
   const blocks = parseContentBlocks(content);
   const chars = content.length + charsOf(blocks);
+  // A text larger than the whole cache is not kept, so it cannot push every other entry out.
+  if (chars > CONTENT_BLOCKS_CACHE_CHARS) return blocks;
   cache.set(content, { blocks, chars });
   cachedChars += chars;
   for (const [key, entry] of cache) {
-    if (cachedChars <= CONTENT_BLOCKS_CACHE_CHARS || key === content) break;
+    if (cachedChars <= CONTENT_BLOCKS_CACHE_CHARS) break;
     cache.delete(key);
     cachedChars -= entry.chars;
   }
