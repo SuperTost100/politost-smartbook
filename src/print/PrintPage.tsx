@@ -484,7 +484,15 @@ export function PrintPage({ kind }: PrintPageProps) {
   }, []);
 
   const canPrint = Boolean(view?.printable) && !view?.message && !(cloud && (cloudLoading || cloudError));
-  usePrintShortcut(canPrint && ready ? () => void handlePrint() : undefined);
+  // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
+  // print the parts mounted so far.
+  const [printQueued, setPrintQueued] = useState(false);
+  usePrintShortcut(canPrint ? () => (ready ? void handlePrint() : setPrintQueued(true)) : undefined);
+  useEffect(() => {
+    if (!printQueued || !ready) return;
+    setPrintQueued(false);
+    if (canPrint) void handlePrint();
+  }, [printQueued, ready, canPrint, handlePrint]);
 
   if (!bookId || !data) return <BookNotFound />;
 

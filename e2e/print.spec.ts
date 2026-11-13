@@ -170,6 +170,48 @@ test.describe('Print preview', () => {
   });
 });
 
+test.describe('Print shortcut', () => {
+  // The service worker would answer the figure request before the route below sees it.
+  test.use({ serviceWorkers: 'block' });
+
+  test.beforeEach(async ({ page }) => {
+    await preparePlatformShell(page);
+  });
+
+  test('Ctrl+P while the document is being prepared waits for it', async ({ page }) => {
+    await page.addInitScript(() => {
+      const counter = window as unknown as { prints: number };
+      counter.prints = 0;
+      window.print = () => {
+        counter.prints += 1;
+      };
+    });
+    const prints = () => page.evaluate(() => (window as unknown as { prints: number }).prints);
+    // The chapter's figure stays pending, so the document is not ready yet.
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(/cosa-trovi.*\.svg$/, async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.print-sheet')).toHaveAttribute('aria-busy', 'true');
+
+    const prevented = await page.evaluate(() => {
+      const event = new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, cancelable: true, bubbles: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+    expect(prevented).toBe(true);
+    expect(await prints()).toBe(0);
+
+    release();
+    await expect.poll(prints).toBe(1);
+  });
+});
+
 test.describe('Print preview of a book loaded one chapter at a time', () => {
   test.skip(process.env.VITE_PLATFORM_ENABLED !== 'true', 'Cloud books need the platform build.');
 
