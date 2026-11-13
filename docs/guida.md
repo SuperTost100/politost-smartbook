@@ -21,7 +21,7 @@ In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutt
 
 - La prima sezione è il testo dei capitoli. Il nome nel menu dipende dal libro, spesso **Capitoli** o **Smartbook**. Nei capitoli una barra permette di saltare da un paragrafo all'altro.
 - **Formulario.** Elenco delle formule numerate, raccolto dai capitoli. Non è un file a parte.
-- **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include.
+- **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include. Gli esercizi si aprono sul capitolo che stavi leggendo e a sinistra c'è l'indice per capitolo, con «Tutti» in cima e il numero di esercizi accanto a ogni capitolo. Sul telefono l'indice si apre dal pulsante con il capitolo, sopra il titolo, o dal menu in alto. Le prove d'esame sono un solo elenco.
 - **Laboratorio.** Frammenti Python, eseguiti nel browser, e MATLAB con un interprete compatibile (cicli, funzioni, matrici, grafici 2D). Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib. In tutti e due i linguaggi i grafici compaiono sotto l'output.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
@@ -29,9 +29,13 @@ Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio n
 
 Un riferimento a una formula, nel testo, ne mostra il contenuto al passaggio o al tocco.
 
+Sopra gli esercizi e le prove scegli la difficoltà: Tutte, Facile, Medio o Difficile, ciascuna con quanti esercizi ha. La scelta resta quando cambi capitolo dall'indice o dai pulsanti in fondo alla pagina. Capitolo e difficoltà stanno nell'indirizzo della pagina, quindi puoi salvarla o mandarla a qualcuno, e il tasto Indietro torna alla scelta precedente.
+
+Alla fine di ogni capitolo, «Esercitati» porta agli esercizi di quel capitolo. Dopo l'ultimo capitolo porta anche alle prove d'esame.
+
 ## Stampa
 
-Dove il libro lo consente compare **Versione stampabile**, per il capitolo, il formulario, gli esercizi o le prove. Si apre un'anteprima. In stampa i suggerimenti e le soluzioni sono visibili. Laboratorio e grafici non si stampano.
+L'icona della stampante in alto, **Versione stampabile**, apre l'anteprima del capitolo, del formulario, degli esercizi o delle prove, dove il libro lo consente. Dagli esercizi stampi quello che vedi: il capitolo scelto, o tutti, con la difficoltà scelta. In stampa i suggerimenti e le soluzioni sono visibili. Laboratorio e grafici non si stampano.
 
 Se hai fatto l'accesso, la pagina e la stampa possono riportare una filigrana con la tua email. Non coprirla. I dettagli sono nei [termini](/termini).
 

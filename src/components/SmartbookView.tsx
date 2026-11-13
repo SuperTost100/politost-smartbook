@@ -5,8 +5,8 @@ import { ContentFlow } from './ContentFlow';
 import { ChapterHeader } from './ds/ChapterHeader';
 import { ParagraphHeading } from './ds/ParagraphHeading';
 import { ChapterPager } from './ds/ChapterPager';
+import { PracticeLinks, type PracticeLink } from './ds/PracticeLinks';
 import { useReaderProgress } from '../context/ReaderProgressContext';
-import { usePrintMode } from '../hooks/usePrintMode';
 import { useRefClick } from '../hooks/useRefClick';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
@@ -17,6 +17,8 @@ interface SmartbookViewProps {
   chapter: Chapter;
   allChapters: Chapter[];
   resolveAsset?: (src: string) => string | undefined;
+  /** Links to this chapter's exercises (and the exam questions after the last chapter), before the pager. */
+  practice?: PracticeLink[];
 }
 
 /** ~200 words per minute, rounded up, at least one minute. */
@@ -25,10 +27,9 @@ function readingMinutes(chapter: Chapter): number {
   return Math.max(1, Math.ceil(words / 200));
 }
 
-export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: SmartbookViewProps) {
+export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, practice = [] }: SmartbookViewProps) {
   const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
-  const print = usePrintMode();
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
   // The chapter re-renders on every change of the active paragraph, so the text work runs once per chapter.
@@ -110,11 +111,6 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         title={chapter.meta.title}
         paragraphs={chapter.paragraphs.length}
         minutes={minutes}
-        onPrint={
-          chapter.meta.printable
-            ? () => print({ bookId, section: 'capitolo', chapterId: chapter.meta.id })
-            : undefined
-        }
       />
 
       <article className="chapter-content">
@@ -141,6 +137,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset }: Sm
         ))}
       </article>
 
+      <PracticeLinks links={practice} />
       <ChapterPager prev={prev} next={next} />
     </div>
   );

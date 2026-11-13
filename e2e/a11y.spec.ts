@@ -70,6 +70,15 @@ test.describe('Accessibility landmarks', () => {
     await expect(page.getByRole('complementary', { name: 'Indice capitoli' })).toBeVisible();
   });
 
+  test('the exercise index marks the current chapter and the filter its state', async ({ page }) => {
+    await page.goto('/libro/esempio/esercizi?capitolo=2');
+    const index = page.getByRole('navigation', { name: 'Esercizi per capitolo' });
+    await expect(index.locator('[aria-current="page"]')).toContainText('Cosa trovi nel libro');
+    const filter = page.getByRole('group', { name: 'Difficoltà' });
+    await expect(filter.getByRole('button', { name: /Tutte/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(filter.getByRole('button', { name: /Facile/ })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   test('print preview has a main landmark', async ({ page }) => {
     await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await expect(page.locator('main#main-content')).toBeVisible();

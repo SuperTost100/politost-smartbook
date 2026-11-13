@@ -12,6 +12,8 @@ export function usePrintMode() {
       const returnTo = location.pathname + location.search + location.hash;
       const url = buildPrintUrl(target.bookId, target.section, {
         chapterId: target.chapterId,
+        scope: target.scope,
+        difficulty: target.difficulty,
         returnTo,
       });
       navigate(url);

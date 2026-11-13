@@ -6,6 +6,17 @@ import { isCloudBook, loadSmartbook } from '../lib/loader';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { withLoadedChapter } from '../lib/chapterNav';
 import { buildFormulaIndex } from '../lib/parser';
+import {
+  buildExerciseIndex,
+  CHAPTER_PARAM,
+  DIFFICULTY_PARAM,
+  exerciseDocumentTitle,
+  exercisesInScope,
+  filterByDifficulty,
+  findEntry,
+  parseDifficulty,
+  parseScope,
+} from '../lib/exerciseNav';
 import { getReturnUrl } from './routes';
 import { PrintDocument } from './PrintDocument';
 import { PrintChapter } from './bodies/PrintChapter';
@@ -163,13 +174,18 @@ export function PrintPage({ kind }: PrintPageProps) {
       case 'esercizi':
       case 'esami': {
         const label = data.config.sections[kind].label;
+        // The same chapter and difficulty as the page the student printed from.
+        const all = kind === 'esercizi' ? data.esercizi : data.esami;
+        const index = kind === 'esercizi' ? buildExerciseIndex(all, data.config.chapters) : null;
+        const scope = parseScope(searchParams.get(CHAPTER_PARAM), index);
+        const difficulty = parseDifficulty(searchParams.get(DIFFICULTY_PARAM));
         return {
-          documentTitle: label,
+          documentTitle: exerciseDocumentTitle(label, findEntry(index, scope), difficulty),
           sectionLabel: label,
           printable: true,
           body: (
             <PrintExercises
-              exercises={kind === 'esercizi' ? data.esercizi : data.esami}
+              exercises={filterByDifficulty(exercisesInScope(all, index, scope), difficulty)}
               formulaIndex={buildFormulaIndex(data.chapters)}
               resolveAsset={resolveAsset}
             />
@@ -177,7 +193,7 @@ export function PrintPage({ kind }: PrintPageProps) {
         };
       }
     }
-  }, [bookId, kind, chapterId, data, cloud, cloudChapter, resolveAsset]);
+  }, [bookId, kind, chapterId, data, cloud, cloudChapter, resolveAsset, searchParams]);
 
   // The browser names the saved PDF after document.title.
   useEffect(() => {
