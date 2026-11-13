@@ -125,6 +125,29 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await expect.poll(dragmode).not.toBe(false);
   });
 
+  for (const width of [390, 360]) {
+    test(`the section bar fits ${width}px wide, without scrolling, and keeps the full labels`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 780 });
+      await page.goto('/libro/esempio/capitolo/nel-libro');
+      const nav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+      const links = nav.getByRole('link');
+      await expect(links).toHaveCount(5);
+      expect(await nav.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+      for (const box of await links.evaluateAll((els) => els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, right: r.right, textFits: el.querySelector('span')!.scrollWidth <= el.querySelector('span')!.clientWidth };
+      }))) {
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(width);
+        expect(box.textFits).toBe(true);
+      }
+      // the full label is the accessible name; the short one is what shows
+      for (const [name, shown] of [['Capitoli', 'Capitoli'], ['Formulario', 'Formule'], ['Esercizi', 'Esercizi'], ["Prove d'esame", 'Esami'], ['Grafici & Calcoli', 'Grafici']]) {
+        await expect(nav.getByRole('link', { name, exact: true })).toHaveText(shown);
+      }
+    });
+  }
+
   test('the install prompt is captured in a book and shown only on the catalog', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/benvenuto');
     await expect(page.locator('.smartbook-view')).toBeVisible();
