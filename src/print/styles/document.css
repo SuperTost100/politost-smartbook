@@ -410,6 +410,248 @@
   color: var(--print-ink-muted);
 }
 
+/* ── Questions, then their solutions ──────────────────────────── */
+
+.print-sheet .print-exercises-title {
+  margin: var(--print-space-2xl) 0 var(--print-space-lg);
+  padding-bottom: var(--print-space-sm);
+  border-bottom: 1pt solid var(--print-border-strong);
+  font-family: var(--print-font-sans);
+  font-size: var(--print-size-heading);
+  font-weight: 600;
+  line-height: var(--print-leading-tight);
+  color: var(--print-ink);
+  break-after: avoid;
+}
+
+.print-sheet .print-part:first-child .print-exercises:first-child > .print-exercises-title {
+  margin-top: 0;
+}
+
+.print-sheet .exercise-card {
+  break-inside: avoid;
+}
+
+.print-sheet .print-solutions {
+  margin-top: var(--print-space-xl);
+  padding-top: var(--print-space-md);
+  border-top: 1pt solid var(--print-border-strong);
+}
+
+.print-sheet .print-solutions-title {
+  margin: 0 0 var(--print-space-md);
+  font-family: var(--print-font-sans);
+  font-size: 11pt;
+  font-weight: 600;
+  line-height: var(--print-leading-tight);
+  color: var(--print-ink);
+  break-after: avoid;
+}
+
+.print-sheet .print-solution {
+  display: grid;
+  grid-template-columns: 3.4em minmax(0, 1fr);
+  gap: 0 0.75em;
+  margin: 0 0 var(--print-space-md);
+  padding-bottom: var(--print-space-md);
+  border-bottom: 1px solid #e3dfd6;
+  break-inside: avoid;
+}
+
+.print-sheet .print-solution-id {
+  padding-top: 1pt;
+  font-family: var(--print-font-mono);
+  font-size: 10pt;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.print-sheet .print-solution .content-flow {
+  min-width: 0;
+  font-size: 10pt;
+}
+
+.print-sheet .print-solution .content-paragraph {
+  margin-bottom: 0.5em;
+}
+
+/* ── The whole book: cover, index, chapter openers, appendices ── */
+
+.print-sheet .print-cover {
+  display: flex;
+  flex-direction: column;
+  min-height: 220mm;
+}
+
+.print-sheet .print-cover .print-opener-brand {
+  margin-bottom: 0;
+}
+
+.print-sheet .print-cover-main {
+  margin: auto 0;
+}
+
+.print-sheet .print-cover-subject,
+.print-sheet .print-kicker {
+  margin: 0 0 var(--print-space-md);
+  font-family: var(--print-font-mono);
+  font-size: var(--print-size-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .print-kicker {
+  margin-bottom: var(--print-space-sm);
+}
+
+.print-sheet .print-cover-title {
+  margin: 0 0 var(--print-space-lg);
+  padding-bottom: var(--print-space-lg);
+  border-bottom: 1.5pt solid var(--print-ink);
+  font-family: var(--print-font-sans);
+  font-size: 34pt;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--print-ink);
+}
+
+.print-sheet .print-cover-authors {
+  margin: 0;
+  font-family: var(--print-font-serif);
+  font-size: 14pt;
+  line-height: 1.4;
+}
+
+.print-sheet .print-cover-meta {
+  margin: var(--print-space-xs) 0 0;
+  font-family: var(--print-font-sans);
+  font-size: 9pt;
+  line-height: 1.4;
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .print-cover-contents {
+  margin: 0;
+  padding-top: var(--print-space-md);
+  border-top: 1px solid var(--print-border);
+  font-family: var(--print-font-sans);
+  font-size: 9pt;
+  line-height: 1.5;
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .print-h2 {
+  margin: 0 0 var(--print-space-lg);
+  padding-bottom: var(--print-space-sm);
+  border-bottom: 1.5pt solid var(--print-ink);
+  font-family: var(--print-font-sans);
+  font-size: 18pt;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--print-ink);
+  break-after: avoid;
+}
+
+.print-sheet .print-index {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--print-font-sans);
+  font-size: 10.5pt;
+}
+
+.print-sheet .print-index > li {
+  padding: 5pt 0;
+  border-bottom: 1px solid #e3dfd6;
+  break-inside: avoid;
+}
+
+.print-sheet .print-index-row {
+  display: flex;
+  gap: 0.75em;
+}
+
+.print-sheet .print-index-n {
+  flex: none;
+  min-width: 1.8em;
+  color: var(--print-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.print-sheet .print-index-sub {
+  margin: 2pt 0 0 2.55em;
+  font-size: 9pt;
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .print-index-appendix {
+  font-weight: 600;
+}
+
+.print-sheet .print-chapter-opener {
+  margin: 0 0 var(--print-space-xl);
+  padding-bottom: var(--print-space-lg);
+  border-bottom: 1.5pt solid var(--print-ink);
+  break-after: avoid;
+}
+
+.print-sheet .print-chapter-title {
+  margin: 0;
+  font-family: var(--print-font-sans);
+  font-size: 20pt;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--print-ink);
+}
+
+/* Each chapter and appendix starts on a new page. */
+.print-sheet .print-part--page {
+  break-before: page;
+}
+
+/* On screen: where a new page starts. */
+.print-sheet .print-break {
+  position: relative;
+  height: 0;
+  margin: 14mm -18mm 12mm;
+  border-top: 1.5px dashed #b9b2a5;
+}
+
+.print-sheet .print-break span {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #efe9dd;
+  color: #5c564c;
+  font: 600 11px/16px var(--print-font-sans);
+  white-space: nowrap;
+}
+
+.print-sheet .print-progress {
+  margin: var(--print-space-xl) 0 0;
+  padding: 9pt 12pt;
+  border: 1.5px dashed #b9b2a5;
+  border-radius: var(--print-radius);
+  font: 500 10pt/1.45 var(--print-font-sans);
+  color: #5c564c;
+}
+
+/* A whole book is about 200,000 elements: on screen, lay out only the parts near the viewport.
+   `auto` keeps a part's real height once it has been on screen. Print lays out everything. */
+@media screen {
+  .print-sheet .print-part--deferred {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1600px;
+  }
+}
+
 /* ── Watermark (licensed copies) ──────────────────────────────── */
 
 .print-watermark {
@@ -452,6 +694,18 @@
 
   .print-sheet .formula-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .print-sheet .print-break {
+    margin-inline: -1.1rem;
+  }
+
+  .print-sheet .print-cover {
+    min-height: 70vh;
+  }
+
+  .print-sheet .print-cover-title {
+    font-size: 28pt;
   }
 }
 
