@@ -87,6 +87,37 @@ test.describe('Remote books', () => {
     expect((await glued.textContent())?.endsWith(',')).toBe(true);
   });
 
+  test('a long formula in many segments wraps, and the full stop after it never starts a line', async ({ page }) => {
+    const sum = 'a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z';
+    const book = pack(`## p1 | Prova\n\nLa somma $${sum}$. Poi $${sum}$, e basta.\n`);
+    await serveBooks(page, catalog({ bytes: book.byteLength, sha256: createHash('sha256').update(book).digest('hex') }), book);
+    await page.goto('/libro/remoto/capitolo/primo');
+    await expect(page.locator('.katex').first()).toBeVisible();
+    await expect(page.locator('.math-glue')).toHaveCount(2);
+
+    for (const width of [390, 360, 330, 317, 311, 455]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.waitForTimeout(100);
+      const result = await page.evaluate(() => {
+        const alone = [...document.querySelectorAll('.math-glue')].map((glue) => {
+          const text = glue.lastChild!;
+          const range = document.createRange();
+          range.setStart(text, 0);
+          range.setEnd(text, text.textContent!.length);
+          const punctuation = range.getClientRects()[0];
+          const last = [...glue.querySelectorAll('.katex-base')].at(-1)!.getBoundingClientRect();
+          return punctuation.top + punctuation.height / 2 > last.bottom;
+        });
+        return { sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth, alone };
+      });
+      expect(result, `at ${width}px`).toEqual({ sideways: 0, alone: [false, false] });
+    }
+    // It wrapped: the formula is on more than one line at 390px.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const lines = await page.locator('.math-glue').first().evaluate((el) => new Set([...el.querySelectorAll('.katex-base')].map((b) => Math.round(b.getBoundingClientRect().top))).size);
+    expect(lines).toBeGreaterThan(1);
+  });
+
   test('keeps the builtin books when the catalog is unreachable', async ({ page }) => {
     await page.route(`${BOOKS_URL}/catalog.json`, (route) => route.fulfill({ status: 503 }));
     await page.goto('/');

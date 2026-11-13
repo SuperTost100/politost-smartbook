@@ -32,3 +32,12 @@ test('text without a formula, or with an unclosed one, comes back unchanged', ()
   const open = '<span class="katex"><span>x</span>,';
   assert.equal(glueMathPunctuation(open), open);
 });
+
+test('a formula in several segments can still wrap between them, but not before its punctuation', () => {
+  const two = '<span class="katex"><span class="katex-html"><span class="katex-base">a+</span><span class="katex-base">b</span></span></span>';
+  const out = glueMathPunctuation(`${two}.`);
+  assert.equal(
+    out,
+    `<span class="math-glue"><span class="katex"><span class="katex-html"><span class="katex-base">a+</span><span class="math-brk">\u200b</span><span class="katex-base">b</span></span></span>.</span>`,
+  );
+});

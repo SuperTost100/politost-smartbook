@@ -172,6 +172,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-prose .katex { font-size: 1.05em; }
 /* A formula and the punctuation after it stay on one line (see glueMathPunctuation). */
 .math-glue { white-space: nowrap; }
+.math-brk { white-space: normal; }
 /* An inline formula wider than the text (flagged by useScrollableInlineMath) scrolls inside its line.
    The padding takes the formula's few pixels of vertical overflow, the negative margin keeps the line height. */
 .sb-prose .katex[data-wide] { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: bottom; padding-block: 0.3em; margin-block: -0.3em; scrollbar-width: thin; }
