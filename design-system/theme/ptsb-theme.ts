@@ -98,7 +98,8 @@ export function ptsbTheme(mode: PtsbMode = 'light'): ThemeConfig {
       Modal: { borderRadiusLG: 24, contentBg: c.surfaceOverlay, headerBg: c.surfaceOverlay, titleFontSize: 22 },
       Drawer: { colorBgElevated: c.surface },
       Popover: { colorBgElevated: c.surfaceOverlay },
-      Tooltip: { colorBgSpotlight: c.ink, colorTextLightSolid: c.onInk },
+      // antd sizes the tooltip box to controlHeight; at the theme's 46px the label sits at the top of a tall box.
+      Tooltip: { colorBgSpotlight: c.ink, colorTextLightSolid: c.onInk, controlHeight: 30, borderRadius: 10 },
       Progress: { defaultColor: c.star, remainingColor: c.surfaceRaised, lineBorderRadius: 999 },
       Tag: { borderRadiusSM: 999, defaultBg: c.surfaceRaised, defaultColor: c.inkMuted },
       Tabs: { itemColor: c.inkMuted, itemSelectedColor: c.primaryText, itemHoverColor: c.ink, inkBarColor: c.primary, titleFontSize: 16 },
