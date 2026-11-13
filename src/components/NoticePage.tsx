@@ -24,8 +24,11 @@ export function NoticePage({ role, ...notice }: NoticeProps & { role?: 'alert' }
   return (
     <div className="site-page">
       <SiteHeader />
-      <main id="main-content" className="page-not-found" role={role}>
-        <NoticeBody {...notice} />
+      {/* The alert role goes on a wrapper: on <main> it would replace the main landmark. */}
+      <main id="main-content">
+        <div className="page-not-found" role={role}>
+          <NoticeBody {...notice} />
+        </div>
       </main>
       <Footer />
     </div>

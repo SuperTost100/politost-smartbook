@@ -396,8 +396,10 @@ export function PrintPage({ kind }: PrintPageProps) {
   const handlePrint = useCallback(async () => {
     setPrinting(true);
     try {
+      // No sheet means a message took its place (no chapter chosen, for example): nothing to print.
       const sheet = document.querySelector('.print-sheet');
-      if (sheet) await waitForImages(sheet);
+      if (!sheet) return;
+      await waitForImages(sheet);
       await document.fonts?.ready;
       window.print();
     } finally {

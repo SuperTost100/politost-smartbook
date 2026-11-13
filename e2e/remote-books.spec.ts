@@ -69,7 +69,7 @@ test.describe('Remote books', () => {
     await expect(page.locator('.katex').first()).toBeVisible();
   });
 
-  test('a long inline formula scrolls inside its line and punctuation stays with its formula', async ({ page }) => {
+  test('a long inline formula scrolls inside its line, and a short one keeps its comma', async ({ page }) => {
     const equation = String.raw`\mathrm{Ca_3(PO_4)_2 + SiO_2 + C \to P_4 + CaSiO_3 + CO + CO_2 + Ca_3(PO_4)_2}`;
     const wide = pack(`## p1 | Prova\n\nBilancia l'equazione $${equation}$. Poi $x = 1$, e basta.\n`);
     await serveBooks(page, catalog({ bytes: wide.byteLength, sha256: createHash('sha256').update(wide).digest('hex') }), wide);
