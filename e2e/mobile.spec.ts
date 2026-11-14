@@ -142,7 +142,7 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
         expect(box.textFits).toBe(true);
       }
       // the full label is the accessible name; the short one is what shows
-      for (const [name, shown] of [['Capitoli', 'Capitoli'], ['Formulario', 'Formule'], ['Esercizi', 'Esercizi'], ["Prove d'esame", 'Esami'], ['Grafici & Calcoli', 'Grafici']]) {
+      for (const [name, shown] of [['Capitoli', 'Capitoli'], ['Formule: Formulario', 'Formule'], ['Esercizi', 'Esercizi'], ["Esami: Prove d'esame", 'Esami'], ['Grafici & Calcoli', 'Grafici']]) {
         await expect(nav.getByRole('link', { name, exact: true })).toHaveText(shown);
       }
     });

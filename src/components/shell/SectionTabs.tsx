@@ -44,12 +44,14 @@ export function SectionTabs({ items, value, compact = false, bottom = false }: S
       {items.map(({ key, label, href }) => {
         const Icon = SECTION_ICONS[key];
         const shown = bottom ? SHORT_LABELS[key] : label;
+        // The accessible name keeps the visible label in it, so speech input can call a tab by what it shows.
+        const name = label.toLowerCase().startsWith(shown.toLowerCase()) ? label : `${shown}: ${label}`;
         return (
           <Link
             key={key}
             to={href}
             aria-current={key === value ? 'page' : undefined}
-            aria-label={shown !== label ? label : undefined}
+            aria-label={name !== shown ? name : undefined}
             title={compact ? label : undefined}
           >
             {Icon && <Icon size={bottom ? 20 : 16} strokeWidth={1.75} aria-hidden />}
