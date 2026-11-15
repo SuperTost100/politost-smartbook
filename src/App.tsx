@@ -118,7 +118,14 @@ function AppRoutes() {
           path="/libro/*"
           element={
             <RouteErrorBoundary>
-              <Suspense fallback={<div className="app-loading"><p>Caricamento libro…</p></div>}>
+              <Suspense
+                fallback={
+                  <div className="app-loading" aria-busy="true">
+                    <div className="app-loading-spinner" aria-hidden />
+                    <p>Caricamento libro…</p>
+                  </div>
+                }
+              >
                 <SmartbookRouter />
               </Suspense>
             </RouteErrorBoundary>

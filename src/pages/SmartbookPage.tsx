@@ -215,7 +215,7 @@ function BookRoutes() {
     };
   }, [bookId, attempt]);
 
-  if (!contentReady) return <p className="empty-note">Caricamento libro…</p>;
+  if (!contentReady) return <SectionLoading>Caricamento libro…</SectionLoading>;
 
   const data = loadSmartbook(bookId ?? '');
 

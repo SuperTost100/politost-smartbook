@@ -26,12 +26,16 @@ import {
   parsePrintOptions,
   PRINT_PARAMS,
   printSummary,
+  recallPrintOptions,
+  rememberPrintOptions,
+  restorePrintOptions,
   writePrintOptions,
   type PrintOptions,
 } from '../lib/printOptions';
 import { buildPrintUrl, getReturnUrl, type PrintSection } from './routes';
 import { PrintDocument, type PrintPart } from './PrintDocument';
 import { useProgressiveParts } from './useProgressiveParts';
+import { fitWideFormulas } from './fitFormulas';
 import {
   bookParts,
   cachedPick,
@@ -152,7 +156,7 @@ function PrintToolbar({
             onClick={onOptions}
           >
             <SlidersHorizontal size={16} strokeWidth={1.75} aria-hidden />
-            <span>Opzioni</span>
+            <span className="print-toolbar-btn-label">Opzioni</span>
           </button>
         )}
         {onPrint && (
@@ -255,7 +259,23 @@ export function PrintPage({ kind }: PrintPageProps) {
 
   // The sheet follows the URL. A choice shows in the panel at once (`chosen`) and reaches the URL
   // after the next paint, in a transition, so the switch never waits for the sheet to re-render.
-  const docOptions = useMemo(() => parsePrintOptions(searchParams, printableNumbers), [searchParams, printableNumbers]);
+  // A preview opened without options in its address starts from the ones last chosen in this book,
+  // and writes them in the address.
+  const optionsKind = kind === 'formulario' ? null : kind;
+  const restored = useMemo(
+    () =>
+      bookId && optionsKind
+        ? restorePrintOptions(searchParams, recallPrintOptions(bookId, printableNumbers), optionsKind, printableNumbers)
+        : null,
+    [bookId, optionsKind, searchParams, printableNumbers],
+  );
+  useEffect(() => {
+    if (restored) setSearchParams(restored, { replace: true });
+  }, [restored, setSearchParams]);
+  const docOptions = useMemo(
+    () => parsePrintOptions(restored ?? searchParams, printableNumbers),
+    [restored, searchParams, printableNumbers],
+  );
   const [chosen, setChosen] = useState<PrintOptions | null>(null);
   const options = chosen ?? docOptions;
 
@@ -420,11 +440,36 @@ export function PrintPage({ kind }: PrintPageProps) {
   useEffect(() => {
     if (!complete) return;
     let cancelled = false;
+    let resizes: ResizeObserver | undefined;
     void (async () => {
-      const sheet = document.querySelector('.print-sheet');
+      const sheet = document.querySelector<HTMLElement>('.print-sheet');
+      const isCancelled = () => cancelled;
       if (sheet) await waitForImages(sheet);
       await document.fonts?.ready;
       if (cancelled) return;
+      if (sheet) {
+        // KaTeX measures narrower before its fonts arrive, and measuring lays out the parts kept
+        // off screen, which can request fonts no other part used: fit again once those arrive.
+        for (let pass = 0; pass < 3; pass++) {
+          let fontsRequested = false;
+          const onLoading = () => {
+            fontsRequested = true;
+          };
+          document.fonts?.addEventListener('loading', onLoading);
+          await fitWideFormulas(sheet, isCancelled);
+          document.fonts?.removeEventListener('loading', onLoading);
+          if (cancelled) return;
+          if (!fontsRequested) break;
+          await document.fonts.ready;
+        }
+        let width = sheet.clientWidth;
+        resizes = new ResizeObserver(() => {
+          if (sheet.clientWidth === width) return;
+          width = sheet.clientWidth;
+          void fitWideFormulas(sheet, isCancelled);
+        });
+        resizes.observe(sheet);
+      }
       setLoadedFor(signature);
       if (printQueued.current) {
         printQueued.current = false;
@@ -433,6 +478,7 @@ export function PrintPage({ kind }: PrintPageProps) {
     })();
     return () => {
       cancelled = true;
+      resizes?.disconnect();
     };
   }, [complete, signature, handlePrint]);
   const ready = complete && loadedFor === signature;
@@ -448,6 +494,7 @@ export function PrintPage({ kind }: PrintPageProps) {
   const setOptions = useCallback(
     (next: PrintOptions) => {
       setChosen(next);
+      if (bookId && optionsKind) rememberPrintOptions(bookId, optionsKind, next, printableNumbers);
       afterPaint(() =>
         startTransition(() => {
           setChosen((current) => (current === next ? null : current));
@@ -455,7 +502,7 @@ export function PrintPage({ kind }: PrintPageProps) {
         }),
       );
     },
-    [setSearchParams, printableNumbers],
+    [setSearchParams, printableNumbers, bookId, optionsKind],
   );
 
   // The other route renders in a transition; until then the tabs show the choice and the rest waits.
@@ -466,9 +513,11 @@ export function PrintPage({ kind }: PrintPageProps) {
   const switchScope = useCallback(
     (scope: 'capitolo' | 'libro') => {
       if (!bookId) return;
+      // The whole book also brings back the chapters, formula sheet and exams chosen last time.
+      const base = (scope === 'libro' && recallPrintOptions(bookId, printableNumbers)) || defaultPrintOptions(printableNumbers);
       const carried = writePrintOptions(
         new URLSearchParams(),
-        { ...defaultPrintOptions(printableNumbers), exercises: options.exercises, solutions: options.solutions },
+        { ...base, exercises: options.exercises, solutions: options.solutions },
         printableNumbers,
       );
       let target: string;

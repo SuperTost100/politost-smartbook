@@ -272,6 +272,26 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-fcard-math .katex-display { margin: 0; text-align: left; }
 .sb-fcard-math .katex-display > .katex { text-align: left; }
 .sb-fcard-math .formula-prose { margin: 0; font: 400 15px/22px var(--font-serif); }
+/* A formula wider than its box scrolls sideways: the edge it can still scroll towards fades out, and the fade
+   goes once that end is reached. A scroll timeline is active only on a box that can scroll, so a formula that
+   fits keeps both fades at 0 and looks the same. The mask works on any background, in light and dark. */
+@property --scroll-fade-start { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --scroll-fade-end { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@keyframes sb-scroll-fade {
+  0% { --scroll-fade-start: 0px; --scroll-fade-end: 32px; }
+  6% { --scroll-fade-start: 32px; }
+  94% { --scroll-fade-end: 32px; }
+  100% { --scroll-fade-start: 32px; --scroll-fade-end: 0px; }
+}
+@supports (animation-timeline: scroll()) {
+  .sb-fcard-math, .sb-formula-math, .sb-fref-pop-math, .sb-prose .content-math, .sb-prose .katex-block, .sb-prose .katex[data-wide] {
+    animation-name: sb-scroll-fade;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(self inline);
+    mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-start), #000 calc(100% - var(--scroll-fade-end)), transparent);
+  }
+}
 @media (max-width: 640px) {
   .sb-fcard-row { grid-template-columns: 48px minmax(0, 1fr); row-gap: var(--space-1); padding-inline: var(--space-4); }
   .sb-fcard-math { grid-column: 2; }

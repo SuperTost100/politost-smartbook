@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { SectionHeader } from './ds/SectionHeader';
 import { FormulaCard } from './ds/FormulaCard';
@@ -9,16 +7,8 @@ interface FormularioViewProps {
   chapters: Chapter[];
 }
 
+/** A `#formula-…` link lands through the book shell's useScrollToHash, like a paragraph link. */
 export function FormularioView({ bookId, chapters }: FormularioViewProps) {
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.hash) {
-      const id = location.hash.slice(1);
-      document.getElementById(`formula-${id}`)?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [location.hash]);
-
   const total = chapters.reduce((n, ch) => n + ch.formulas.length, 0);
 
   return (

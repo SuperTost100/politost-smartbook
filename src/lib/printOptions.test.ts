@@ -7,6 +7,9 @@ import {
   parsePrintOptions,
   pickExercises,
   printSummary,
+  recallPrintOptions,
+  rememberPrintOptions,
+  restorePrintOptions,
   writePrintOptions,
 } from './printOptions.ts';
 import { buildPrintUrl } from '../print/routes.ts';
@@ -120,4 +123,74 @@ test('the whole book has its own print URL and remembers the chapter it came fro
     buildPrintUrl('chimica', 'libro', { chapterId: 'atomi', returnTo: '/libro/chimica/capitolo/atomi' }),
     '/libro/chimica/stampa/libro?da=atomi&return=%2Flibro%2Fchimica%2Fcapitolo%2Fatomi',
   );
+});
+
+/** A sessionStorage stand-in. */
+function memoryStorage() {
+  const items = new Map<string, string>();
+  return () => ({
+    getItem: (key: string) => items.get(key) ?? null,
+    setItem: (key: string, value: string) => void items.set(key, value),
+  });
+}
+
+test('the options chosen in a book come back for that book only', () => {
+  const storage = memoryStorage();
+  assert.equal(recallPrintOptions('analisi', printable, storage), null);
+  const chosen = { chapters: [1, 3], exercises: 5 as const, formulario: false, exams: true, solutions: false };
+  rememberPrintOptions('analisi', 'libro', chosen, printable, storage);
+  assert.deepEqual(recallPrintOptions('analisi', printable, storage), chosen);
+  assert.equal(recallPrintOptions('chimica', printable, storage), null);
+});
+
+test('a preview remembers only the options it offers', () => {
+  const storage = memoryStorage();
+  rememberPrintOptions('analisi', 'libro', { chapters: [2], exercises: 5, formulario: true, exams: true, solutions: true }, printable, storage);
+  // The chapter preview has no chapter list, formula sheet or exams: those stay as the whole book left them.
+  rememberPrintOptions('analisi', 'capitolo', { ...defaultPrintOptions(printable), exercises: 10, solutions: false }, printable, storage);
+  assert.deepEqual(recallPrintOptions('analisi', printable, storage), {
+    chapters: [2],
+    exercises: 10,
+    formulario: true,
+    exams: true,
+    solutions: false,
+  });
+});
+
+test('a damaged or unavailable store gives the defaults', () => {
+  const broken = () => ({
+    getItem: () => '{"analisi": 3, "chimica": "esercizi=7&soluzioni=0"}',
+    setItem: () => {
+      throw new Error('QuotaExceededError');
+    },
+  });
+  assert.equal(recallPrintOptions('analisi', printable, broken), null);
+  assert.deepEqual(recallPrintOptions('chimica', printable, broken), { ...defaultPrintOptions(printable), solutions: false });
+  assert.doesNotThrow(() => rememberPrintOptions('analisi', 'libro', defaultPrintOptions(printable), printable, broken));
+  const missing = () => {
+    throw new ReferenceError('sessionStorage is not defined');
+  };
+  assert.equal(recallPrintOptions('analisi', printable, missing), null);
+  assert.doesNotThrow(() => rememberPrintOptions('analisi', 'libro', defaultPrintOptions(printable), printable, missing));
+});
+
+test('a preview without options in its address gets the remembered ones it offers', () => {
+  const remembered = { chapters: [1, 3], exercises: 5 as const, formulario: true, exams: true, solutions: false };
+  const chapter = restorePrintOptions(new URLSearchParams('return=%2Flibro%2Fa'), remembered, 'capitolo', printable);
+  assert.equal(chapter?.toString(), 'return=%2Flibro%2Fa&esercizi=5&soluzioni=0');
+  const book = restorePrintOptions(new URLSearchParams('da=limiti'), remembered, 'libro', printable);
+  assert.deepEqual(parsePrintOptions(book!, printable), remembered);
+  assert.equal(book?.get('da'), 'limiti');
+  const exercises = restorePrintOptions(new URLSearchParams('capitolo=3'), remembered, 'esercizi', printable);
+  assert.equal(exercises?.toString(), 'capitolo=3&soluzioni=0');
+});
+
+test('options in the address win, and defaults leave the address alone', () => {
+  const remembered = { chapters: [1, 3], exercises: 5 as const, formulario: true, exams: true, solutions: false };
+  assert.equal(restorePrintOptions(new URLSearchParams('soluzioni=0'), remembered, 'libro', printable), null);
+  assert.equal(restorePrintOptions(new URLSearchParams('capitoli='), remembered, 'libro', printable), null);
+  assert.equal(restorePrintOptions(new URLSearchParams(''), null, 'libro', printable), null);
+  assert.equal(restorePrintOptions(new URLSearchParams(''), defaultPrintOptions(printable), 'libro', printable), null);
+  // Nothing the exam print offers differs from the defaults.
+  assert.equal(restorePrintOptions(new URLSearchParams(''), { ...remembered, solutions: true }, 'esami', printable), null);
 });

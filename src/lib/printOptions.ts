@@ -81,6 +81,99 @@ export function writePrintOptions(params: URLSearchParams, options: PrintOptions
   return next;
 }
 
+/** The previews with an options panel, and the options each one offers. */
+export type PrintOptionsKind = 'capitolo' | 'libro' | 'esercizi' | 'esami';
+export const PRINT_OPTIONS_OF: Record<PrintOptionsKind, (keyof PrintOptions)[]> = {
+  capitolo: ['exercises', 'solutions'],
+  libro: ['chapters', 'exercises', 'formulario', 'exams', 'solutions'],
+  esercizi: ['solutions'],
+  esami: ['solutions'],
+};
+
+const OPTION_PARAMS = [
+  PRINT_PARAMS.chapters,
+  PRINT_PARAMS.exercises,
+  PRINT_PARAMS.formulario,
+  PRINT_PARAMS.exams,
+  PRINT_PARAMS.solutions,
+];
+
+/** True when the address sets any option: then it wins over what the student chose last time. */
+export function hasPrintOptions(params: URLSearchParams): boolean {
+  return OPTION_PARAMS.some((key) => params.has(key));
+}
+
+/**
+ * The last options chosen in each book, kept for the browser session so that leaving the preview
+ * and opening it again does not reset them. Each book's entry is a query string, read back with
+ * parsePrintOptions, so a damaged entry falls back to the defaults like a damaged URL does.
+ */
+const STORAGE_KEY = 'ptsb-print-options';
+
+type SessionStore = Pick<Storage, 'getItem' | 'setItem'>;
+const session = (): SessionStore => sessionStorage;
+
+function readRemembered(storage: () => SessionStore): Record<string, string> {
+  // No prototype, so a "__proto__" book id stays a plain entry.
+  const store: Record<string, string> = Object.create(null);
+  try {
+    const parsed: unknown = JSON.parse(storage().getItem(STORAGE_KEY) ?? '{}');
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return store;
+    for (const [bookId, query] of Object.entries(parsed)) {
+      if (typeof query === 'string') store[bookId] = query;
+    }
+  } catch {
+    // Storage disabled or damaged: the preview opens with the defaults.
+  }
+  return store;
+}
+
+/** The options last chosen in this book during the session, or null when there are none. */
+export function recallPrintOptions(
+  bookId: string,
+  printableChapters: number[],
+  storage: () => SessionStore = session,
+): PrintOptions | null {
+  const query = readRemembered(storage)[bookId];
+  return query == null ? null : parsePrintOptions(new URLSearchParams(query), printableChapters);
+}
+
+/** Keeps the options `kind` offers; the others keep what was chosen in another preview of the book. */
+export function rememberPrintOptions(
+  bookId: string,
+  kind: PrintOptionsKind,
+  options: PrintOptions,
+  printableChapters: number[],
+  storage: () => SessionStore = session,
+): void {
+  const store = readRemembered(storage);
+  const next = recallPrintOptions(bookId, printableChapters, storage) ?? defaultPrintOptions(printableChapters);
+  for (const key of PRINT_OPTIONS_OF[kind]) Object.assign(next, { [key]: options[key] });
+  store[bookId] = writePrintOptions(new URLSearchParams(), next, printableChapters).toString();
+  try {
+    storage().setItem(STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    // Storage full or disabled: the options still live in the URL.
+  }
+}
+
+/**
+ * `params` with the remembered options of `kind` written in, or null when there is nothing to
+ * restore: the address already sets an option (a shared link), or nothing differs from the defaults.
+ */
+export function restorePrintOptions(
+  params: URLSearchParams,
+  remembered: PrintOptions | null,
+  kind: PrintOptionsKind,
+  printableChapters: number[],
+): URLSearchParams | null {
+  if (!remembered || hasPrintOptions(params)) return null;
+  const options = defaultPrintOptions(printableChapters);
+  for (const key of PRINT_OPTIONS_OF[kind]) Object.assign(options, { [key]: remembered[key] });
+  const next = writePrintOptions(params, options, printableChapters);
+  return hasPrintOptions(next) ? next : null;
+}
+
 const PICK_ORDER: (Exercise['difficulty'] | undefined)[] = [...DIFFICULTIES, undefined];
 
 /**
