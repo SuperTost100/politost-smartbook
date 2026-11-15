@@ -157,6 +157,17 @@ export function neighbourEntries(index: ExerciseIndex, scope: ExerciseScope | nu
   };
 }
 
+/** The pager's count for a neighbouring chapter: what its page shows with the difficulty filter on. */
+export function pagerNote(
+  exercises: Exercise[],
+  index: ExerciseIndex,
+  entry: ExerciseIndexEntry,
+  difficulty: Difficulty | null,
+): string {
+  const count = filterByDifficulty(exercisesInScope(exercises, index, entry.scope), difficulty).length;
+  return count === 0 && difficulty ? `Nessun esercizio ${difficulty}` : plural(count, 'esercizio', 'esercizi');
+}
+
 /** "Esercizi · Capitolo 3. Formule · Livello difficile": the print document and its saved PDF. */
 export function exerciseDocumentTitle(
   sectionLabel: string,

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PTSB_ZIP_LIMITS } from '@politost/content-core';
-import { MAX_PACKAGE_BYTES, packageTimeoutMs, parseRemoteCatalog } from './remoteCatalog.ts';
+import { MAX_PACKAGE_BYTES, bookOpenProblem, fetchRemoteBook, packageTimeoutMs, parseRemoteCatalog } from './remoteCatalog.ts';
 
 const BASE = 'https://books.example.org';
 const SHA = 'a'.repeat(64);
@@ -53,7 +53,6 @@ test('leaves out entries the reader must not fetch or cannot read', () => {
 });
 
 test('package timeout rejects even when response headers arrive but the body hangs', async (t) => {
-  const { fetchRemoteBook } = await import('./remoteCatalog.ts');
   const [entry] = parseRemoteCatalog(catalog(book()), BASE);
   const controller = new AbortController();
   t.mock.method(AbortSignal, 'timeout', (milliseconds: number) => {
@@ -69,7 +68,10 @@ test('package timeout rejects even when response headers arrive but the body han
       },
     }));
   });
-  await assert.rejects(fetchRemoteBook(entry), { name: 'TimeoutError' });
+  await assert.rejects(fetchRemoteBook(entry), (err: Error) => {
+    assert.equal((err.cause as Error).name, 'TimeoutError');
+    return true;
+  });
 });
 
 test('the package download gets 10 s plus 1 s per 100 kB', () => {
@@ -81,4 +83,40 @@ test('the package download gets 10 s plus 1 s per 100 kB', () => {
 
 test('the catalog size limit matches the unzip limit of content-core', () => {
   assert.equal(MAX_PACKAGE_BYTES, PTSB_ZIP_LIMITS.maxCompressedBytes);
+});
+
+async function failedDownload(answer: () => Promise<Response>): Promise<unknown> {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = answer;
+  try {
+    const [entry] = parseRemoteCatalog(catalog(book()), BASE);
+    await fetchRemoteBook(entry);
+  } catch (err) {
+    return err;
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  assert.fail('the download should fail');
+}
+
+test('a download the browser cannot make is explained in Italian, without its own message', async () => {
+  const err = await failedDownload(() => Promise.reject(new TypeError('Failed to fetch')));
+  const text = bookOpenProblem(err);
+  assert.doesNotMatch(text, /Failed to fetch/);
+  assert.match(text, /connessione/);
+});
+
+test('a download the books site refuses is explained without the HTTP status', async () => {
+  const err = await failedDownload(() => Promise.resolve(new Response('', { status: 503 })));
+  assert.doesNotMatch(bookOpenProblem(err), /HTTP|503/);
+});
+
+test('a package that does not match the catalog keeps saying so', async () => {
+  const err = await failedDownload(() => Promise.resolve(new Response(new Uint8Array(3))));
+  assert.match(bookOpenProblem(err), /non corrisponde al catalogo/);
+});
+
+test('any other failure gets a plain sentence, not the technical message', () => {
+  assert.doesNotMatch(bookOpenProblem(new Error('IDBDatabase: transaction failed')), /IDB/);
+  assert.doesNotMatch(bookOpenProblem('boom'), /boom/);
 });

@@ -150,4 +150,27 @@ test.describe('Exercises by chapter on a phone', () => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     expect(overflow).toBe(false);
   });
+
+  for (const path of ['/libro/esempio/esercizi?capitolo=1', '/libro/esempio/esami']) {
+    test(`a wide formula in a hint or solution scrolls inside it: ${path}`, async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.goto(path);
+      const exercise = page.locator('.sb-ex').first();
+      for (const name of ['Mostra suggerimento', 'Mostra soluzione']) {
+        await exercise.getByRole('button', { name }).click();
+      }
+      // A display formula wider than the phone, built like the ones KaTeX renders.
+      await exercise.locator('.sb-reveal-body .sb-prose').evaluateAll((bodies) => {
+        for (const body of bodies) {
+          body.insertAdjacentHTML('beforeend', '<div class="content-math"><span class="katex-block"><span class="katex-display"><span class="katex" style="display:inline-block;width:600px">x</span></span></span></div>');
+        }
+      });
+      await expect(exercise.locator('.sb-reveal-open')).toHaveCount(2);
+      const sideways = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(sideways).toBe(0);
+      for (const math of await exercise.locator('.sb-reveal-body .katex-block').all()) {
+        expect(await math.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+      }
+    });
+  }
 });

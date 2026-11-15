@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Routes, Route, Navigate, Link, useParams, Outlet, useLocation } from 'react-router-dom';
 import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
+import { bookOpenProblem } from '../lib/remoteCatalog';
 import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
@@ -8,6 +9,7 @@ import { buildFormulaIndex } from '../lib/parser';
 import { exerciseSearch, plural, practiceCounts } from '../lib/exerciseNav';
 import { sectionPath } from '../lib/sectionRoutes';
 import { getReadingPosition, readingPositionPath } from '../lib/readingPosition';
+import { pinIntoView } from '../lib/scrollPin';
 import type { PracticeLink } from '../components/ds/PracticeLinks';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +19,7 @@ import { SmartbookView } from '../components/SmartbookView';
 import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
-import { BookNotFound } from '../components/BookNotFound';
+import { BookLoadFailed, BookNotFound } from '../components/BookNotFound';
 import { NoticeBlock } from '../components/NoticePage';
 import { NotFoundPage } from './NotFoundPage';
 import type { SectionKey } from '../types/smartbook';
@@ -39,21 +41,25 @@ function SectionLoading({ children }: { children?: ReactNode }) {
 }
 
 function useScrollToHash() {
-  const { hash } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
     if (!hash) return;
     const id = decodeURIComponent(hash.slice(1));
     // A cloud chapter renders after its download, so keep looking for the target for a few seconds.
     let tries = 30;
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let release: (() => void) | undefined;
     const attempt = () => {
       const target = document.getElementById(id);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      if (target) release = pinIntoView(target);
       else if (tries-- > 0) timer = setTimeout(attempt, 100);
     };
-    timer = setTimeout(attempt, 150);
-    return () => clearTimeout(timer);
-  }, [hash]);
+    attempt();
+    return () => {
+      clearTimeout(timer);
+      release?.();
+    };
+  }, [pathname, hash]);
 }
 
 function useBookData(): SmartbookData | null {
@@ -187,6 +193,7 @@ function BookRoutes() {
   const { bookId } = useParams<{ bookId: string }>();
   const [readyFor, setReadyFor] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<{ id: string; message: string } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const contentReady = readyFor === (bookId ?? '');
 
   useEffect(() => {
@@ -196,7 +203,8 @@ function BookRoutes() {
       .then(
         () => setLoadError(null),
         (err: unknown) => {
-          if (!cancelled) setLoadError({ id, message: err instanceof Error ? err.message : String(err) });
+          console.error(`Il libro ${id} non si apre:`, err);
+          if (!cancelled) setLoadError({ id, message: bookOpenProblem(err) });
         },
       )
       .finally(() => {
@@ -205,14 +213,22 @@ function BookRoutes() {
     return () => {
       cancelled = true;
     };
-  }, [bookId]);
+  }, [bookId, attempt]);
 
   if (!contentReady) return <p className="empty-note">Caricamento libro…</p>;
 
   const data = loadSmartbook(bookId ?? '');
 
   if (!data && loadError && loadError.id === bookId) {
-    return <p className="empty-note" role="alert">Non riesco ad aprire il libro. {loadError.message}</p>;
+    return (
+      <BookLoadFailed
+        text={loadError.message}
+        onRetry={() => {
+          setReadyFor(null);
+          setAttempt((n) => n + 1);
+        }}
+      />
+    );
   }
   if (!data) return <BookNotFound />;
 

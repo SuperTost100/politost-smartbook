@@ -10,6 +10,7 @@ import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
+import { pinnedElement } from '../lib/scrollPin';
 import { chapterProgress } from '../lib/chapterProgress';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
@@ -41,7 +42,9 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     setParagraphs(
       chapter.paragraphs.map((p, i) => ({ id: p.id, number: `${chapter.meta.number}.${i + 1}`, title: p.title })),
     );
-    setActiveParagraphId(chapter.paragraphs[0]?.id);
+    // A link to a paragraph opens on that paragraph, so it is the one saved from the first render.
+    const linked = chapter.paragraphs.find((p) => `#${p.id}` === window.location.hash);
+    setActiveParagraphId((linked ?? chapter.paragraphs[0])?.id);
     return () => setParagraphs([]);
   }, [chapter, setParagraphs, setActiveParagraphId]);
 
@@ -58,6 +61,13 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
         for (const entry of entries) {
           if (entry.isIntersecting) intersections.set(entry.target, entry);
           else intersections.delete(entry.target);
+        }
+        // A landing on a paragraph holds it until the reader moves: the last paragraphs never reach
+        // the band, and figures loading above shift everything while the page settles.
+        const landed = pinnedElement()?.closest('[data-para-id]')?.getAttribute('data-para-id');
+        if (landed && chapter.paragraphs.some((p) => p.id === landed)) {
+          setActiveParagraphId(landed);
+          return;
         }
         const closest = closestIntersectingParagraph(
           [...intersections.values()],

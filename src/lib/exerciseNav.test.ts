@@ -10,6 +10,7 @@ import {
   exercisesInScope,
   filterByDifficulty,
   neighbourEntries,
+  pagerNote,
   parseDifficulty,
   parseScope,
   practiceCounts,
@@ -109,6 +110,16 @@ test('the pager skips chapters without exercises and stops at the last chapter',
   assert.deepEqual(at(4), [3, undefined]);
   assert.deepEqual(at('tutti'), [undefined, undefined]);
   assert.deepEqual(at('altri'), [undefined, undefined]);
+});
+
+test('the pager note counts what the next page shows with the difficulty chosen', () => {
+  const index = buildExerciseIndex(exercises, chapters)!;
+  const chapter1 = index.entries[0];
+  assert.equal(pagerNote(exercises, index, chapter1, null), '2 esercizi');
+  assert.equal(pagerNote(exercises, index, chapter1, 'difficile'), '1 esercizio');
+  assert.equal(pagerNote(exercises, index, chapter1, 'medio'), 'Nessun esercizio medio');
+  // The index keeps the chapter's total.
+  assert.equal(chapter1.count, 2);
 });
 
 test('the print title names the chapter and the difficulty', () => {

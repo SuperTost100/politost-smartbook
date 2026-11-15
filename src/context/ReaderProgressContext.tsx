@@ -1,4 +1,5 @@
 import { chapterProgress } from '../lib/chapterProgress';
+import { pinIntoView } from '../lib/scrollPin';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 export interface ParagraphItem {
@@ -28,7 +29,8 @@ export function ReaderProgressProvider({ children }: { children: ReactNode }) {
 
   const jumpTo = useCallback((id: string) => {
     setActiveParagraphId(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = document.getElementById(id);
+    if (target) pinIntoView(target, 'smooth');
   }, []);
 
   const value = useMemo<ReaderProgress>(() => {

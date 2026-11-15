@@ -121,6 +121,15 @@ async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** A download that failed for a reason the reader can be told, in a sentence fit for the page. */
+export class BookDownloadError extends Error {}
+
+/** What the page says when a book does not open. Other errors are technical: they go to the console only. */
+export function bookOpenProblem(err: unknown): string {
+  if (err instanceof BookDownloadError) return err.message;
+  return 'Qualcosa è andato storto mentre aprivo il libro. Riprova tra poco.';
+}
+
 /**
  * The parsed package for a catalog entry. A copy saved in IndexedDB for the same version is
  * used without the network, so a book opened once also opens offline.
@@ -130,21 +139,32 @@ export async function fetchRemoteBook(entry: RemoteCatalogEntry): Promise<Stored
   const cached = await getRemoteCached(key).catch(() => undefined);
   if (cached) return cached;
 
-  const res = await fetch(entry.packageUrl, { signal: AbortSignal.timeout(packageTimeoutMs(entry.bytes)) });
-  if (!res.ok) throw new Error(`Download del libro non riuscito (HTTP ${res.status})`);
-  const bytes = new Uint8Array(await res.arrayBuffer());
+  let res: Response;
+  let bytes: Uint8Array<ArrayBuffer>;
+  try {
+    res = await fetch(entry.packageUrl, { signal: AbortSignal.timeout(packageTimeoutMs(entry.bytes)) });
+    if (!res.ok) {
+      console.error(`Download di ${key}: HTTP ${res.status}`);
+      throw new BookDownloadError('Il sito dei libri non risponde. Riprova tra poco.');
+    }
+    bytes = new Uint8Array(await res.arrayBuffer());
+  } catch (err) {
+    if (err instanceof BookDownloadError) throw err;
+    console.error(`Download di ${key} non riuscito:`, err);
+    throw new BookDownloadError('Non riesco a scaricare il libro. Controlla la connessione e riprova.', { cause: err });
+  }
   if (bytes.byteLength !== entry.bytes || (await sha256Hex(bytes)) !== entry.sha256) {
-    throw new Error('Il file scaricato non corrisponde al catalogo. Riprova più tardi.');
+    throw new BookDownloadError('Il file scaricato non corrisponde al catalogo. Riprova più tardi.');
   }
   const [{ parsePtsbFile }, { ptsbKind }] = await Promise.all([import('./ptsb'), import('@politost/content-core')]);
   // Remote books are public only. Never send an encrypted package to the platform for a key.
-  if (ptsbKind(bytes) !== 'zip') throw new Error('Il catalogo contiene un libro protetto: non lo apro.');
+  if (ptsbKind(bytes) !== 'zip') throw new BookDownloadError('Il catalogo contiene un libro protetto: non lo apro.');
 
   const bundle = await parsePtsbFile(new File([bytes], `${key}.ptsb`));
   if (bundle.config.id !== entry.id || bundle.config.version !== entry.version) {
-    throw new Error('Il libro scaricato non corrisponde al catalogo.');
+    throw new BookDownloadError('Il libro scaricato non corrisponde al catalogo.');
   }
-  if (bundle.config.access === 'licensed') throw new Error('Il catalogo contiene un libro con licenza: non lo apro.');
+  if (bundle.config.access === 'licensed') throw new BookDownloadError('Il catalogo contiene un libro con licenza: non lo apro.');
   await saveRemoteCached(key, bundle).catch((err) => console.warn('Cache del libro non salvata:', err));
   return bundle;
 }

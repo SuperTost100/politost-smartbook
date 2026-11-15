@@ -13,3 +13,14 @@ export function BookNotFound() {
     </NoticePage>
   );
 }
+
+/** A book that exists but did not open, usually a failed download: what went wrong, a retry and the way back. */
+export function BookLoadFailed({ text, onRetry }: { text: string; onRetry: () => void }) {
+  useDocumentTitle('Libro non disponibile');
+  return (
+    <NoticePage role="alert" title="Non riesco ad aprire il libro" text={text}>
+      <button type="button" className="sb-btn sb-btn-primary" onClick={onRetry}>Riprova</button>
+      <Link to="/" className="sb-btn">Torna alla libreria</Link>
+    </NoticePage>
+  );
+}
