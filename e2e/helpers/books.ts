@@ -67,8 +67,14 @@ export async function openTestBook(page: Page, book: TestBook): Promise<void> {
   await expect(page.locator('.sb-prose').first()).toBeVisible();
 }
 
-/** A display formula about twice as wide as the printed text column. */
-const WIDE = Array.from({ length: 40 }, (_, i) => `a_{${i + 1}}b_{${i + 1}}`).join(' + ');
+const sum = (terms: number) => Array.from({ length: terms }, (_, i) => `a_{${i + 1}}b_{${i + 1}}`).join(' + ');
+/** About 3,000px: too wide to fit any screen readably, fitted to the page in print. */
+const WIDE = sum(40);
+/** About 830px: wider than the printed column, readable once fitted to it. */
+const LONG = sum(11);
+/** About 400px and 480px: wider than a 320px and a 375px phone's column, readable once fitted to it. */
+const MEDIUM = sum(5);
+const MEDIUM_WIDER = sum(6);
 const many = Array.from({ length: 40 }, (_, i) => `:::formula{id="2.${i + 1}" label="Formula ${i + 1}"}\n$$y = ${i + 1}x$$\n:::\n`).join('\n');
 
 /** Wide formulas in every kind of print block, and a formula sheet long enough to scroll. */
@@ -85,7 +91,12 @@ export const WIDE_BOOK: TestBook = {
         '## p1 | Una somma lunga', '',
         'Una formula più larga della colonna:', '',
         `$$S = ${WIDE}$$`, '',
-        ':::formula{id="1.1" label="Una formula numerata lunga"}', `$$S = ${WIDE}$$`, ':::', '',
+        ':::formula{id="1.1" label="Una formula numerata lunga"}', `$$S = ${LONG}$$`, ':::', '',
+        ':::formula{id="1.3" label="Una formula numerata larghissima"}', `$$S = ${WIDE}$$`, ':::', '',
+        'Una più corta:', '',
+        `$$M = ${MEDIUM}$$`, '',
+        `$$N = ${MEDIUM_WIDER}$$`, '',
+        `Una somma in linea, che non va a capo: $S = {${WIDE}}$ e il testo continua.`, '',
         '- In un elenco:', '',
         `  $$S = ${WIDE}$$`, '',
         ':::formula{id="1.2" label="Una formula corta"}', '$$s = a + b$$', ':::', '',

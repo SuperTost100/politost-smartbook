@@ -2,41 +2,71 @@
 const PRINT_COLUMN = (174 * 96) / 25.4;
 const SCREEN_FIT = '--display-fit';
 const PRINT_FIT = '--display-fit-print';
+const INLINE_PRINT_FIT = '--inline-fit-print';
 const WIDE_CARD = 'formulario-card--wide';
-/** Corrections after the first estimate; one is usually enough. */
-const PASSES = 4;
+/** Corrections after the first estimate: one is usually enough, a formula scaled to a few px can need more. */
+const PASSES = 8;
+/**
+ * The smallest font size a formula is scaled to on screen: 12px, the sheet's 9pt small text (figure
+ * captions, formula labels). A display formula starts at 17.75px (11pt body text at KaTeX's 1.21em),
+ * so on screen it shrinks to about 68% at most; a wider one keeps that size and scrolls in its box.
+ * Print has no such floor: on paper a formula fits the page whatever its scale.
+ */
+export const READABLE_FORMULA_PX = 12;
 
-interface Display {
+interface Formula {
+  /** Where the fit goes: the `.katex-display`, or an inline `.katex`. */
   el: HTMLElement;
-  html: HTMLElement;
-  /** Width at full size. */
+  /** The `.katex` whose font size the fit scales. */
+  katex: HTMLElement;
+  /** Its font size at full scale, in px. */
+  size: number;
+  /** Width at full size, and how to measure it at the scale being tried. */
   natural: number;
+  measure: () => number;
   /** The column it has on screen and on the page. */
   screen: number;
   print: number;
 }
 
 /**
- * The scale at which each formula fits `column(d)`. Glyph advances snap to whole pixels at some
- * sizes, so a formula does not shrink exactly in proportion: each estimate is measured on screen
- * (through the screen variable, which `scrollWidth` reads whatever the container) and corrected.
+ * The scale at which each formula fits `column(f)`. Glyph advances snap to whole pixels at some
+ * sizes, so a formula does not shrink exactly in proportion: each estimate is applied on screen as a
+ * font size, measured and corrected. The trial size is removed afterwards, so neither result depends
+ * on the other or on what the screen shows.
  */
-function fits(displays: Display[], column: (d: Display) => number): Map<Display, number> {
-  const result = new Map<Display, number>();
-  for (const d of displays) if (d.natural > column(d)) result.set(d, column(d) / d.natural);
+function fits(formulas: Formula[], column: (f: Formula) => number): Map<Formula, number> {
+  const result = new Map<Formula, number>();
+  for (const f of formulas) if (f.natural > column(f)) result.set(f, column(f) / f.natural);
   let pending = [...result.keys()];
   for (let pass = 0; pass < PASSES && pending.length > 0; pass++) {
-    for (const d of pending) d.el.style.setProperty(SCREEN_FIT, String(result.get(d)));
-    const measured = pending.map((d) => [d, d.html.scrollWidth] as const);
+    for (const f of pending) f.katex.style.fontSize = `${f.size * (result.get(f) ?? 1)}px`;
+    const measured = pending.map((f) => [f, f.measure()] as const);
     pending = [];
-    for (const [d, w] of measured) {
-      if (w <= column(d)) continue;
-      result.set(d, (result.get(d) ?? 1) * (column(d) / w) - 0.005);
-      pending.push(d);
+    for (const [f, w] of measured) {
+      if (w <= column(f)) continue;
+      result.set(f, (result.get(f) ?? 1) * (column(f) / w) - 0.005);
+      pending.push(f);
     }
   }
-  for (const d of result.keys()) d.el.style.removeProperty(SCREEN_FIT);
+  for (const f of result.keys()) f.katex.style.removeProperty('font-size');
   return result;
+}
+
+/** The width the text has: that of the nearest ancestor that is not an inline box, minus its padding. */
+function lineWidth(el: HTMLElement): number {
+  let block = el.parentElement;
+  while (block && getComputedStyle(block).display.startsWith('inline')) block = block.parentElement;
+  if (!block) return Infinity;
+  const style = getComputedStyle(block);
+  return block.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+}
+
+/** An inline formula breaks only between its segments, so its widest segment is what must fit. */
+function widestSegment(katex: HTMLElement): number {
+  let widest = 0;
+  for (const base of katex.querySelectorAll<HTMLElement>('.katex-base')) widest = Math.max(widest, base.getBoundingClientRect().width);
+  return widest;
 }
 
 function horizontalChrome(el: Element): number {
@@ -84,37 +114,77 @@ function cardColumns(root: Element, toPrint: number): Map<HTMLElement, number> {
   return columns;
 }
 
-/** Fits the display formulas under `root`, whose sheet is `toPrint` px narrower than the page. */
+const round = (fit: number) => (Math.floor(fit * 1000) / 1000).toString();
+
+/** Fits the formulas under `root`, whose sheet is `toPrint` px narrower than the page. */
 function fitPart(root: Element, toPrint: number): void {
-  const elements = [...root.querySelectorAll<HTMLElement>('.katex-display')];
+  const displays = [...root.querySelectorAll<HTMLElement>('.katex-display')];
+  const inlines = [...root.querySelectorAll<HTMLElement>('.katex')].filter((k) => !k.parentElement?.closest('.katex-display'));
   // Measure every formula at full size: clear the previous fit first, then read, then write.
-  for (const el of elements) {
+  for (const el of displays) {
     el.style.removeProperty(SCREEN_FIT);
     el.style.removeProperty(PRINT_FIT);
   }
+  for (const el of inlines) el.style.removeProperty(INLINE_PRINT_FIT);
   const cards = cardColumns(root, toPrint);
-  const displays: Display[] = [];
-  for (const el of elements) {
+  const formulas: Formula[] = [];
+  for (const el of displays) {
     const html = el.querySelector<HTMLElement>('.katex-html');
-    if (!html) continue;
+    const katex = el.querySelector<HTMLElement>('.katex');
+    if (!html || !katex) continue;
     const card = el.closest<HTMLElement>('.formulario-card');
     const screen = el.clientWidth;
-    displays.push({ el, html, natural: html.scrollWidth, screen, print: (card && cards.get(card)) ?? screen + toPrint });
+    formulas.push({
+      el,
+      katex,
+      size: parseFloat(getComputedStyle(katex).fontSize),
+      natural: html.scrollWidth,
+      measure: () => html.scrollWidth,
+      screen,
+      print: (card && cards.get(card)) ?? screen + toPrint,
+    });
   }
+  const inline: Formula[] = inlines.map((katex) => {
+    const screen = lineWidth(katex);
+    return {
+      el: katex,
+      katex,
+      size: parseFloat(getComputedStyle(katex).fontSize),
+      natural: widestSegment(katex),
+      measure: () => widestSegment(katex),
+      screen,
+      print: screen + toPrint,
+    };
+  });
 
-  const print = fits(displays, (d) => d.print);
+  const print = fits(formulas, (f) => f.print);
   // On a sheet as wide as the page (any screen from 860px) the two columns are the same.
-  const screen = toPrint < 1 ? print : fits(displays, (d) => d.screen);
-  const round = (fit: number) => (Math.floor(fit * 1000) / 1000).toString();
-  for (const [d, fit] of print) d.el.style.setProperty(PRINT_FIT, round(fit));
-  for (const [d, fit] of screen) d.el.style.setProperty(SCREEN_FIT, round(fit));
+  const screen = toPrint < 1 ? print : fits(formulas, (f) => f.screen);
+  const inlinePrint = fits(inline, (f) => f.print);
+
+  for (const [f, fit] of print) f.el.style.setProperty(PRINT_FIT, round(fit));
+  for (const f of formulas) {
+    // On screen a formula shrinks only while it stays readable; below that it scrolls in its box.
+    const fit = screen.get(f);
+    const readable = fit === undefined || f.size * Number(round(fit)) >= READABLE_FORMULA_PX;
+    if (fit !== undefined && readable) f.el.style.setProperty(SCREEN_FIT, round(fit));
+    f.el.toggleAttribute('data-wide', !readable);
+  }
+  for (const f of inline) {
+    const fit = inlinePrint.get(f);
+    if (fit !== undefined) f.el.style.setProperty(INLINE_PRINT_FIT, round(fit));
+    f.el.toggleAttribute('data-print-fit', fit !== undefined);
+    // As in the reader (useScrollableInlineMath), one wider than the line scrolls inside it on screen.
+    f.el.toggleAttribute('data-wide', f.natural > f.screen + 0.5);
+  }
 }
 
 /**
  * Chromium shrinks the whole printed document when anything in it is wider than the page, so one
  * long formula would print a whole book at 80%. Each display formula wider than its column is
- * scaled down to fit it instead: on screen to the sheet, in print to the page. The print column is
- * the screen column plus the difference between the page and the sheet, because what sits between
+ * scaled down to fit it instead: in print to the page, and on screen to the sheet while it stays
+ * readable (READABLE_FORMULA_PX). An inline formula wider than its line is fitted the same way in
+ * print and scrolls inside its line on screen. The print column is the screen column plus the difference between the page and the sheet, because what sits between
  * the sheet and a formula (cards, list indents, the solution id column) has a fixed width.
  *
  * Measuring lays out the parts kept off screen (`content-visibility: auto`), which takes seconds

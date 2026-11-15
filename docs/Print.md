@@ -70,7 +70,9 @@ In print, internal links print their target (`§3.4`), and formula hovers print 
 
 Chromium shrinks the whole printed document when anything in it is wider than the page: one long formula in Analisi Matematica 2 printed the whole book at 79%. `src/print/fitFormulas.ts` scales each display formula wider than its column down to fit it instead, and leaves the others at full size:
 
-- On screen the formula fits the sheet, and in print it fits the page (`--display-fit` and `--display-fit-print`). The print column is the screen column plus the difference between the page and the sheet, so a preview opened on a phone prints the same as one opened on a computer.
+- In print the formula fits the page (`--display-fit-print`), whatever the scale. The print column is the screen column plus the difference between the page and the sheet, so a preview opened on a phone prints the same as one opened on a computer.
+- On screen the formula fits the sheet (`--display-fit`) only while its font stays at 12px or more (`READABLE_FORMULA_PX`, the sheet's 9pt small text; a display formula starts at 17.75px). A wider one keeps its size, gets `data-wide` and scrolls sideways inside its own box, with the same fade at the edge as the reader's scrolling formulas. The sheet itself never scrolls sideways.
+- An inline formula wider than its line is fitted to the printed line in print (`--inline-fit-print`) and scrolls inside its line on screen, as in the reader.
 - Formula-sheet cards print two to a row. A card whose formula is wider than half the row spans the whole row, and the formula is fitted to that.
 - Each scale is measured again after it is applied and corrected, because glyph widths snap to whole pixels and a formula does not shrink exactly in proportion.
 

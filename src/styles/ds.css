@@ -178,7 +178,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 /* An inline formula wider than the text (flagged by useScrollableInlineMath) scrolls inside its line.
    The padding takes the formula's few pixels of vertical overflow, the negative margin keeps the line height. */
 .sb-prose .katex[data-wide] { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: bottom; padding-block: 0.3em; margin-block: -0.3em; scrollbar-width: thin; }
-.sb-prose .katex[data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.sb-prose .katex[data-wide]:focus-visible, .print-sheet [data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 .math-glue:has(> .katex[data-wide]) { white-space: normal; }
 .sb-prose mark { background: var(--star-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
 .sb-prose > :last-child { margin-bottom: 0; }
@@ -283,8 +283,10 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
   94% { --scroll-fade-end: 32px; }
   100% { --scroll-fade-start: 32px; --scroll-fade-end: 0px; }
 }
+/* In the print preview only formulas flagged as scrolling get it, and only on screen: print fits them to the page. */
 @supports (animation-timeline: scroll()) {
-  .sb-fcard-math, .sb-formula-math, .sb-fref-pop-math, .sb-prose .content-math, .sb-prose .katex-block, .sb-prose .katex[data-wide] {
+  .sb-fcard-math, .sb-formula-math, .sb-fref-pop-math, .sb-prose .content-math, .sb-prose .katex-block, .sb-prose .katex[data-wide],
+  .print-sheet .katex-display[data-wide], .print-sheet .katex[data-wide] {
     animation-name: sb-scroll-fade;
     animation-timing-function: linear;
     animation-fill-mode: both;
@@ -292,6 +294,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
     mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-start), #000 calc(100% - var(--scroll-fade-end)), transparent);
   }
 }
+@media print { .print-sheet .katex-display[data-wide], .print-sheet .katex[data-wide] { animation: none; mask-image: none; } }
 @media (max-width: 640px) {
   .sb-fcard-row { grid-template-columns: 48px minmax(0, 1fr); row-gap: var(--space-1); padding-inline: var(--space-4); }
   .sb-fcard-math { grid-column: 2; }

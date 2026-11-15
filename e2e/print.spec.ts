@@ -272,6 +272,44 @@ test.describe('Print preview of wide formulas', () => {
     });
   }
 
+  // On a phone a formula shrinks only while it stays readable (12px, the sheet's 9pt small text, see
+  // READABLE_FORMULA_PX); a wider one keeps its size and scrolls inside its own box.
+  for (const width of [320, 375]) {
+    for (const [name, path] of [
+      ['a chapter with its exercises', '/stampa/capitolo/lunghe?esercizi=tutti'],
+      ['the whole book with every extra', '/stampa/libro?esercizi=tutti&formulario=1&esami=1'],
+    ] as const) {
+      test(`at ${width}px every formula in the preview is readable and the page does not scroll sideways: ${name}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(`/libro/${WIDE_BOOK.id}${path}`, PRINT_GOTO_OPTIONS);
+        await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+        const report = await page.evaluate(() => {
+          const sheet = document.querySelector('.print-sheet')!;
+          const fontPx = (katex: Element) => parseFloat(getComputedStyle(katex).fontSize);
+          const displays = [...sheet.querySelectorAll<HTMLElement>('.katex-display')];
+          const scaled = displays.filter((d) => d.style.getPropertyValue('--display-fit'));
+          const scrolling = [...sheet.querySelectorAll<HTMLElement>('[data-wide]')];
+          return {
+            scaled: scaled.length,
+            smallest: Math.min(...scaled.map((d) => fontPx(d.querySelector('.katex')!))),
+            scrolling: scrolling.length,
+            scrollingInline: scrolling.filter((el) => el.matches('.katex')).length,
+            notScrolling: scrolling.filter((el) => !(el.scrollWidth > el.clientWidth && getComputedStyle(el).overflowX === 'auto')).length,
+            unreadableScrolling: scrolling.filter((el) => fontPx(el.matches('.katex') ? el : el.querySelector('.katex')!) < 12).length,
+            page: document.documentElement.scrollWidth,
+          };
+        });
+        expect(report.scaled).toBeGreaterThan(0);
+        expect(report.smallest).toBeGreaterThanOrEqual(12);
+        expect(report.scrolling).toBeGreaterThan(0);
+        expect(report.scrollingInline).toBeGreaterThan(0);
+        expect(report.notScrolling).toBe(0);
+        expect(report.unreadableScrolling).toBe(0);
+        expect(report.page).toBe(width);
+      });
+    }
+  }
+
   test('a wide numbered formula fits its card on screen', async ({ page }) => {
     await page.goto(`/libro/${WIDE_BOOK.id}/stampa/capitolo/lunghe`, PRINT_GOTO_OPTIONS);
     await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();

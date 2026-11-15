@@ -196,6 +196,11 @@
   .print-sheet .katex-display > .katex {
     font-size: calc(1.21em * var(--display-fit-print, 1));
   }
+
+  /* An inline formula wider than the printed line, fitted the same way. */
+  .print-sheet .katex[data-print-fit] {
+    font-size: calc(1.21em * var(--inline-fit-print, 1));
+  }
 }
 
 /* ── Formulas ─────────────────────────────────────────────────── */
@@ -769,5 +774,30 @@
     color: #5f6675;
     vertical-align: top;
     padding-top: 3mm;
+  }
+}
+
+/* ── Formulas too wide to fit readably on screen ──────────────── */
+
+/* fitWideFormulas flags them with data-wide: they keep a readable size and scroll inside their own box, with
+   the fade of the reader's scrolling formulas (ds.css). The padding takes the few pixels a formula reaches
+   above or below its box, which overflow-y: hidden would cut. Print fits them to the page instead. */
+@media screen {
+  .print-sheet .katex-display[data-wide] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.3em;
+    scrollbar-width: thin;
+  }
+
+  .print-sheet .katex[data-wide] {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    vertical-align: bottom;
+    padding-block: 0.3em;
+    margin-block: -0.3em;
+    scrollbar-width: thin;
   }
 }
