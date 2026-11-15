@@ -142,6 +142,30 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
       }
     });
 
+    test('leaving the chapter while its page is still changing keeps the landed paragraph', async ({ page }) => {
+      // While the reader presses a tab, the chapter collapses for a moment, as a figure or a section
+      // still loading can make it: the scroll clamps to the bottom and only the last paragraph is on screen.
+      await page.addInitScript(() => {
+        window.addEventListener('pointerdown', () => {
+          const sections = [...document.querySelectorAll<HTMLElement>('.paragraph-section')].slice(0, -1);
+          for (const section of sections) section.style.display = 'none';
+          setTimeout(() => sections.forEach((section) => section.style.removeProperty('display')), 600);
+        }, true);
+      });
+      await page.goto('/libro/lungo/capitolo/lungo#p6');
+      await expect.poll(() => savedParagraph(page)).toBe('p6');
+      const nav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+      for (let round = 1; round <= 5; round++) {
+        // A press as long as a person's, so the page has time to report what it shows.
+        await nav.getByRole('link', { name: 'Esercizi' }).click({ delay: 300 });
+        await expect(page).toHaveURL(/\/esercizi/);
+        expect(await savedParagraph(page), `leaving, round ${round}`).toBe('p6');
+        await nav.getByRole('link', { name: 'Capitoli' }).click();
+        await expect(page).toHaveURL(/\/capitolo\/lungo#p6$/, { timeout: 2000 });
+        await expect.poll(() => savedParagraph(page)).toBe('p6');
+      }
+    });
+
     test('scrolling after a landing still moves the active paragraph', async ({ page }) => {
       await page.goto('/libro/lungo/capitolo/lungo#p6');
       await expect.poll(() => savedParagraph(page)).toBe('p6');
@@ -163,3 +187,23 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
     });
   });
 }
+
+test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
+  // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const saved = () =>
+    page.evaluate(() => {
+      const place = JSON.parse(localStorage.getItem('politost-last-read') ?? '{}').esempio;
+      return place ? `${place.chapterId}:${place.paragraphId ?? 'top'}` : 'none';
+    });
+
+  await page.goto('/libro/esempio/capitolo/nel-libro');
+  // The outline on the right lands on a paragraph without changing the address.
+  await page.locator('.sb-rail').getByText('Collegamenti tra le parti').click();
+  await expect.poll(saved).toBe('nel-libro:p3');
+
+  // A click on the chapter index is not a scroll, so the landing is still held when the chapter changes.
+  await page.locator('.sb-toc a[href$="/capitolo/prova-tu"]').click();
+  await expect(page).toHaveURL(/\/capitolo\/prova-tu$/);
+  await expect.poll(saved).toBe('prova-tu:top');
+});

@@ -107,9 +107,11 @@ function LayoutInner({
   const exerciseEntry = findEntry(exerciseIndex, scope);
   const pageTitle = activeChapter
     ? `${activeChapter.number}. ${activeChapter.title}`
-    : exerciseEntry
-      ? `${exerciseEntry.number != null ? `${exerciseEntry.number}. ` : ''}${exerciseEntry.title} · ${sectionLabel}`
-      : sectionLabel;
+    : activeChapterId
+      ? 'Capitolo non trovato'
+      : exerciseEntry
+        ? `${exerciseEntry.number != null ? `${exerciseEntry.number}. ` : ''}${exerciseEntry.title} · ${sectionLabel}`
+        : sectionLabel;
   useDocumentTitle(`${pageTitle} · ${config.title}`);
   const printSection = PRINT_SECTIONS[activeSection];
   const onPrint =
