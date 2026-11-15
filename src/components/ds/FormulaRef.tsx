@@ -5,6 +5,7 @@ import { Popover } from 'antd';
 import type { FormulaRef as FormulaRefData } from '../../types/smartbook';
 import { renderFormulaLatex } from '../../lib/formulaRender';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { formulaSheetPath } from '../../lib/sectionRoutes';
 
 interface FormulaRefProps {
   formulaId: string;
@@ -112,7 +113,7 @@ function FormulaPreview({ formula, bookId, actionRef, onActionKeyDown, onActionB
             onMouseDown={(e) => e.preventDefault()}
             onKeyDown={onActionKeyDown}
             onBlur={onActionBlur}
-            onClick={() => onOpen(`/libro/${bookId}/formulario#${formula.id}`)}
+            onClick={() => onOpen(formulaSheetPath(bookId, formula.id))}
           >
             Apri nel formulario
           </button>

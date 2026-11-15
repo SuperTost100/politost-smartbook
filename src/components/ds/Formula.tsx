@@ -10,10 +10,10 @@ export function Formula({ formula }: { formula: FormulaRef }) {
     <div className="sb-formula" id={`formula-${formula.id}`} data-formula-id={formula.id}>
       <div
         className="sb-formula-math"
-        // ponytail: KaTeX output is sanitized; a scroll region keeps wide formulas inside the card.
-        tabIndex={0}
-        role="group"
-        aria-label={`Formula ${formula.id}: ${formula.label}`}
+        // KaTeX output is sanitized. A wide formula scrolls in this box, which useScrollableMath then
+        // makes a named Tab stop: the number and label give the name.
+        data-formula-id={formula.id}
+        data-formula-label={formula.label}
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <span className="sb-formula-num">({formula.id})</span>

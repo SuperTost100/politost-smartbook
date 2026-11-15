@@ -259,6 +259,7 @@ export function exerciseParts(
     }));
 }
 
-export function formularioParts(chapters: Chapter[]): PrintPart[] {
-  return [{ key: 'formulario', label: 'il formulario', node: <PrintFormulario chapters={chapters} /> }];
+/** `headings: false` for one chapter, which the document title already names. */
+export function formularioParts(chapters: Chapter[], headings = true): PrintPart[] {
+  return [{ key: 'formulario', label: 'il formulario', node: <PrintFormulario chapters={chapters} headings={headings} /> }];
 }

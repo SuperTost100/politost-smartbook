@@ -22,22 +22,22 @@ Se hai già letto un libro su questo browser, la sua scheda mostra l'ultimo capi
 In cima trovi le sezioni presenti in quel libro. Non tutti i libri le hanno tutte.
 
 - La prima sezione è il testo dei capitoli. Il nome nel menu dipende dal libro, spesso **Capitoli** o **Smartbook**. Nei capitoli una barra permette di saltare da un paragrafo all'altro.
-- **Formulario.** Elenco delle formule numerate, raccolto dai capitoli. Non è un file a parte.
-- **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include. Gli esercizi si aprono sul capitolo che stavi leggendo e a sinistra c'è l'indice per capitolo, con «Tutti» in cima e il numero di esercizi accanto a ogni capitolo. Sul telefono l'indice si apre dal pulsante con il capitolo, sopra il titolo, o dal menu in alto. Le prove d'esame sono un solo elenco.
+- **Formulario.** Le formule numerate dei capitoli, un capitolo alla volta. Si apre sul capitolo che stavi leggendo e a sinistra c'è l'indice per capitolo, con «Tutte» in cima per vederle tutte insieme e il numero di formule accanto a ogni capitolo. Tocca una riga per aprire la formula nel suo capitolo. Un libro con le formule in un solo capitolo le mostra in un'unica pagina, senza indice.
+- **Esercizi** e **Prove d'esame.** Testo, suggerimento e soluzione, quando il libro li include. Gli esercizi si aprono sul capitolo che stavi leggendo e a sinistra c'è l'indice per capitolo, con «Tutti» in cima e il numero di esercizi accanto a ogni capitolo. Le prove d'esame sono un solo elenco.
 - **Laboratorio.** Frammenti Python, eseguiti nel browser, e MATLAB con un interprete compatibile (cicli, funzioni, matrici, grafici 2D). Il codice non viene inviato al server. In Python puoi usare numpy e matplotlib. In tutti e due i linguaggi i grafici compaiono sotto l'output.
 - **Grafici & Calcoli.** Grafici interattivi calcolati sul dispositivo.
 
-Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano, e l'indice dei capitoli o degli esercizi si apre dal pulsante con il menu, in alto a sinistra.
+Su uno schermo stretto, telefono in verticale o in orizzontale, il laboratorio non compare nel menu, perché l'editor di codice vuole una tastiera. Capitoli, formulario, esercizi, esami e grafici restano, e l'indice dei capitoli, delle formule o degli esercizi si apre dal pulsante con il menu, in alto a sinistra. Nel formulario e negli esercizi lo apre anche il pulsante con il capitolo, sopra il titolo.
 
-Un riferimento a una formula, nel testo, ne mostra il contenuto al passaggio o al tocco.
+Un riferimento a una formula, nel testo, ne mostra il contenuto al passaggio o al tocco, e «Apri nel formulario» porta alla formula nel formulario, aperto sul suo capitolo.
 
-Sopra gli esercizi e le prove scegli la difficoltà: Tutte, Facile, Medio o Difficile, ciascuna con quanti esercizi ha. La scelta resta quando cambi capitolo dall'indice o dai pulsanti in fondo alla pagina. Capitolo e difficoltà stanno nell'indirizzo della pagina, quindi puoi salvarla o mandarla a qualcuno, e il tasto Indietro torna alla scelta precedente.
+Sopra gli esercizi e le prove scegli la difficoltà: Tutte, Facile, Medio o Difficile, ciascuna con quanti esercizi ha. La scelta resta quando cambi capitolo dall'indice o dai pulsanti in fondo alla pagina. Capitolo e difficoltà stanno nell'indirizzo della pagina, quindi puoi salvarla o mandarla a qualcuno, e il tasto Indietro torna alla scelta precedente. Lo stesso vale per il capitolo scelto nel formulario.
 
-Alla fine di ogni capitolo, «Esercitati» porta agli esercizi di quel capitolo. Dopo l'ultimo capitolo porta anche alle prove d'esame.
+Alla fine di ogni capitolo, «Ripassa ed esercitati» porta alle formule e agli esercizi di quel capitolo. Dopo l'ultimo capitolo porta anche alle prove d'esame.
 
 ## Stampa
 
-L'icona della stampante in alto, **Versione stampabile**, apre l'anteprima del capitolo, del formulario, degli esercizi o delle prove, dove il libro lo consente. Dagli esercizi stampi quello che vedi: il capitolo scelto, o tutti, con la difficoltà scelta. Laboratorio e grafici non si stampano.
+L'icona della stampante in alto, **Versione stampabile**, apre l'anteprima del capitolo, del formulario, degli esercizi o delle prove, dove il libro lo consente. Dal formulario e dagli esercizi stampi quello che vedi: il capitolo scelto, o tutti, e per gli esercizi la difficoltà scelta. Laboratorio e grafici non si stampano.
 
 Accanto all'anteprima, o sotto **Opzioni** su un telefono, scegli cosa stampare. **Questo capitolo** stampa il capitolo che stavi leggendo, e puoi aggiungere i suoi esercizi alla fine. **Tutto il libro** stampa una copertina, un indice e ogni capitolo su una pagina nuova: togli i capitoli che non ti servono e, se vuoi, aggiungi gli esercizi alla fine di ogni capitolo, il formulario e le prove d'esame in fondo. Gli esercizi puoi stamparli tutti oppure 3, 5 o 10 per capitolo, scelti tra facili, medi e difficili e sempre gli stessi. L'indice non ha i numeri di pagina, perché le pagine le decide il browser al momento della stampa.
 

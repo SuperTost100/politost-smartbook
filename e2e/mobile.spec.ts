@@ -39,7 +39,8 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
     await page.goto('/libro/esempio/capitolo/nel-libro');
     await page.locator('.sb-fref-chip').first().tap();
     await page.getByRole('button', { name: 'Apri nel formulario' }).tap();
-    await expect(page).toHaveURL(/\/libro\/esempio\/formulario#2\.1$/);
+    await expect(page).toHaveURL(/\/libro\/esempio\/formulario\?capitolo=2#formula-2\.1$/);
+    await expect(page.locator('[id="formula-2.1"]')).toBeInViewport();
   });
 
   test('a formula popover keeps 16px from both screen edges', async ({ page }) => {
@@ -60,7 +61,7 @@ test.describe('Mobile (iPhone 13 viewport)', () => {
   });
 
   test('chapter labels in the formula sheet stay on one line', async ({ page }) => {
-    await page.goto('/libro/esempio/formulario');
+    await page.goto('/libro/esempio/formulario?capitolo=tutte');
     const label = page.locator('.sb-fcard-head .sb-eyebrow').first();
     await expect(label).toBeVisible();
     await expect(label).toHaveCSS('white-space', 'nowrap');

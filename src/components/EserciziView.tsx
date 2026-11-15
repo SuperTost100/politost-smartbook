@@ -1,6 +1,5 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
 import type { ChapterMeta, Exercise, FormulaRef } from '../types/smartbook';
 import { ContentFlow } from './ContentFlow';
 import { SectionHeader } from './ds/SectionHeader';
@@ -8,19 +7,21 @@ import { ExerciseCard } from './ds/ExerciseCard';
 import { RevealBlock } from './ds/RevealBlock';
 import { ChapterPager, type PagerTarget } from './ds/ChapterPager';
 import { DifficultyFilter } from './ds/DifficultyFilter';
+import { ChapterPicker } from './ds/ChapterPicker';
 import { useIndexDrawer } from './shell/indexDrawer';
 import { preprocessContent } from '../lib/parser';
 import { useRefClick } from '../hooks/useRefClick';
-import { useExerciseView } from '../hooks/useExerciseView';
-import { getReadingPosition } from '../lib/readingPosition';
+import { useChapterView, useFocusOnScopeChange } from '../hooks/useChapterView';
+import { lastReadChapter } from '../lib/readingPosition';
 import { sectionPath } from '../lib/sectionRoutes';
 import {
   difficultyCounts,
   entryScopeOf,
-  exerciseRedirect,
-  linkedExerciseId,
-  exerciseSearch,
-  exercisesInScope,
+  scopeRedirect,
+  linkedId,
+  scopeSearch,
+  itemsInScope,
+  EXERCISE_HASH,
   filterByDifficulty,
   findEntry,
   neighbourEntries,
@@ -28,9 +29,10 @@ import {
   plural,
   type Difficulty,
   type EntryScope,
-  type ExerciseIndex,
-  type ExerciseIndexEntry,
+  type ChapterIndex,
+  type ChapterIndexEntry,
   type ExerciseScope,
+  type IndexScope,
 } from '../lib/exerciseNav';
 
 interface EserciziViewProps {
@@ -74,23 +76,11 @@ const ExerciseItem = memo(function ExerciseItem({ exercise: ex, showChapter, for
   );
 });
 
-function lastReadChapter(bookId: string, chapters: ChapterMeta[]): number | undefined {
-  const position = getReadingPosition(bookId);
-  if (!position) return undefined;
-  return chapters.find((c) => c.id === position.chapterId)?.number ?? position.chapterNumber;
-}
-
 function emptyMessage(section: EserciziViewProps['section'], scope: ExerciseScope | null, difficulty: Difficulty | null): string {
   const noun = section === 'esami' ? "Nessuna prova d'esame" : 'Nessun esercizio';
   const level = difficulty ? ` di livello ${difficulty}` : '';
   const where = scope === 'altri' ? ' senza capitolo' : typeof scope === 'number' ? ' in questo capitolo' : ' nel libro';
   return `${noun}${level}${where}.`;
-}
-
-/** What the chapter control on a phone says: "Capitolo 3 di 17". */
-function scopeName(index: ExerciseIndex, entry: ExerciseIndexEntry | undefined): string {
-  if (!entry) return 'Tutti i capitoli';
-  return entry.number != null ? `Capitolo ${entry.number} di ${index.chapterCount}` : entry.title;
 }
 
 export function EserciziView({
@@ -102,7 +92,7 @@ export function EserciziView({
   formulaIndex,
   resolveAsset,
 }: EserciziViewProps) {
-  const view = useExerciseView(exercises, chapters, section === 'esercizi');
+  const view = useChapterView(exercises, chapters, { indexed: section === 'esercizi', all: 'tutti' });
   const { index, scope, difficulty } = view;
   const location = useLocation();
   const navigate = useNavigate();
@@ -112,29 +102,20 @@ export function EserciziView({
   const filterRef = useRef<HTMLDivElement>(null);
   const basePath = sectionPath(bookId, section);
 
-  const inScope = useMemo(() => exercisesInScope(exercises, index, scope), [exercises, index, scope]);
+  const inScope = useMemo(() => itemsInScope(exercises, index, scope), [exercises, index, scope]);
   const shown = useMemo(() => filterByDifficulty(inScope, difficulty), [inScope, difficulty]);
   const counts = useMemo(() => difficultyCounts(inScope), [inScope]);
+  useFocusOnScopeChange(scope, location.hash, titleRef);
 
-  // A new chapter starts at the top with focus on its title, as a new page would.
-  const lastScope = useRef(scope);
-  useEffect(() => {
-    const previous = lastScope.current;
-    lastScope.current = scope;
-    if (previous === scope || previous === null || location.hash) return;
-    window.scrollTo(0, 0);
-    titleRef.current?.focus({ preventScroll: true });
-  }, [scope, location.hash]);
-
-  const linkedId = linkedExerciseId(location.hash);
-  const linked = linkedId ? exercises.find((ex) => ex.id === linkedId) : undefined;
-  const redirect = exerciseRedirect(view, linked, index && scope == null && !linked ? lastReadChapter(bookId, chapters) : undefined);
+  const linkedExercise = linkedId(location.hash, EXERCISE_HASH);
+  const linked = linkedExercise ? exercises.find((ex) => ex.id === linkedExercise) : undefined;
+  const redirect = scopeRedirect(view, linked, index && scope == null && !linked ? lastReadChapter(bookId, chapters) : undefined);
   if (redirect != null) return <Navigate replace to={{ search: redirect, hash: location.hash }} />;
 
   const entry = findEntry(index, scope);
   const showChapter = section === 'esami' || !index || scope === 'altri';
-  const href = (to: ExerciseScope) => `${basePath}${exerciseSearch(to, difficulty)}`;
-  const setDifficulty = (level: Difficulty | null) => navigate({ search: exerciseSearch(scope, level) });
+  const href = (to: IndexScope) => `${basePath}${scopeSearch(to, difficulty)}`;
+  const setDifficulty = (level: Difficulty | null) => navigate({ search: scopeSearch(scope, level) });
   const item = (ex: Exercise) => (
     <ExerciseItem
       key={ex.id}
@@ -146,21 +127,7 @@ export function EserciziView({
     />
   );
 
-  const trigger = index && drawer.open ? (
-    <button
-      type="button"
-      className="sb-btn sb-btn-sm sb-chpicker"
-      aria-haspopup="dialog"
-      aria-expanded={drawer.expanded}
-      onClick={drawer.open}
-    >
-      <span>
-        {scopeName(index, entry)}
-        <span className="sb-sr">, scegli il capitolo</span>
-      </span>
-      <ChevronDown size={16} strokeWidth={1.75} aria-hidden />
-    </button>
-  ) : undefined;
+  const trigger = index && drawer.open ? <ChapterPicker index={index} entry={entry} /> : undefined;
 
   let body;
   if (exercises.length === 0) {
@@ -193,7 +160,7 @@ export function EserciziView({
   let pager = null;
   if (index && typeof scope === 'number') {
     const { prev, next } = neighbourEntries(index, scope);
-    const target = (e?: ExerciseIndexEntry): PagerTarget | null =>
+    const target = (e?: ChapterIndexEntry): PagerTarget | null =>
       e ? { number: e.number!, title: e.title, href: href(e.scope), note: pagerNote(exercises, index, e, difficulty) } : null;
     pager = <ChapterPager prev={target(prev)} next={target(next)} />;
   }
@@ -218,9 +185,9 @@ export function EserciziView({
 }
 
 interface GroupedListProps {
-  index: ExerciseIndex;
+  index: ChapterIndex;
   shown: Exercise[];
-  href: (scope: ExerciseScope) => string;
+  href: (scope: IndexScope) => string;
   item: (ex: Exercise) => React.ReactNode;
 }
 

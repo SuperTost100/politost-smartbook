@@ -88,7 +88,7 @@ a.sb-btn { color: var(--ink); }
 .sb-drawer .ant-drawer-body { padding: var(--space-4); }
 .sb-drawer .ant-drawer-title { font: 600 19px/1.2 var(--font-serif); }
 .sb-drawer .sb-toc { position: static; max-height: none; }
-/* ExerciseToc: "Tutti" on top, then each chapter with its count. */
+/* IndexToc: the whole section ("Tutti", "Tutte") on top, then each chapter with its count. */
 .sb-toc-title { flex: 1; min-width: 0; }
 .sb-toc-count { flex: none; margin-left: auto; padding-left: var(--space-2); color: var(--ink-subtle); font: 500 13px/20px var(--font-sans); font-variant-numeric: tabular-nums; }
 .sb-toc-ch[aria-current="page"] .sb-toc-count { color: var(--primary-text); font-weight: 700; }
@@ -175,7 +175,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 /* A formula and the punctuation after it stay on one line (see glueMathPunctuation). */
 .math-glue { white-space: nowrap; }
 .math-brk { white-space: normal; }
-/* An inline formula wider than the text (flagged by useScrollableInlineMath) scrolls inside its line.
+/* An inline formula wider than the text (flagged by useScrollableMath) scrolls inside its line.
    The padding takes the formula's few pixels of vertical overflow, the negative margin keeps the line height. */
 .sb-prose .katex[data-wide] { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: bottom; padding-block: 0.3em; margin-block: -0.3em; scrollbar-width: thin; }
 .sb-prose .katex[data-wide]:focus-visible, .print-sheet [data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
@@ -257,18 +257,28 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-fcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--raised); overflow: hidden; }
 .sb-fcard-head { display: flex; align-items: baseline; gap: var(--space-3); padding: 18px var(--space-6); border-bottom: 1px dashed var(--border-control); }
 .sb-fcard-head h2 { margin: 0; font: 600 21px/1.2 var(--font-serif); color: var(--ink); }
+.sb-fcard-head h2 a { color: inherit; text-decoration: none; }
+.sb-fcard-head h2 a:hover { color: var(--primary-text); }
 .sb-fcard-head .sb-eyebrow { flex: none; white-space: nowrap; color: var(--primary-text); }
 .sb-fcard-empty { margin: 0; padding: var(--space-4) var(--space-6); color: var(--ink-muted); font-style: italic; }
-.sb-fcard-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; gap: var(--space-4); padding: 14px var(--space-6); border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
+.sb-fcard-row { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; gap: var(--space-4); padding: 14px var(--space-6); border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
 .sb-fcard-row:last-child { border-bottom: 0; }
-.sb-fcard-row:hover { background: var(--surface-raised); color: inherit; }
+.sb-fcard-row:hover { background: var(--surface-raised); }
+/* The link holds the number and the label, and its ::after covers the row, so a tap anywhere opens the
+   formula in its chapter. A formula that scrolls (data-wide) sits above it, to be scrolled and focused. */
+.sb-fcard-link { grid-column: 1 / 3; display: grid; grid-template-columns: subgrid; align-items: center; color: inherit; text-decoration: none; }
+.sb-fcard-link:hover { color: inherit; }
+.sb-fcard-link::after { content: ""; position: absolute; inset: 0; }
+.sb-fcard-link:focus-visible { outline: none; }
+.sb-fcard-link:focus-visible::after { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.sb-fcard-math[data-wide] { position: relative; z-index: 1; }
 .sb-fcard-num { justify-self: start; padding: 5px 8px; border-radius: 9px; background: var(--page); box-shadow: var(--raised-sm); font: 700 13px/1 var(--font-sans); font-variant-numeric: tabular-nums; color: var(--primary-text); }
 .sb-fcard-label { font: 400 16px/22px var(--font-sans); color: var(--ink); }
 .sb-fcard-math { font-size: 17px; overflow-x: auto; color: var(--ink); }
 /* A formula a few pixels taller than its line makes overflow-x: auto scroll vertically too, and Chrome then gives every cell a Tab stop.
    The padding takes that overflow, and the negative margin keeps the row height, so only a formula wider than its cell is focusable. */
 .sb-fcard-math { padding-block: 0.6em; margin-block: -0.6em; }
-.sb-fcard-math:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.sb-fcard-math:focus-visible, .sb-formula-math:focus-visible, .sb-prose .content-math:focus-visible, .sb-prose .katex-block:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 .sb-fcard-math .katex-display { margin: 0; text-align: left; }
 .sb-fcard-math .katex-display > .katex { text-align: left; }
 .sb-fcard-math .formula-prose { margin: 0; font: 400 15px/22px var(--font-serif); }
@@ -328,7 +338,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
   .sb-exgroup-count { grid-column: 2; margin-left: 0; padding-left: 0; }
 }
 
-/* PracticeLinks: "Esercitati" at the end of a chapter, before the pager. */
+/* PracticeLinks: "Ripassa ed esercitati" at the end of a chapter, before the pager. */
 .sb-practice { margin-top: 56px; padding-top: 30px; border-top: 1px dashed var(--border-control); }
 .sb-practice .sb-panel-label { margin-bottom: 14px; }
 .sb-practice-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }

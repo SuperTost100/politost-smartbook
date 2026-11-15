@@ -37,7 +37,7 @@ Pacchetti distribuiti: [ptsb.md](ptsb.md).
 | Sezione | URL |
 |---------|-----|
 | Capitoli | `/libro/<id>/capitolo/<chapter-id>` |
-| Formulario | `/libro/<id>/formulario` |
+| Formulario | `/libro/<id>/formulario?capitolo=<n>` |
 | Esercizi | `/libro/<id>/esercizi?capitolo=<n>&difficolta=<livello>` |
 | Prove d'esame | `/libro/<id>/esami?difficolta=<livello>` |
 | Laboratorio | `/libro/<id>/laboratorio` |
@@ -58,7 +58,20 @@ Gli esercizi si leggono un capitolo alla volta. Il pannello a sinistra (un drawe
 - `#ex-<id>` apre il capitolo di quell'esercizio senza filtro di difficoltà e scorre fino alla scheda.
 - La difficoltà resta quando si cambia capitolo dall'indice o dal pager in fondo, che salta i capitoli senza esercizi. Un capitolo senza esercizi di quel livello mostra «Mostra tutte le difficoltà».
 - Le prove d'esame sono un solo elenco con il filtro di difficoltà, senza indice.
-- In fondo a ogni capitolo, prima del pager, «Esercitati» porta agli esercizi del capitolo; dopo l'ultimo capitolo anche alle prove d'esame.
+- In fondo a ogni capitolo, prima del pager, «Ripassa ed esercitati» porta alle formule e agli esercizi del capitolo; dopo l'ultimo capitolo anche alle prove d'esame.
+
+### Formulario
+
+Il formulario usa lo stesso indice per capitolo degli esercizi (`src/lib/exerciseNav.ts`, `IndexToc`, `ChapterPicker`): «Tutte» con il totale, poi ogni capitolo con il numero di formule; un capitolo senza formule è una voce disabilitata. Una formula appartiene al capitolo in cui è scritta (`bookFormulas`). Un libro con le formule in un solo capitolo non ha indice e resta una pagina sola.
+
+| Parametro | Valori |
+|-----------|--------|
+| `capitolo` | numero del capitolo, `tutte` |
+
+- `/libro/<id>/formulario` senza `capitolo` (anche dalla scheda della sezione) porta al capitolo dell'ultima lettura, o al primo capitolo con formule.
+- `#formula-<id>` apre il capitolo di quella formula e la porta sotto l'intestazione con lo stesso aggancio dei paragrafi (`scrollPin.ts`). Lo producono «Apri nel formulario» nei riferimenti e i link `ref:formula/<id>` (`formulaSheetPath` in `sectionRoutes.ts`).
+- Il pager in fondo salta i capitoli senza formule. «Tutte» mostra un riquadro per capitolo, con il titolo che porta al capitolo.
+- Una riga apre la formula nel suo capitolo. Una formula più larga della riga scorre di lato e diventa una tappa del Tab con un nome (vedi sotto).
 
 ### Mobile (≤768px)
 
@@ -67,7 +80,8 @@ Breakpoint contract in `global.css` (`dvh`, `safe-area-inset`). Landscape phones
 | Feature | Mobile behavior |
 |---------|-----------------|
 | Capitoli | Inline chapter picker under section tabs; section nav hides on scroll |
-| Formulario / Esercizi / Esami | Full-width; no horizontal page scroll |
+| Formulario / Esercizi | Chapter index in a drawer, opened from the menu or the "Capitolo 3 di 14" control; no horizontal page scroll |
+| Esami | Full-width; no horizontal page scroll |
 | Laboratorio | Hidden from section nav (desktop-only) |
 | Grafici | In the section nav; the graph list becomes a select |
 | Upload `.ptsb` | Large tap target; no drag-and-drop |
@@ -206,6 +220,8 @@ esercizi.md / esami.md
 
 Il **formulario** non ha file dedicato: aggrega `chapter.formulas` da tutti i capitoli.
 
+Una formula che scorre di lato (nel testo, numerata o nel formulario) riceve `data-wide`, `tabindex="0"`, `role="group"` e un nome («Formula 2.1: Velocità media») finché scorre, così la tastiera può farla scorrere anche dove il browser non rende focalizzabile un riquadro che scorre (Safari). Le formule che stanno nella colonna restano fuori dal Tab. Il codice è `markScrolling` in `src/lib/scrollableMath.ts`, usato dal reader (`useScrollableMath`) e dall'anteprima di stampa (`fitWideFormulas`).
+
 ### Spaziatura inline
 
 Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), link `[[link:…]]` e riferimenti formula `[[hover:…]]`. Gli spazi **prima e dopo** questi elementi vanno mantenuti nel sorgente `.md` e nel rendering (`renderInlineFragment` conserva gli spazi ai bordi di ogni frammento).
@@ -231,12 +247,12 @@ Il parser (`renderContent.ts`) spezza il testo attorno a grassetto (`**…**`), 
 
 ## 7. Stampa
 
-L'icona della stampante nella barra in alto (**Versione stampabile**) apre l'anteprima della pagina; le intestazioni delle pagine non hanno un pulsante di stampa. Serve `printable: true` sul capitolo o sul file degli esercizi. Esercizi e prove stampano il capitolo e la difficoltà scelti (`?capitolo=3&difficolta=medio`, vedi [Print.md](Print.md)).
+L'icona della stampante nella barra in alto (**Versione stampabile**) apre l'anteprima della pagina; le intestazioni delle pagine non hanno un pulsante di stampa. Serve `printable: true` sul capitolo o sul file degli esercizi. Formulario, esercizi e prove stampano quello che mostra la pagina: il capitolo (`?capitolo=3`) e, per gli esercizi, la difficoltà (`&difficolta=medio`, vedi [Print.md](Print.md)).
 
 | Contenuto | URL anteprima |
 |-----------|---------------|
 | Capitolo | `/libro/<id>/stampa/capitolo/<chapter-id>` |
-| Formulario | `/libro/<id>/stampa/formulario` |
+| Formulario | `/libro/<id>/stampa/formulario?capitolo=<n>` (o `tutte`) |
 | Esercizi | `/libro/<id>/stampa/esercizi` |
 | Esami | `/libro/<id>/stampa/esami` |
 

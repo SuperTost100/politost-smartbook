@@ -100,12 +100,13 @@ test.describe('Exercises by chapter', () => {
     await expect(page).toHaveURL(/\/esercizi\?capitolo=3&difficolta=medio$/);
   });
 
-  test('the end of a chapter links its exercises, and the last one the exam questions', async ({ page }) => {
+  test('the end of a chapter links its formulas and exercises, and the last one the exam questions', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/benvenuto', PRINT_GOTO_OPTIONS);
-    const practice = page.getByRole('navigation', { name: 'Esercitati' });
-    await expect(practice.getByRole('link')).toHaveCount(1);
+    const practice = page.getByRole('navigation', { name: 'Ripassa ed esercitati' });
+    // Chapter 1 has an exercise and no formulas.
+    await expect(practice.getByRole('link')).toHaveText([/Esercizi di questo capitolo/]);
     await page.goto('/libro/esempio/capitolo/prova-tu', PRINT_GOTO_OPTIONS);
-    await expect(practice.getByRole('link')).toHaveText([/Esercizi di questo capitolo/, /Prove d'esame/]);
+    await expect(practice.getByRole('link')).toHaveText([/Formule di questo capitolo/, /Esercizi di questo capitolo/, /Prove d'esame/]);
     await practice.getByRole('link', { name: /Esercizi di questo capitolo.*1 esercizio/ }).click();
     await expect(page).toHaveURL(/\/esercizi\?capitolo=3$/);
     await expect(title(page)).toHaveText('Prova tu');

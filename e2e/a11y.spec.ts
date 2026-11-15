@@ -92,7 +92,8 @@ test.describe('Accessibility landmarks', () => {
     await page.keyboard.press('Enter');
     await expect(action).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/libro\/esempio\/formulario#2\.1$/);
+    await expect(page).toHaveURL(/\/libro\/esempio\/formulario\?capitolo=2#formula-2\.1$/);
+    await expect(page.locator('[id="formula-2.1"]')).toBeInViewport();
   });
 
   test('reader chapter has a main landmark', async ({ page }) => {
@@ -101,9 +102,9 @@ test.describe('Accessibility landmarks', () => {
   });
 
   test('formulario and exercises use main landmark', async ({ page }) => {
-    await page.goto('/libro/esempio/formulario');
+    await page.goto('/libro/esempio/formulario?capitolo=tutte');
     await expect(page.locator('main.app-main')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Formulario' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Formulario' })).toBeVisible();
 
     await page.goto('/libro/esempio/esercizi');
     await expect(page.locator('main.app-main')).toBeVisible();

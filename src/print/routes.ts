@@ -1,5 +1,5 @@
 import { isSafeNextPath } from '../lib/safeNext';
-import { CHAPTER_PARAM, DIFFICULTY_PARAM, type Difficulty, type ExerciseScope } from '../lib/exerciseNav';
+import { CHAPTER_PARAM, DIFFICULTY_PARAM, type Difficulty, type IndexScope } from '../lib/exerciseNav';
 import { PRINT_PARAMS } from '../lib/printOptions';
 
 /** What a print route prints: one chapter, the whole book, the formula sheet, the exercises or the exam questions. */
@@ -9,15 +9,15 @@ export interface PrintTarget {
   bookId: string;
   section: PrintSection;
   chapterId?: string;
-  /** Exercises and exam questions print what the page shows: one chapter (or all) and one difficulty. */
-  scope?: ExerciseScope;
+  /** The formula sheet, the exercises and the exam questions print what the page shows: one chapter (or all), and for exercises one difficulty. */
+  scope?: IndexScope;
   difficulty?: Difficulty;
 }
 
 export function buildPrintUrl(
   bookId: string,
   section: PrintSection,
-  options?: { chapterId?: string; returnTo?: string; scope?: ExerciseScope; difficulty?: Difficulty },
+  options?: { chapterId?: string; returnTo?: string; scope?: IndexScope; difficulty?: Difficulty },
 ): string {
   let path: string;
   switch (section) {

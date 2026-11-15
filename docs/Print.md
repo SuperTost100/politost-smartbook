@@ -14,14 +14,15 @@ The printer icon in the reader's top bar (**Versione stampabile**, or Ctrl+P / C
 
 Requires `printable: true` on the chapter or exercise frontmatter. The whole book leaves out the chapters with `printable: false`.
 
-The exercise and exam routes take the filters of the page they were opened from, so the printout matches the screen:
+The formula sheet, exercise and exam routes take the filters of the page they were opened from, so the printout matches the screen:
 
 | Parameter | Values | Applies to |
 |-----------|--------|------------|
 | `capitolo` | a chapter number, `tutti`, or `altri` (exercises without a chapter) | `esercizi` |
+| `capitolo` | a chapter number or `tutte`; `tutte` prints the chapters that have formulas | `formulario` |
 | `difficolta` | `facile`, `medio`, `difficile` | `esercizi`, `esami` |
 
-The document title, the running head and the saved PDF's name include them, for example `Esercizi · Capitolo 3. Formule e nomenclatura inorganica · Livello difficile`. A missing or unknown value prints everything.
+The document title, the running head and the saved PDF's name include them, for example `Esercizi · Capitolo 3. Formule e nomenclatura inorganica · Livello difficile`. A missing or unknown value prints everything (for the formula sheet, every chapter with formulas; a book without the formula index prints every chapter).
 
 ## Options
 

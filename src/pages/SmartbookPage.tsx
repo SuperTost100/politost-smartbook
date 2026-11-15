@@ -6,7 +6,7 @@ import { useCloudChapter } from '../hooks/useCloudChapter';
 import { resolveBookAsset } from '../lib/cloudAssets';
 import { firstChapterPath, withLoadedChapter } from '../lib/chapterNav';
 import { buildFormulaIndex } from '../lib/parser';
-import { exerciseSearch, plural, practiceCounts } from '../lib/exerciseNav';
+import { bookFormulas, scopeSearch, plural, practiceCounts } from '../lib/exerciseNav';
 import { sectionPath } from '../lib/sectionRoutes';
 import { getReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import { pinIntoView } from '../lib/scrollPin';
@@ -87,6 +87,7 @@ function BookShell({
       showChapterIndex={showChapterIndex}
       activeChapterId={chapterId}
       exercises={activeSection === 'esercizi' ? data.esercizi : undefined}
+      formulas={activeSection === 'formulario' ? bookFormulas(data.chapters) : undefined}
     >
       <Outlet />
     </Layout>
@@ -118,20 +119,32 @@ function ChapterContent() {
     if (!data || !bookId || !chapter) return [];
     const { config } = data;
     const number = chapter.meta.number;
-    const { exercises, exams } = practiceCounts(number, config.chapters.at(-1)?.id === chapter.meta.id, {
+    const { formulas, exercises, exams } = practiceCounts(number, config.chapters.at(-1)?.id === chapter.meta.id, {
+      // The formula sheet's own list, so the count matches the chapter it opens on.
+      formulas: bookFormulas(data.chapters),
       esercizi: data.esercizi,
       esami: data.esami,
+      formulasEnabled: config.sections.formulario.enabled,
       exercisesEnabled: config.sections.esercizi.enabled,
       examsEnabled: config.sections.esami.enabled,
     });
     const links: PracticeLink[] = [];
+    if (formulas > 0) {
+      links.push({
+        kind: 'formulario',
+        label: 'Formule di questo capitolo',
+        count: formulas,
+        countLabel: plural(formulas, 'formula', 'formule'),
+        href: `${sectionPath(bookId, 'formulario')}${scopeSearch(number, null)}`,
+      });
+    }
     if (exercises > 0) {
       links.push({
         kind: 'esercizi',
         label: 'Esercizi di questo capitolo',
         count: exercises,
         countLabel: plural(exercises, 'esercizio', 'esercizi'),
-        href: `${sectionPath(bookId, 'esercizi')}${exerciseSearch(number, null)}`,
+        href: `${sectionPath(bookId, 'esercizi')}${scopeSearch(number, null)}`,
       });
     }
     if (exams > 0) {
@@ -319,7 +332,7 @@ function FormularioRoute() {
   const { bookId } = useParams<{ bookId: string }>();
   const data = useBookData();
   if (!data || !bookId) return <BookNotFound />;
-  return <FormularioView bookId={bookId} chapters={data.chapters} />;
+  return <FormularioView bookId={bookId} chapters={data.chapters} config={data.config} />;
 }
 
 function EserciziRoute() {

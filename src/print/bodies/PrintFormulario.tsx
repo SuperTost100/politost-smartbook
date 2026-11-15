@@ -4,17 +4,21 @@ import { sanitizeHtml } from '../../lib/sanitizeHtml';
 
 interface PrintFormularioProps {
   chapters: Chapter[];
+  /** False when the document prints one chapter and its title names it already. */
+  headings?: boolean;
 }
 
 /** Cards print two to a row; fitWideFormulas lets a wide formula's card span the row. */
-export function PrintFormulario({ chapters }: PrintFormularioProps) {
+export function PrintFormulario({ chapters, headings = true }: PrintFormularioProps) {
   return (
     <div>
       {chapters.map((ch) => (
         <section key={ch.meta.id} className="formulario-chapter" data-print-chapter={ch.meta.id}>
-          <h3>
-            Capitolo {ch.meta.number}. {ch.meta.title}
-          </h3>
+          {headings && (
+            <h3>
+              Capitolo {ch.meta.number}. {ch.meta.title}
+            </h3>
+          )}
           {ch.formulas.length === 0 ? (
             <p className="empty-note">Nessuna formula in questo capitolo.</p>
           ) : (
