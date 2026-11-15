@@ -294,7 +294,7 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
     mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-start), #000 calc(100% - var(--scroll-fade-end)), transparent);
   }
 }
-@media print { .print-sheet .katex-display[data-wide], .print-sheet .katex[data-wide] { animation: none; mask-image: none; } }
+@media print { .print-sheet .katex-display[data-wide], .print-sheet .katex[data-wide] { animation: none; mask-image: none; outline: none; } }
 @media (max-width: 640px) {
   .sb-fcard-row { grid-template-columns: 48px minmax(0, 1fr); row-gap: var(--space-1); padding-inline: var(--space-4); }
   .sb-fcard-math { grid-column: 2; }

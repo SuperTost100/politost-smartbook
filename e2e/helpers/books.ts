@@ -68,13 +68,13 @@ export async function openTestBook(page: Page, book: TestBook): Promise<void> {
 }
 
 const sum = (terms: number) => Array.from({ length: terms }, (_, i) => `a_{${i + 1}}b_{${i + 1}}`).join(' + ');
-/** About 3,000px: too wide to fit any screen readably, fitted to the page in print. */
+/** About 2,600px: too wide to fit any screen readably, fitted to the page in print. */
 const WIDE = sum(40);
-/** About 830px: wider than the printed column, readable once fitted to it. */
+/** About 630px: a little wider than a numbered formula card, readable once fitted to it. */
 const LONG = sum(11);
-/** About 400px and 480px: wider than a 320px and a 375px phone's column, readable once fitted to it. */
+/** About 290px and 400px: wider than the column of a 320px and of a 375px phone, readable once fitted to it. */
 const MEDIUM = sum(5);
-const MEDIUM_WIDER = sum(6);
+const MEDIUM_WIDER = sum(7);
 const many = Array.from({ length: 40 }, (_, i) => `:::formula{id="2.${i + 1}" label="Formula ${i + 1}"}\n$$y = ${i + 1}x$$\n:::\n`).join('\n');
 
 /** Wide formulas in every kind of print block, and a formula sheet long enough to scroll. */
