@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { PRINT_ROUTES, assertPrintMediaHidesChrome, assertPrintPreview, assertUniqueIds } from './helpers/print';
 import { preparePlatformShell, PRINT_GOTO_OPTIONS } from './helpers/platform';
+import { openTestBook, WIDE_BOOK } from './helpers/books';
+
+/** The printed text column: A4 less the 18 mm side margins, in CSS px. */
+const PRINT_COLUMN = Math.floor((174 * 96) / 25.4);
 
 test.describe('Print preview', () => {
   test.beforeEach(async ({ page }) => {
@@ -177,6 +181,55 @@ test.describe('Print preview', () => {
     await expect(page.locator('.print-sheet .print-exercises-title')).toHaveText('Esercizi del capitolo 2');
   });
 
+  test('at 320px the toolbar keeps every action on screen', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    const toolbar = page.locator('.print-toolbar');
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    expect(await toolbar.evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(320);
+    for (const action of [
+      page.getByRole('button', { name: /Attiva tema/ }),
+      page.getByRole('link', { name: 'Torna al libro' }),
+      page.getByRole('button', { name: 'Opzioni' }),
+      page.getByRole('button', { name: 'Stampa o salva PDF' }),
+    ]) {
+      const box = await action.boundingBox();
+      expect(box && box.x >= 0 && box.x + box.width <= 320).toBe(true);
+    }
+  });
+
+  test('the print options come back in the next preview of the book, but not the scope', async ({ page }) => {
+    await page.goto('/libro/esempio/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    await page.getByRole('banner').getByRole('button', { name: 'Versione stampabile' }).click();
+    await page.getByRole('button', { name: 'Tutto il libro' }).click();
+    await expect(page.locator('.print-cover-title')).toBeVisible();
+    await page.getByRole('checkbox', { name: /Benvenuto/ }).uncheck();
+    await page.getByRole('switch', { name: 'Esercizi alla fine di ogni capitolo' }).click();
+    await page.getByRole('group', { name: 'Quanti per capitolo' }).getByRole('button', { name: '3' }).click();
+    await page.getByRole('switch', { name: "Prove d'esame in fondo" }).click();
+    await page.getByRole('switch', { name: 'Soluzioni' }).click();
+    await expect(page).toHaveURL(/soluzioni=0/);
+
+    await page.getByRole('link', { name: 'Torna al libro' }).click();
+    await page.getByRole('banner').getByRole('button', { name: 'Versione stampabile' }).click();
+    // The printer on a chapter still opens this chapter, with the exercise choices.
+    await expect(page).toHaveURL(/\/stampa\/capitolo\/nel-libro\?.*esercizi=3&soluzioni=0/);
+    await expect(page.getByRole('switch', { name: 'Esercizi alla fine del capitolo' })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('switch', { name: 'Soluzioni' })).toHaveAttribute('aria-checked', 'false');
+
+    await page.getByRole('button', { name: 'Tutto il libro' }).click();
+    await expect(page.locator('.print-chapter-title')).toHaveText(['Cosa trovi nel libro', 'Prova tu']);
+    await expect(page.getByRole('switch', { name: "Prove d'esame in fondo" })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('switch', { name: 'Soluzioni' })).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByRole('group', { name: 'Quanti per capitolo' }).getByRole('button', { name: '3' })).toHaveAttribute('aria-pressed', 'true');
+
+    // Options in the address win: a shared link prints what it says.
+    await page.goto('/libro/esempio/stampa/libro?formulario=1', PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('switch', { name: 'Formulario in fondo' })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('switch', { name: "Prove d'esame in fondo" })).toHaveAttribute('aria-checked', 'false');
+    await expect(page.locator('.print-chapter-title')).toHaveCount(3);
+  });
+
   test('back link returns to the chapter', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await page.getByRole('banner').getByRole('button', { name: 'Versione stampabile' }).click();
@@ -184,6 +237,50 @@ test.describe('Print preview', () => {
     await assertPrintPreview(page, PRINT_ROUTES[0]);
     await page.getByRole('link', { name: 'Torna al libro' }).click();
     await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
+  });
+});
+
+test.describe('Print preview of wide formulas', () => {
+  test.beforeEach(async ({ page }) => {
+    await preparePlatformShell(page);
+    await openTestBook(page, WIDE_BOOK);
+  });
+
+  // Chromium shrinks the whole printed document when anything is wider than the page.
+  for (const [name, path, width] of [
+    ['a chapter with its exercises', '/stampa/capitolo/lunghe?esercizi=tutti', 1440],
+    ['a chapter opened on a phone', '/stampa/capitolo/lunghe?esercizi=tutti', 390],
+    ['the whole book with every extra', '/stampa/libro?esercizi=tutti&formulario=1&esami=1', 1440],
+    ['the exercises', '/stampa/esercizi?capitolo=tutti', 1440],
+    ['the exam questions', '/stampa/esami', 1440],
+  ] as const) {
+    test(`no print document is wider than its sheet: ${name}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/libro/${WIDE_BOOK.id}${path}`, PRINT_GOTO_OPTIONS);
+      await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+      await expect(page.locator('.print-sheet .katex-display').first()).toBeVisible();
+      // In print media the sheet takes the viewport's width: make it the printed column.
+      await page.emulateMedia({ media: 'print' });
+      await page.setViewportSize({ width: PRINT_COLUMN, height: 900 });
+      const overflow = await page.evaluate(() => {
+        const wide = [...document.querySelectorAll<HTMLElement>('.print-sheet .katex-display')].filter(
+          (el) => (el.querySelector('.katex-html')?.scrollWidth ?? 0) > el.clientWidth + 1,
+        );
+        return { document: document.documentElement.scrollWidth, formulas: wide.length };
+      });
+      expect(overflow).toEqual({ document: PRINT_COLUMN, formulas: 0 });
+    });
+  }
+
+  test('a wide numbered formula fits its card on screen', async ({ page }) => {
+    await page.goto(`/libro/${WIDE_BOOK.id}/stampa/capitolo/lunghe`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    const card = page.locator('.print-sheet .numbered-formula[data-formula-id="1.1"]');
+    const { cardRight, formulaRight } = await card.evaluate((el) => {
+      const html = el.querySelector<HTMLElement>('.katex-html')!;
+      return { cardRight: el.getBoundingClientRect().right, formulaRight: html.getBoundingClientRect().left + html.scrollWidth };
+    });
+    expect(formulaRight).toBeLessThanOrEqual(cardRight);
   });
 });
 

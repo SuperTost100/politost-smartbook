@@ -13,6 +13,23 @@ const ALLOWED_KEYS = new Set([
   'showarrow', 'l', 'r', 't', 'b',
 ]);
 
+/** An axis id Plotly accepts as `scaleanchor`: x, y, x2, y2 and so on. */
+const AXIS_ID = /^[xy](?:[2-9]|[1-9]\d+)?$/;
+
+/**
+ * Equal axis scales, so a circle draws round: `scaleanchor` only as an axis id and `scaleratio` only
+ * as a positive finite number. These two keys are read on axes only, not anywhere in the config.
+ */
+function axisScale(axis: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (!isPlainObject(axis)) return out;
+  if (typeof axis.scaleanchor === 'string' && AXIS_ID.test(axis.scaleanchor)) out.scaleanchor = axis.scaleanchor;
+  if (typeof axis.scaleratio === 'number' && Number.isFinite(axis.scaleratio) && axis.scaleratio > 0) {
+    out.scaleratio = axis.scaleratio;
+  }
+  return out;
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const proto = Object.getPrototypeOf(value);
@@ -66,5 +83,9 @@ export function sanitizePlotlyConfig(
   if (!isPlainData(layout)) return null;
   const cleanedLayout = sanitizeNode(layout);
   if (!isPlainObject(cleanedLayout)) return null;
+  for (const key of ['xaxis', 'yaxis']) {
+    const axis = cleanedLayout[key];
+    if (isPlainObject(axis) && isPlainObject(layout)) Object.assign(axis, axisScale(layout[key]));
+  }
   return { data: traces, layout: cleanedLayout };
 }

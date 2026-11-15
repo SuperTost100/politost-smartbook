@@ -186,6 +186,18 @@
   break-inside: avoid;
 }
 
+/* A display formula wider than its column is scaled to fit it (fitWideFormulas): on screen to the
+   sheet, in print to the page, so the browser never shrinks the whole document to fit one formula. */
+.print-sheet .katex-display > .katex {
+  font-size: calc(1.21em * var(--display-fit, 1));
+}
+
+@media print {
+  .print-sheet .katex-display > .katex {
+    font-size: calc(1.21em * var(--display-fit-print, 1));
+  }
+}
+
 /* ── Formulas ─────────────────────────────────────────────────── */
 
 .print-sheet .numbered-formula {
@@ -318,10 +330,6 @@
 .print-sheet .formulario-card-body {
   text-align: center;
   overflow: hidden;
-}
-
-.print-sheet .formulario-card-body .katex {
-  font-size: calc(1.21em * var(--formula-fit, 1));
 }
 
 .print-sheet .formulario-card--wide {

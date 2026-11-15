@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { preparePlatformShell } from './helpers/platform';
+import { openTestBook, WIDE_BOOK } from './helpers/books';
 
 test.describe('Reader', () => {
   test.beforeEach(async ({ page }) => {
@@ -284,3 +285,40 @@ test.describe('Reader', () => {
     expect(edges.right).toBeLessThanOrEqual(40);
   });
 });
+
+test.describe('Formula sheet', () => {
+  test.beforeEach(async ({ page }) => {
+    await preparePlatformShell(page);
+    await openTestBook(page, WIDE_BOOK);
+  });
+
+  test('a formula link far down the sheet lands on its formula', async ({ page }) => {
+    await page.goto(`/libro/${WIDE_BOOK.id}/capitolo/lunghe`);
+    await expect(page.locator('.sb-prose').first()).toBeVisible();
+    // An in-app link, as the formula references use.
+    await page.evaluate((id) => {
+      history.pushState({}, '', `/libro/${id}/formulario#formula-2.30`);
+      dispatchEvent(new PopStateEvent('popstate'));
+    }, WIDE_BOOK.id);
+    const target = page.locator('[id="formula-2.30"]');
+    await expect(target).toBeVisible();
+    await expect.poll(() => target.evaluate((el) => Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)))).toBe(0);
+  });
+
+  test('a formula wider than its cell fades at the edge it scrolls to; one that fits does not', async ({ page }) => {
+    await page.goto(`/libro/${WIDE_BOOK.id}/formulario`);
+    const wide = page.locator('[id="formula-1.1"] .sb-fcard-math');
+    const fits = page.locator('[id="formula-1.2"] .sb-fcard-math');
+    await expect(wide).toBeVisible();
+    const mask = (cell: typeof wide) => cell.evaluate((el) => getComputedStyle(el).maskImage);
+    expect(await wide.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    expect(await mask(wide)).toContain('calc(100% - 32px)');
+    expect(await mask(fits)).toMatch(/rgb\(0, 0, 0\) 0px, rgb\(0, 0, 0\) 100%/);
+    // At the end of the scroll the fade moves to the start.
+    await wide.evaluate((el) => {
+      el.scrollLeft = el.scrollWidth;
+    });
+    await expect.poll(() => mask(wide)).toMatch(/rgb\(0, 0, 0\) 32px, rgb\(0, 0, 0\) 100%/);
+  });
+});
+

@@ -25,7 +25,7 @@ The document title, the running head and the saved PDF's name include them, for 
 
 ## Options
 
-The panel sits left of the sheet from 1024px and opens from **Opzioni** in the toolbar below that, as a bottom sheet. Every option lives in the URL, so a reload, a shared link and **Torna al libro** keep it. Defaults are left out of the URL, and a missing or invalid value falls back to the default. The parsing and the exercise picks are in `src/lib/printOptions.ts`.
+The panel sits left of the sheet from 1024px and opens from **Opzioni** in the toolbar below that, as a bottom sheet (below 400px the button shows only its icon). Every option lives in the URL, so a reload, a shared link and **Torna al libro** keep it. Defaults are left out of the URL, and a missing or invalid value falls back to the default. The parsing, the exercise picks and the remembered options are in `src/lib/printOptions.ts`.
 
 | Parameter | Values | Default | Applies to |
 |-----------|--------|---------|------------|
@@ -39,6 +39,7 @@ The panel sits left of the sheet from 1024px and opens from **Opzioni** in the t
 - **Cosa stampare** switches between **Questo capitolo** and **Tutto il libro**. The whole book remembers the chapter it came from in `da`, so **Questo capitolo** goes back to it; both keep `esercizi`, `soluzioni` and `return`.
 - **Esercizi** with a limit picks the same exercises every time: the slots go to facile, medio and difficile in turn (then to exercises without a difficulty), each difficulty's picks are spaced evenly through the chapter, and the result is in book order. A chapter with no more exercises than the limit prints all of them.
 - The exercises and exam prints show only the **Soluzioni** switch. The formula sheet has no options, so it has no panel.
+- The last options chosen in each book are kept in `sessionStorage` for the browser session. A preview opened without options in its address restores the ones it offers and writes them in the address: a chapter gets the exercises and solutions, the whole book also gets the chapters, the formula sheet and the exams, and the exercise and exam prints get the solutions. The scope is not remembered, so the printer on a chapter always opens **Questo capitolo**, and **Tutto il libro** brings the remembered extras back. Options in the address win, so a shared link prints what it says.
 - Books loaded one chapter at a time from the platform (`useCloudChapter`) offer only **Questo capitolo**; `/stampa/libro` says so instead of printing.
 
 ## How the whole book is assembled
@@ -63,7 +64,17 @@ The preview is the printed document. There is no pagination engine: the page ren
 - `src/print/bodies/`: chapter, cover and index, formulario and exercise bodies. Text goes through `ContentFlow variant="print"`, the same renderer as the screen.
 - `src/print/styles/document.css`: sheet layout, page-break rules (`break-inside: avoid` on formulas, figures, list items, exercise questions and solutions; `break-after: avoid` on headings) and the `@media print` reset. The sheet re-maps the theme tokens, so it stays light in dark mode.
 
-In print, internal links print their target (`§3.4`), and formula hovers print as `(1.2)`. Lab and graphs are **not** printable. Formulas too wide for the formulario grid span the row and, if still too wide, are scaled down (`useWideFormulaCards`).
+In print, internal links print their target (`§3.4`), and formula hovers print as `(1.2)`. Lab and graphs are **not** printable.
+
+### Wide formulas
+
+Chromium shrinks the whole printed document when anything in it is wider than the page: one long formula in Analisi Matematica 2 printed the whole book at 79%. `src/print/fitFormulas.ts` scales each display formula wider than its column down to fit it instead, and leaves the others at full size:
+
+- On screen the formula fits the sheet, and in print it fits the page (`--display-fit` and `--display-fit-print`). The print column is the screen column plus the difference between the page and the sheet, so a preview opened on a phone prints the same as one opened on a computer.
+- Formula-sheet cards print two to a row. A card whose formula is wider than half the row spans the whole row, and the formula is fitted to that.
+- Each scale is measured again after it is applied and corrected, because glyph widths snap to whole pixels and a formula does not shrink exactly in proportion.
+
+The fitting runs when every part is mounted and the fonts have loaded, before **Stampa o salva PDF** enables, and again when a font requested by the measurement arrives or the sheet changes width. Measuring lays out the parts kept off screen, so it goes one part per task: for the whole Analisi Matematica 2 with every extra it adds a few seconds to **Preparazione…**.
 
 ### Running heads in the whole book
 
@@ -78,7 +89,7 @@ A whole book with every extra is large: Chimica di base is about 325,000 element
 - The panel shows a new option at once from local state. The URL changes after the next paint, in a transition, and the sheet follows it, so a switch never waits for the sheet to re-render.
 - On screen, chapters and exercise sections use `content-visibility: auto`. Print lays out everything.
 
-**Stampa o salva PDF** stays disabled, reading **Preparazione…**, until every part is mounted and its images and fonts have loaded. Ctrl+P waits the same way.
+**Stampa o salva PDF** stays disabled, reading **Preparazione…**, until every part is mounted, its images and fonts have loaded and its wide formulas are fitted. Ctrl+P waits the same way.
 
 ## Browser support
 
@@ -93,6 +104,6 @@ A whole book with every extra is large: Chimica di base is about 325,000 element
 npm run test:print
 ```
 
-`e2e/print.spec.ts` covers the previews, print media, the options and the URL, the phone options sheet and a whole-book PDF export. `src/lib/printOptions.test.ts` covers the URL parsing and the exercise picks. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
+`e2e/print.spec.ts` covers the previews, print media, the options and the URL, the remembered options, the toolbar at 320px, the phone options sheet, a whole-book PDF export, and a book of wide formulas whose print documents must not be wider than the printed column. `src/lib/printOptions.test.ts` covers the URL parsing, the exercise picks and the remembered options. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
 
 Print CSS lives in `src/print/styles/` (tokens, shell, document).

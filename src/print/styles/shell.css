@@ -105,6 +105,12 @@
   .print-toolbar-btn-extra { display: none; }
 }
 
+/* Down to 320px every action stays on screen: Opzioni keeps only its icon, and its label stays for screen readers. */
+@media (max-width: 400px) {
+  .print-toolbar-actions { gap: var(--space-1); }
+  .print-toolbar-btn--options .print-toolbar-btn-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
 /* Options panel: next to the sheet from 1024px, in a bottom sheet below. */
 .print-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: var(--space-6); align-items: start; padding: var(--space-8) var(--space-6) var(--space-16); }
 .print-layout > .print-canvas { padding: 0; min-width: 0; }

@@ -1,6 +1,4 @@
-import { useRef } from 'react';
 import type { Chapter } from '../../types/smartbook';
-import { useWideFormulaCards } from '../../hooks/useWideFormulaCards';
 import { renderFormulaLatex } from '../../lib/formulaRender';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
 
@@ -8,11 +6,10 @@ interface PrintFormularioProps {
   chapters: Chapter[];
 }
 
+/** Cards print two to a row; fitWideFormulas lets a wide formula's card span the row. */
 export function PrintFormulario({ chapters }: PrintFormularioProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  useWideFormulaCards(ref, [chapters]);
   return (
-    <div ref={ref}>
+    <div>
       {chapters.map((ch) => (
         <section key={ch.meta.id} className="formulario-chapter" data-print-chapter={ch.meta.id}>
           <h3>
