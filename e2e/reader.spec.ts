@@ -247,6 +247,7 @@ test.describe('Reader', () => {
   test('an unknown chapter, book or address each show the same notice with a way on', async ({ page }) => {
     await page.goto('/libro/esempio/capitolo/non-esiste');
     await expect(page.getByRole('heading', { level: 1, name: 'Capitolo non trovato' })).toBeVisible();
+    await expect(page).toHaveTitle('Capitolo non trovato · Guida di esempio · PoliTost Smartbook');
     await expect(page.getByRole('navigation', { name: 'Sezioni del libro' })).toBeVisible();
     await page.getByRole('link', { name: 'Vai al primo capitolo' }).click();
     await expect(page).toHaveURL(/\/capitolo\/benvenuto$/);

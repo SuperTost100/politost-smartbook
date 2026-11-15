@@ -142,6 +142,30 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
       }
     });
 
+    test('leaving the chapter while its page is still changing keeps the landed paragraph', async ({ page }) => {
+      // While the reader presses a tab, the chapter collapses for a moment, as a figure or a section
+      // still loading can make it: the scroll clamps to the bottom and only the last paragraph is on screen.
+      await page.addInitScript(() => {
+        window.addEventListener('pointerdown', () => {
+          const sections = [...document.querySelectorAll<HTMLElement>('.paragraph-section')].slice(0, -1);
+          for (const section of sections) section.style.display = 'none';
+          setTimeout(() => sections.forEach((section) => section.style.removeProperty('display')), 600);
+        }, true);
+      });
+      await page.goto('/libro/lungo/capitolo/lungo#p6');
+      await expect.poll(() => savedParagraph(page)).toBe('p6');
+      const nav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+      for (let round = 1; round <= 5; round++) {
+        // A press as long as a person's, so the page has time to report what it shows.
+        await nav.getByRole('link', { name: 'Esercizi' }).click({ delay: 300 });
+        await expect(page).toHaveURL(/\/esercizi/);
+        expect(await savedParagraph(page), `leaving, round ${round}`).toBe('p6');
+        await nav.getByRole('link', { name: 'Capitoli' }).click();
+        await expect(page).toHaveURL(/\/capitolo\/lungo#p6$/, { timeout: 2000 });
+        await expect.poll(() => savedParagraph(page)).toBe('p6');
+      }
+    });
+
     test('scrolling after a landing still moves the active paragraph', async ({ page }) => {
       await page.goto('/libro/lungo/capitolo/lungo#p6');
       await expect.poll(() => savedParagraph(page)).toBe('p6');

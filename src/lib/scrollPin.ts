@@ -3,6 +3,10 @@
  * height (figures decoding, lazy blocks), until the reader scrolls, taps or presses a key.
  * A smooth scroll aims at where the target was when it started, so without the pin a figure
  * that loads on the way leaves the reader one paragraph short.
+ *
+ * The landing itself lasts longer than the alignment: `pinnedElement()` keeps naming the target
+ * until the reader scrolls on purpose. A tap, such as the one on a section tab, only stops the
+ * alignment, so a page that shifts while the reader leaves cannot pass off another paragraph as read.
  */
 
 interface Pin {
@@ -12,9 +16,22 @@ interface Pin {
 
 let current: Pin | null = null;
 
-const READER_INPUT = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+const READER_INPUT = ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown'] as const;
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
-/** The element a landing is holding in place, if the reader has not moved since. */
+/** Input that moves the page: the wheel, a swipe, a scrolling key, the scrollbar or the middle button. */
+function scrollsThePage(event: Event): boolean {
+  if (event.type === 'wheel' || event.type === 'touchmove') return true;
+  if (event.type === 'keydown') return SCROLL_KEYS.has((event as KeyboardEvent).key);
+  if (event.type === 'pointerdown') {
+    const { button, clientX, clientY } = event as PointerEvent;
+    const root = document.documentElement;
+    return button === 1 || clientX >= root.clientWidth || clientY >= root.clientHeight;
+  }
+  return false;
+}
+
+/** The element a landing points at, until the reader scrolls on purpose or lands elsewhere. */
 export function pinnedElement(): Element | null {
   return current?.element ?? null;
 }
@@ -25,17 +42,23 @@ export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = '
   const align = () => element.scrollIntoView({ behavior: 'instant', block: 'start' });
   // While a smooth scroll runs, a correction would cut it short: correct once it ends.
   let settled = behavior === 'instant';
+  let aligning = true;
   const settle = () => {
     if (settled) return;
     settled = true;
-    align();
+    if (aligning) align();
   };
   const resizes = new ResizeObserver(() => {
-    if (settled) align();
+    if (settled && aligning) align();
   });
   // shortcut: browsers without `scrollend` settle on this timer, which can end a very long smooth scroll early.
   const timer = settled ? undefined : setTimeout(settle, 2000);
 
+  const onInput = (event: Event) => {
+    aligning = false;
+    resizes.disconnect();
+    if (scrollsThePage(event)) pin.release();
+  };
   const pin: Pin = {
     element,
     release: () => {
@@ -44,7 +67,7 @@ export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = '
       resizes.disconnect();
       clearTimeout(timer);
       window.removeEventListener('scrollend', settle);
-      for (const type of READER_INPUT) window.removeEventListener(type, pin.release, true);
+      for (const type of READER_INPUT) window.removeEventListener(type, onInput, true);
     },
   };
   current = pin;
@@ -52,6 +75,6 @@ export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = '
   element.scrollIntoView({ behavior, block: 'start' });
   resizes.observe(document.body);
   if (!settled) window.addEventListener('scrollend', settle);
-  for (const type of READER_INPUT) window.addEventListener(type, pin.release, { capture: true, passive: true });
+  for (const type of READER_INPUT) window.addEventListener(type, onInput, { capture: true, passive: true });
   return pin.release;
 }
