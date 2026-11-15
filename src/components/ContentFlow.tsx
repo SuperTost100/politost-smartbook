@@ -5,7 +5,7 @@ import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/formulaRender';
 import { refLabel } from '../lib/chapterNav';
 import { glueMathPunctuation } from '../lib/mathGlue';
-import { useScrollableInlineMath } from '../hooks/useScrollableInlineMath';
+import { useScrollableMath } from '../hooks/useScrollableMath';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
 import { Formula } from './ds/Formula';
 import { Figure } from './ds/Figure';
@@ -178,7 +178,7 @@ export const ContentFlow = memo(function ContentFlow({
   const blocks = useMemo(() => cachedContentBlocks(content), [content]);
   const ctx: RenderContext = { formulaIndex, resolveAsset, variant };
   const rootRef = useRef<HTMLDivElement>(null);
-  useScrollableInlineMath(rootRef, variant !== 'print');
+  useScrollableMath(rootRef, variant !== 'print');
 
   return (
     <div

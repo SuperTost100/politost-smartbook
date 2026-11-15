@@ -8,12 +8,14 @@ import { resolveBookAsset } from '../lib/cloudAssets';
 import { withLoadedChapter } from '../lib/chapterNav';
 import { buildFormulaIndex } from '../lib/parser';
 import {
-  buildExerciseIndex,
+  bookFormulas,
+  buildChapterIndex,
   CHAPTER_PARAM,
+  FORMULA_INDEX_MIN_CHAPTERS,
   DIFFICULTY_PARAM,
   entryScopeOf,
-  exerciseDocumentTitle,
-  exercisesInScope,
+  scopeDocumentTitle,
+  itemsInScope,
   filterByDifficulty,
   findEntry,
   parseDifficulty,
@@ -350,12 +352,18 @@ export function PrintPage({ kind }: PrintPageProps) {
         }
         case 'formulario': {
           const label = data.config.sections.formulario.label;
+          // The chapter on screen, or every chapter with formulas; a book without the index prints them all.
+          const index = buildChapterIndex(bookFormulas(data.chapters), data.config.chapters, FORMULA_INDEX_MIN_CHAPTERS);
+          const scope = parseScope(scopeParam, index, 'tutte');
+          const chapters = index
+            ? data.chapters.filter((ch) => (typeof scope === 'number' ? ch.meta.number === scope : ch.formulas.length > 0))
+            : data.chapters;
           return {
-            documentTitle: label,
+            documentTitle: scopeDocumentTitle(label, findEntry(index, scope), null),
             sectionLabel: label,
             printable: true,
             opener: true,
-            parts: formularioParts(data.chapters),
+            parts: formularioParts(chapters, typeof scope !== 'number'),
             summary: { main: '', sub: '' },
             counts: NO_COUNTS,
             panel: null,
@@ -366,10 +374,10 @@ export function PrintPage({ kind }: PrintPageProps) {
           const label = data.config.sections[kind].label;
           // The same chapter and difficulty as the page the student printed from.
           const all = kind === 'esercizi' ? data.esercizi : data.esami;
-          const index = kind === 'esercizi' ? buildExerciseIndex(all, data.config.chapters) : null;
-          const scope = parseScope(scopeParam, index);
+          const index = kind === 'esercizi' ? buildChapterIndex(all, data.config.chapters) : null;
+          const scope = parseScope(scopeParam, index, 'tutti');
           const difficulty = parseDifficulty(difficultyParam);
-          const list = filterByDifficulty(exercisesInScope(all, index, scope), difficulty);
+          const list = filterByDifficulty(itemsInScope(all, index, scope), difficulty);
           const groups: ExerciseGroup[] =
             index && (scope == null || scope === 'tutti')
               ? index.entries.map((entry) => ({
@@ -380,7 +388,7 @@ export function PrintPage({ kind }: PrintPageProps) {
                 }))
               : [{ key: kind, label: kind === 'esercizi' ? 'gli esercizi' : "le prove d'esame", exercises: list }];
           return {
-            documentTitle: exerciseDocumentTitle(label, findEntry(index, scope), difficulty),
+            documentTitle: scopeDocumentTitle(label, findEntry(index, scope), difficulty),
             sectionLabel: label,
             printable: true,
             opener: true,

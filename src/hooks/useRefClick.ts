@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formulaSheetPath } from '../lib/sectionRoutes';
 
 /**
  * Click handler for a ContentFlow: follows the in-book links (`ref:formula/2.1`,
@@ -15,7 +16,7 @@ export function useRefClick(bookId: string, chapters: { id: string; number: numb
       e.preventDefault();
 
       if (ref.startsWith('formula/')) {
-        navigate(`/libro/${bookId}/formulario#${ref.slice('formula/'.length)}`);
+        navigate(formulaSheetPath(bookId, ref.slice('formula/'.length)));
       } else if (ref.startsWith('chapter/')) {
         const [chNum, para] = ref.slice('chapter/'.length).split('#');
         const ch = chapters.find((c) => c.number === Number(chNum));

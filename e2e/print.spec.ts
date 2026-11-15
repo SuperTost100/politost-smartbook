@@ -347,6 +347,54 @@ test.describe('Print preview of wide formulas', () => {
     expect(formula).toBeCloseTo(text * 1.21, 1);
   });
 
+  // A card prints one of two in a row, but on a phone it takes the whole screen, which can be narrower than
+  // that half row: its formula must fit the screen too, scaled while readable, else scrolling.
+  for (const width of [320, 375, 500]) {
+    test(`at ${width}px no formula-sheet card cuts its formula: scaled or scrolling, with the print scale of a computer`, async ({ page }) => {
+      const printScales = () =>
+        page.evaluate(() =>
+          Object.fromEntries(
+            [...document.querySelectorAll<HTMLElement>('.print-sheet .formulario-card')].map((card) => [
+              card.id,
+              card.querySelector<HTMLElement>('.katex-display')?.style.getPropertyValue('--display-fit-print') ?? '',
+            ]),
+          ),
+        );
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/libro/${WIDE_BOOK.id}/stampa/formulario`, PRINT_GOTO_OPTIONS);
+      await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+      const desktop = await printScales();
+
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(`/libro/${WIDE_BOOK.id}/stampa/formulario`, PRINT_GOTO_OPTIONS);
+      await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+      const report = await page.evaluate(() => {
+        const cut: string[] = [];
+        for (const card of document.querySelectorAll<HTMLElement>('.print-sheet .formulario-card')) {
+          const body = card.querySelector<HTMLElement>('.formulario-card-body')!.getBoundingClientRect();
+          const display = card.querySelector<HTMLElement>('.katex-display')!;
+          if (display.hasAttribute('data-wide')) {
+            if (display.getAttribute('tabindex') !== '0' || !(display.scrollWidth > display.clientWidth)) cut.push(`${card.id} does not scroll`);
+            continue;
+          }
+          for (const box of display.querySelector('.katex-html')!.children) {
+            const r = box.getBoundingClientRect();
+            if (!box.classList.contains('katex-newline') && (r.left < body.left - 0.5 || r.right > body.right + 0.5)) cut.push(card.id);
+          }
+        }
+        return { cut, page: document.documentElement.scrollWidth };
+      });
+      expect(report).toEqual({ cut: [], page: width });
+      // The medium formula needed it at 320px: scaled or scrolling there, and printed as on a computer.
+      const medium = page.locator('.print-sheet [id="formula-1.4"] .katex-display');
+      if (width === 320) {
+        const fitted = await medium.evaluate((el) => el.hasAttribute('data-wide') || el.style.getPropertyValue('--display-fit') !== '');
+        expect(fitted).toBe(true);
+      }
+      expect(await printScales()).toEqual(desktop);
+    });
+  }
+
   test('a formula that scrolls in the preview is a named tab stop until it fits again', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto(`/libro/${WIDE_BOOK.id}/stampa/capitolo/lunghe`, PRINT_GOTO_OPTIONS);

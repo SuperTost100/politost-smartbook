@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { forgetAllReadingPositions, forgetReadingPosition, getReadingPosition, lastReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
+import { forgetAllReadingPositions, forgetReadingPosition, getReadingPosition, lastReadChapter, lastReadingPosition, readingPositionPath, saveReadingPosition } from './readingPosition.ts';
 
 const data = new Map<string, string>();
 Object.defineProperty(globalThis, 'localStorage', {
@@ -72,6 +72,13 @@ describe('readingPosition', () => {
     saveReadingPosition('esempio', pos, 1000);
     saveReadingPosition('esempio', pos, 5000);
     assert.equal(getReadingPosition('esempio')?.readAt, 1000);
+  });
+
+  it('names the chapter last read by its id, so a renumbered chapter is still found', () => {
+    assert.equal(lastReadChapter('esempio', [{ id: 'nel-libro', number: 2 }]), undefined);
+    saveReadingPosition('esempio', pos);
+    assert.equal(lastReadChapter('esempio', [{ id: 'nel-libro', number: 5 }]), 5);
+    assert.equal(lastReadChapter('esempio', [{ id: 'altro', number: 1 }]), 2);
   });
 
   it('builds the chapter path, with the paragraph as hash', () => {

@@ -59,6 +59,16 @@ export function getReadingPosition(bookId: string): ReadingPosition | undefined 
   return readStore()[bookId];
 }
 
+/**
+ * The number of the chapter last read, where the exercises and the formula sheet open. A chapter
+ * renumbered since then is found by its id; one removed from the book keeps its saved number.
+ */
+export function lastReadChapter(bookId: string, chapters: { id: string; number: number }[]): number | undefined {
+  const position = getReadingPosition(bookId);
+  if (!position) return undefined;
+  return chapters.find((c) => c.id === position.chapterId)?.number ?? position.chapterNumber;
+}
+
 export function saveReadingPosition(bookId: string, position: Omit<ReadingPosition, 'readAt'>, now = Date.now()): void {
   const store = readStore();
   const prev = store[bookId];

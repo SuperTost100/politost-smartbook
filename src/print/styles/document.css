@@ -335,6 +335,11 @@
 .print-sheet .formulario-card-body {
   text-align: center;
   overflow: hidden;
+  /* A formula is fitted to its box by its glyph boxes, and the last glyph of an italic letter reaches a
+     couple of pixels past them. The padding shows that ink, and the negative margin keeps the formula's
+     column, so neither the screen nor the print scale changes. */
+  margin-inline: -3px;
+  padding-inline: 3px;
 }
 
 .print-sheet .formulario-card--wide {

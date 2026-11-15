@@ -1,27 +1,33 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { exerciseSearch, type Difficulty, type ExerciseIndex, type ExerciseScope } from '../../lib/exerciseNav';
+import type { AllScope, ChapterIndex, IndexScope } from '../../lib/exerciseNav';
 
-interface ExerciseTocProps {
-  index: ExerciseIndex;
-  basePath: string;
-  scope: ExerciseScope | null;
-  /** Kept in every link, so the chosen difficulty stays on when the chapter changes. */
-  difficulty: Difficulty | null;
+interface IndexTocProps {
+  index: ChapterIndex;
+  /** Names the nav and its heading, e.g. "Esercizi per capitolo". */
+  label: string;
+  /** The first entry, for the whole section: "Tutti" or "Tutte". */
+  allLabel: string;
+  all: AllScope;
+  /** The count in words for assistive tech: singular and plural, e.g. ['formula', 'formule']. */
+  noun: [string, string];
+  scope: IndexScope | null;
+  /** Where an entry leads; the exercises keep the chosen difficulty in it. */
+  href: (scope: IndexScope) => string;
   onNavigate?: () => void;
 }
 
-function Count({ n }: { n: number }) {
+function Count({ n, noun }: { n: number; noun: [string, string] }) {
   return (
     <span className="sb-toc-count">
       {n}
-      <span className="sb-sr"> {n === 1 ? 'esercizio' : 'esercizi'}</span>
+      <span className="sb-sr"> {n === 1 ? noun[0] : noun[1]}</span>
     </span>
   );
 }
 
-/** The exercises by chapter in the left panel: "Tutti", then each chapter with its count. */
-export function ExerciseToc({ index, basePath, scope, difficulty, onNavigate }: ExerciseTocProps) {
+/** A section by chapter in the left panel: the whole section first, then each chapter with its count. */
+export function IndexToc({ index, label, allLabel, all, noun, scope, href, onNavigate }: IndexTocProps) {
   const ref = useRef<HTMLElement>(null);
 
   // A long index scrolls inside its panel: keep the current chapter in view.
@@ -34,16 +40,14 @@ export function ExerciseToc({ index, basePath, scope, difficulty, onNavigate }: 
     if (top < box.top || bottom > box.bottom) panel.scrollTop += top - box.top - panel.clientHeight / 2;
   }, [scope]);
 
-  const href = (to: ExerciseScope) => `${basePath}${exerciseSearch(to, difficulty)}`;
-
   return (
-    <nav ref={ref} className="sb-toc" aria-label="Esercizi per capitolo">
-      <h2 className="sb-panel-label">Esercizi per capitolo</h2>
+    <nav ref={ref} className="sb-toc" aria-label={label}>
+      <h2 className="sb-panel-label">{label}</h2>
       <ol>
         <li className="sb-toc-all">
-          <Link to={href('tutti')} className="sb-toc-ch" aria-current={scope === 'tutti' ? 'page' : undefined} onClick={onNavigate}>
-            <span className="sb-toc-title">Tutti</span>
-            <Count n={index.total} />
+          <Link to={href(all)} className="sb-toc-ch" aria-current={scope === all ? 'page' : undefined} onClick={onNavigate}>
+            <span className="sb-toc-title">{allLabel}</span>
+            <Count n={index.total} noun={noun} />
           </Link>
         </li>
         {index.entries.map((entry) => {
@@ -51,7 +55,7 @@ export function ExerciseToc({ index, basePath, scope, difficulty, onNavigate }: 
             <>
               {entry.number != null && <span className="sb-toc-num">{entry.number}</span>}
               <span className="sb-toc-title">{entry.title}</span>
-              <Count n={entry.count} />
+              <Count n={entry.count} noun={noun} />
             </>
           );
           return (

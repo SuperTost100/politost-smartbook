@@ -1,3 +1,5 @@
+import { formulaName, markScrolling } from '../lib/scrollableMath';
+
 /** The printed text column: A4 less the 18 mm side margins of `@page` (PrintDocument), in CSS px. */
 const PRINT_COLUMN = (174 * 96) / 25.4;
 const SCREEN_FIT = '--display-fit';
@@ -172,39 +174,15 @@ function cardRows(root: Element, toPrint: number): Map<HTMLElement, CardRow> {
 }
 
 /** The name a scrolling formula gets: "Formula 4.1: label" for a numbered one, as in the reader. */
-function formulaName(el: HTMLElement): string {
+function printFormulaName(el: HTMLElement): string {
   const numbered = el.closest<HTMLElement>('.numbered-formula[data-formula-id]');
   if (numbered) {
     const id = numbered.dataset.formulaId ?? '';
-    const label = numbered.querySelector('.formula-header')?.textContent?.replace(`(${id})`, '').trim();
-    return label ? `Formula ${id}: ${label}` : `Formula ${id}`;
+    return formulaName(id, numbered.querySelector('.formula-header')?.textContent?.replace(`(${id})`, '').trim());
   }
   const card = el.closest<HTMLElement>('.formulario-card');
-  if (card) {
-    const id = card.id.replace(/^formula-/, '');
-    const label = card.querySelector('.formula-label')?.textContent?.trim();
-    return label ? `Formula ${id}: ${label}` : `Formula ${id}`;
-  }
-  return 'Formula';
-}
-
-/**
- * A formula that scrolls sideways on screen (`data-wide`) is a tab stop with a name, so a keyboard
- * can scroll it: Safari does not make a scroll container focusable by itself. All of it goes when
- * the formula fits again.
- */
-function markScrolling(el: HTMLElement, wide: boolean): void {
-  if (wide === el.hasAttribute('data-wide')) return;
-  el.toggleAttribute('data-wide', wide);
-  if (wide) {
-    el.tabIndex = 0;
-    el.setAttribute('role', 'group');
-    el.setAttribute('aria-label', formulaName(el));
-  } else {
-    el.removeAttribute('tabindex');
-    el.removeAttribute('role');
-    el.removeAttribute('aria-label');
-  }
+  if (card) return formulaName(card.id.replace(/^formula-/, ''), card.querySelector('.formula-label')?.textContent?.trim());
+  return formulaName();
 }
 
 const round = (fit: number) => (Math.floor(fit * 1000) / 1000).toString();
@@ -231,7 +209,8 @@ function fitPart(root: Element, sheet: Element, toPrint: number): void {
     const card = el.closest<HTMLElement>('.formulario-card');
     const cardRow = card ? cards.get(card) : undefined;
     const screen = contentBoxWidth(el);
-    const narrowest = cardRow ? cardRow.half - cardRow.chrome : Math.min(screen, screen + toPrint);
+    // A card's printed column is half the row, but on a phone its screen box can be narrower still.
+    const narrowest = Math.min(screen, cardRow ? cardRow.half - cardRow.chrome : screen + toPrint);
     const size = parseFloat(getComputedStyle(katex).fontSize);
     const inPlace = contentWidth(html);
     const copy = inPlace > narrowest - IN_PLACE_MARGIN ? copyInto(box, katex, size, true) : null;
@@ -293,14 +272,14 @@ function fitPart(root: Element, sheet: Element, toPrint: number): void {
     const fit = screen.get(f);
     const readable = fit === undefined || f.size * Number(round(fit)) >= READABLE_FORMULA_PX;
     if (fit !== undefined && readable) f.el.style.setProperty(SCREEN_FIT, round(fit));
-    markScrolling(f.el, !readable);
+    markScrolling(f.el, !readable, printFormulaName);
   }
   for (const f of inlineFormulas) {
     const fit = inlinePrint.get(f);
     if (fit !== undefined) f.el.style.setProperty(INLINE_PRINT_FIT, round(fit));
     f.el.toggleAttribute('data-print-fit', fit !== undefined);
-    // As in the reader (useScrollableInlineMath), one wider than the line scrolls inside it on screen.
-    markScrolling(f.el, f.natural > f.screen + 0.5);
+    // As in the reader (useScrollableMath), one wider than the line scrolls inside it on screen.
+    markScrolling(f.el, f.natural > f.screen + 0.5, printFormulaName);
   }
 }
 

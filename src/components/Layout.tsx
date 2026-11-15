@@ -1,18 +1,18 @@
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
-import type { Exercise, SectionKey, SmartbookConfig } from '../types/smartbook';
+import type { Exercise, FormulaRef, SectionKey, SmartbookConfig } from '../types/smartbook';
 import { ReaderProgressProvider } from '../context/ReaderProgressContext';
 import { ReaderShell, type ReaderIndex } from './shell/ReaderShell';
 import { ChapterToc } from './shell/ChapterToc';
-import { ExerciseToc } from './shell/ExerciseToc';
+import { IndexToc } from './shell/IndexToc';
 import type { SectionItem } from './shell/SectionTabs';
 import { UserWatermark } from './UserWatermark';
 import { Footer } from './Footer';
 import { MOBILE_LAYOUT_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { usePrintMode } from '../hooks/usePrintMode';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { useExerciseView } from '../hooks/useExerciseView';
-import { findEntry } from '../lib/exerciseNav';
+import { useChapterView } from '../hooks/useChapterView';
+import { FORMULA_INDEX_MIN_CHAPTERS, findEntry, scopeSearch } from '../lib/exerciseNav';
 import { MOBILE_HIDDEN_SECTIONS, UNROUTED_SECTIONS, sectionPath } from '../lib/sectionRoutes';
 import type { PrintSection } from '../print/routes';
 
@@ -24,10 +24,13 @@ interface LayoutProps {
   activeChapterId?: string;
   /** The Esercizi section: its chapter index replaces the chapters one. */
   exercises?: Exercise[];
+  /** The Formulario section, from bookFormulas: the same, for the formulas. */
+  formulas?: FormulaRef[];
   children?: ReactNode;
 }
 
 const NO_EXERCISES: Exercise[] = [];
+const NO_FORMULAS: FormulaRef[] = [];
 
 const PRINT_SECTIONS: Partial<Record<SectionKey, PrintSection>> = {
   formulario: 'formulario',
@@ -50,6 +53,7 @@ function LayoutInner({
   showChapterIndex = false,
   activeChapterId,
   exercises = NO_EXERCISES,
+  formulas = NO_FORMULAS,
   children,
 }: LayoutProps) {
   const print = usePrintMode();
@@ -68,7 +72,14 @@ function LayoutInner({
     [bookId, config.sections, isMobile],
   );
 
-  const { index: exerciseIndex, scope, difficulty } = useExerciseView(exercises, config.chapters, activeSection === 'esercizi');
+  const exerciseView = useChapterView(exercises, config.chapters, { indexed: activeSection === 'esercizi', all: 'tutti' });
+  const formulaView = useChapterView(formulas, config.chapters, {
+    indexed: activeSection === 'formulario',
+    all: 'tutte',
+    minChapters: FORMULA_INDEX_MIN_CHAPTERS,
+  });
+  const { index: exerciseIndex, scope: exerciseScope, difficulty } = exerciseView;
+  const { index: formulaIndex, scope: formulaScope } = formulaView;
 
   const index = useMemo<ReaderIndex | undefined>(() => {
     if (showChapterIndex && config.chapters.length > 0) {
@@ -86,31 +97,55 @@ function LayoutInner({
       };
     }
     if (exerciseIndex) {
+      const basePath = sectionPath(bookId, 'esercizi');
       return {
         label: 'Indice esercizi',
         render: (onNavigate) => (
-          <ExerciseToc
+          <IndexToc
             index={exerciseIndex}
-            basePath={sectionPath(bookId, 'esercizi')}
-            scope={scope}
-            difficulty={difficulty}
+            label="Esercizi per capitolo"
+            allLabel="Tutti"
+            all="tutti"
+            noun={['esercizio', 'esercizi']}
+            scope={exerciseScope}
+            // The chosen difficulty stays on when the chapter changes.
+            href={(to) => `${basePath}${scopeSearch(to, difficulty)}`}
+            onNavigate={onNavigate}
+          />
+        ),
+      };
+    }
+    if (formulaIndex) {
+      const basePath = sectionPath(bookId, 'formulario');
+      return {
+        label: 'Indice formule',
+        render: (onNavigate) => (
+          <IndexToc
+            index={formulaIndex}
+            label="Formule per capitolo"
+            allLabel="Tutte"
+            all="tutte"
+            noun={['formula', 'formule']}
+            scope={formulaScope}
+            href={(to) => `${basePath}${scopeSearch(to, null)}`}
             onNavigate={onNavigate}
           />
         ),
       };
     }
     return undefined;
-  }, [bookId, config.chapters, showChapterIndex, activeChapterId, exerciseIndex, scope, difficulty]);
+  }, [bookId, config.chapters, showChapterIndex, activeChapterId, exerciseIndex, exerciseScope, difficulty, formulaIndex, formulaScope]);
 
   const activeChapter = config.chapters.find((ch) => ch.id === activeChapterId);
   const sectionLabel = config.sections[activeSection].label;
-  const exerciseEntry = findEntry(exerciseIndex, scope);
+  const scope = activeSection === 'formulario' ? formulaScope : exerciseScope;
+  const indexEntry = findEntry(activeSection === 'formulario' ? formulaIndex : exerciseIndex, scope);
   const pageTitle = activeChapter
     ? `${activeChapter.number}. ${activeChapter.title}`
     : activeChapterId
       ? 'Capitolo non trovato'
-      : exerciseEntry
-        ? `${exerciseEntry.number != null ? `${exerciseEntry.number}. ` : ''}${exerciseEntry.title} · ${sectionLabel}`
+      : indexEntry
+        ? `${indexEntry.number != null ? `${indexEntry.number}. ` : ''}${indexEntry.title} · ${sectionLabel}`
         : sectionLabel;
   useDocumentTitle(`${pageTitle} · ${config.title}`);
   const printSection = PRINT_SECTIONS[activeSection];
@@ -118,7 +153,13 @@ function LayoutInner({
     activeSection === 'smartbook' && activeChapter?.printable
       ? () => print({ bookId, section: 'capitolo', chapterId: activeChapter.id })
       : printSection
-        ? () => print({ bookId, section: printSection, scope: scope ?? undefined, difficulty: difficulty ?? undefined })
+        ? () =>
+            print({
+              bookId,
+              section: printSection,
+              scope: scope ?? undefined,
+              difficulty: activeSection === 'formulario' ? undefined : (difficulty ?? undefined),
+            })
         : undefined;
 
   return (

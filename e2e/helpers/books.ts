@@ -100,6 +100,8 @@ export const WIDE_BOOK: TestBook = {
         '- In un elenco:', '',
         `  $$S = ${WIDE}$$`, '',
         ':::formula{id="1.2" label="Una formula corta"}', '$$s = a + b$$', ':::', '',
+        // Narrower than half the printed row, so its card prints one of two, but wider than a card on a 320px phone.
+        ':::formula{id="1.4" label="Una formula numerata media"}', `$$M = ${MEDIUM}$$`, ':::', '',
       ].join('\n'),
     },
     {

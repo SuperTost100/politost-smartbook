@@ -33,11 +33,11 @@ A smartbook is a course book written in Markdown with numbered formulas, exercis
 
 **Read chapters.** Formulas render with KaTeX and carry numbers like a printed book. Hovering a reference such as (2.1) shows the formula without leaving the page.
 
-**Study from the formula sheet.** It collects every numbered formula from the chapters. Exercises and past exam questions come with hints and step-by-step solutions. Exercises open on the chapter you were reading, with an index by chapter and a difficulty filter that stays on when you change chapter, and the end of each chapter links to its exercises.
+**Study from the formula sheet.** It collects every numbered formula from the chapters and shows one chapter at a time, or all of them, through an index by chapter. Exercises and past exam questions come with hints and step-by-step solutions. Exercises use the same index, with a difficulty filter that stays on when you change chapter. Both open on the chapter you were reading, and the end of each chapter links to its formulas and exercises.
 
 **Run code and plot.** The lab runs Python in the browser through Pyodide, with numpy and matplotlib, and MATLAB scripts through numbl, a MATLAB-compatible interpreter. Graphs are computed on the device. Neither sends code to a server.
 
-**Print.** Chapters, the whole book, the formula sheet, exercises and exams each have a print preview. The whole book gets a cover, an index and each chapter on a new page, with optional exercises after each chapter (all, or 3, 5 or 10 picked across the difficulties), the formula sheet and the exam questions. Exercises print their questions first and the solutions at the end, and hints are left out. From the exercises it prints the chapter and the difficulty on screen.
+**Print.** Chapters, the whole book, the formula sheet, exercises and exams each have a print preview. The whole book gets a cover, an index and each chapter on a new page, with optional exercises after each chapter (all, or 3, 5 or 10 picked across the difficulties), the formula sheet and the exam questions. Exercises print their questions first and the solutions at the end, and hints are left out. From the formula sheet it prints the chapter on screen, and from the exercises the chapter and the difficulty.
 
 **Import a book.** Drop a `.ptsb` file on the home page. It stays in that browser and isn't uploaded anywhere.
 

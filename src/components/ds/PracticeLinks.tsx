@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { GraduationCap, PencilLine } from 'lucide-react';
+import { GraduationCap, PencilLine, Sigma } from 'lucide-react';
 
 export interface PracticeLink {
-  kind: 'esercizi' | 'esami';
+  kind: 'formulario' | 'esercizi' | 'esami';
   label: string;
   count: number;
   /** The count in words for assistive tech, e.g. "21 esercizi". */
@@ -10,15 +10,20 @@ export interface PracticeLink {
   href: string;
 }
 
-/** "Esercitati" at the end of a chapter: its exercises and, after the last chapter, the exam questions. */
+const ICONS = { formulario: Sigma, esercizi: PencilLine, esami: GraduationCap };
+
+/**
+ * "Ripassa ed esercitati" at the end of a chapter: its formulas, its exercises and, after the last
+ * chapter, the exam questions.
+ */
 export function PracticeLinks({ links }: { links: PracticeLink[] }) {
   if (links.length === 0) return null;
   return (
-    <nav className="sb-practice no-print" aria-label="Esercitati">
-      <h2 className="sb-panel-label">Esercitati</h2>
+    <nav className="sb-practice no-print" aria-label="Ripassa ed esercitati">
+      <h2 className="sb-panel-label">Ripassa ed esercitati</h2>
       <div className="sb-practice-links">
         {links.map((link) => {
-          const Icon = link.kind === 'esercizi' ? PencilLine : GraduationCap;
+          const Icon = ICONS[link.kind];
           return (
             <Link key={link.kind} to={link.href}>
               <Icon size={20} strokeWidth={1.75} aria-hidden />
