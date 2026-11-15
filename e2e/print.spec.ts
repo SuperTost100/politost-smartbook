@@ -272,6 +272,107 @@ test.describe('Print preview of wide formulas', () => {
     });
   }
 
+  // On a phone a formula shrinks only while it stays readable (12px, the sheet's 9pt small text, see
+  // READABLE_FORMULA_PX); a wider one keeps its size and scrolls inside its own box.
+  for (const width of [320, 375]) {
+    for (const [name, path] of [
+      ['a chapter with its exercises', '/stampa/capitolo/lunghe?esercizi=tutti'],
+      ['the whole book with every extra', '/stampa/libro?esercizi=tutti&formulario=1&esami=1'],
+    ] as const) {
+      test(`at ${width}px every formula in the preview is readable and the page does not scroll sideways: ${name}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(`/libro/${WIDE_BOOK.id}${path}`, PRINT_GOTO_OPTIONS);
+        await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+        const report = await page.evaluate(() => {
+          const sheet = document.querySelector('.print-sheet')!;
+          const fontPx = (katex: Element) => parseFloat(getComputedStyle(katex).fontSize);
+          const displays = [...sheet.querySelectorAll<HTMLElement>('.katex-display')];
+          const scaled = displays.filter((d) => d.style.getPropertyValue('--display-fit'));
+          const scrolling = [...sheet.querySelectorAll<HTMLElement>('[data-wide]')];
+          return {
+            scaled: scaled.length,
+            smallest: Math.min(...scaled.map((d) => fontPx(d.querySelector('.katex')!))),
+            scrolling: scrolling.length,
+            scrollingInline: scrolling.filter((el) => el.matches('.katex')).length,
+            notScrolling: scrolling.filter((el) => !(el.scrollWidth > el.clientWidth && getComputedStyle(el).overflowX === 'auto')).length,
+            unreadableScrolling: scrolling.filter((el) => fontPx(el.matches('.katex') ? el : el.querySelector('.katex')!) < 12).length,
+            page: document.documentElement.scrollWidth,
+          };
+        });
+        expect(report.scaled).toBeGreaterThan(0);
+        expect(report.smallest).toBeGreaterThanOrEqual(12);
+        expect(report.scrolling).toBeGreaterThan(0);
+        expect(report.scrollingInline).toBeGreaterThan(0);
+        expect(report.notScrolling).toBe(0);
+        expect(report.unreadableScrolling).toBe(0);
+        expect(report.page).toBe(width);
+      });
+    }
+  }
+
+  // The print scale depends on the formula and the printed column only. Between the phone and the computer
+  // layouts the screen boxes differ from the printed ones in both directions: one formula-sheet card per row
+  // on screen against two in print, and a sheet wider than the page from about 700px to 860px.
+  test('every formula prints at the same scale whatever the preview width', async ({ page }) => {
+    const printScales = async (width: number) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/libro/${WIDE_BOOK.id}/stampa/libro?esercizi=tutti&formulario=1&esami=1`, PRINT_GOTO_OPTIONS);
+      await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+      return page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.print-sheet .katex-display, .print-sheet .katex')]
+          .filter((el) => el.matches('.katex-display') || !el.parentElement?.closest('.katex-display'))
+          .map((el) => Number(el.style.getPropertyValue(el.matches('.katex-display') ? '--display-fit-print' : '--inline-fit-print') || 1)),
+      );
+    };
+    const desktop = await printScales(1440);
+    expect(desktop.some((scale) => scale < 1)).toBe(true);
+    for (const width of [420, 600, 800]) {
+      const scales = await printScales(width);
+      expect(scales.length).toBe(desktop.length);
+      scales.forEach((scale, i) => expect(scale, `formula ${i} at ${width}px`).toBeCloseTo(desktop[i], 2));
+    }
+  });
+
+  test('a short formula in the formula sheet keeps its full print size at an in-between width', async ({ page }) => {
+    await page.setViewportSize({ width: 600, height: 900 });
+    await page.goto(`/libro/${WIDE_BOOK.id}/stampa/formulario`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    const short = page.locator('.print-sheet [id="formula-1.2"] .katex-display');
+    expect(await short.evaluate((el) => el.style.getPropertyValue('--display-fit-print'))).toBe('');
+    await page.emulateMedia({ media: 'print' });
+    const { formula, text } = await short.evaluate((el) => ({
+      formula: parseFloat(getComputedStyle(el.querySelector('.katex')!).fontSize),
+      text: parseFloat(getComputedStyle(el).fontSize),
+    }));
+    expect(formula).toBeCloseTo(text * 1.21, 1);
+  });
+
+  test('a formula that scrolls in the preview is a named tab stop until it fits again', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto(`/libro/${WIDE_BOOK.id}/stampa/capitolo/lunghe`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    const numbered = page.getByRole('group', { name: 'Formula 1.1: Una formula numerata lunga' });
+    await expect(numbered).toHaveAttribute('tabindex', '0');
+    await expect(numbered).toHaveAttribute('data-wide', '');
+    await expect(page.locator('.print-sheet .katex[data-wide]')).toHaveAttribute('aria-label', 'Formula');
+    // The keyboard scrolls it.
+    await numbered.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => numbered.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+    // No focus ring on paper.
+    await page.emulateMedia({ media: 'print' });
+    expect(await numbered.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+    await page.emulateMedia({ media: 'screen' });
+
+    // On a computer this formula fits at a readable size: no tab stop, no name.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const formula = page.locator('.print-sheet .numbered-formula[data-formula-id="1.1"] .katex-display');
+    await expect(formula).not.toHaveAttribute('data-wide');
+    await expect(formula).not.toHaveAttribute('tabindex');
+    await expect(formula).not.toHaveAttribute('role');
+    await expect(formula).not.toHaveAttribute('aria-label');
+  });
+
   test('a wide numbered formula fits its card on screen', async ({ page }) => {
     await page.goto(`/libro/${WIDE_BOOK.id}/stampa/capitolo/lunghe`, PRINT_GOTO_OPTIONS);
     await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();

@@ -302,7 +302,7 @@ test.describe('Formula sheet', () => {
     }, WIDE_BOOK.id);
     const target = page.locator('[id="formula-2.30"]');
     await expect(target).toBeVisible();
-    await expect.poll(() => target.evaluate((el) => Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)))).toBe(0);
+    await expect.poll(() => target.evaluate((el) => Math.abs(Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop))))).toBe(0);
   });
 
   test('a formula wider than its cell fades at the edge it scrolls to; one that fits does not', async ({ page }) => {
