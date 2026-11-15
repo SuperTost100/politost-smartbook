@@ -237,15 +237,18 @@ export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendi
                 ? isBook
                   ? "Attiva gli esercizi o le prove d'esame per sceglierlo."
                   : 'Attiva gli esercizi per sceglierlo.'
-                : kind === 'esami'
-                  ? "In fondo alle prove d'esame"
-                  : kind === 'esercizi'
-                    ? 'In fondo agli esercizi'
-                    : isBook
-                      ? "In fondo agli esercizi di ogni capitolo e alle prove d'esame"
-                      : 'In fondo agli esercizi del capitolo'
+                : !options.solutions
+                  ? 'Non vengono stampate'
+                  : kind === 'esami'
+                    ? "In fondo alle prove d'esame"
+                    : kind === 'esercizi'
+                      ? 'In fondo agli esercizi'
+                      : isBook
+                        ? "In fondo agli esercizi di ogni capitolo e alle prove d'esame"
+                        : 'In fondo agli esercizi del capitolo'
             }
-            checked={options.solutions}
+            // Disabled shows off, while the stored choice waits for the exercises to come back.
+            checked={options.solutions && !solutionsOff}
             disabled={solutionsOff}
             onChange={(solutions) => set({ solutions })}
           />

@@ -78,7 +78,7 @@ function pageLd(meta, route, page) {
     ? { '@type': 'Chapter', name: chapter.title, position: chapter.number, url, isPartOf: { '@id': `${ORIGIN}${READER}/libro/${meta.id}#book` } }
     : { '@type': 'WebPage', name: `${page.title} · ${meta.title}`, url, isPartOf: { '@id': `${ORIGIN}${READER}/libro/${meta.id}#book` } };
   const crumbs = [
-    { name: 'Biblioteca', item: `${ORIGIN}${READER}/` },
+    { name: 'Libreria', item: `${ORIGIN}${READER}/` },
     { name: meta.title, item: firstChapter(meta) },
     ...(route === `capitolo/${meta.chapters[0].id}` ? [] : [{ name: page.title, item: url }]),
   ];
@@ -146,14 +146,14 @@ async function libraryPage(request, env) {
     .join('\n');
   const canonical = `${ORIGIN}${READER}/`;
   return shell(request, env, {
-    title: `Biblioteca · ${APP_TITLE}`,
+    title: `Libreria · ${APP_TITLE}`,
     description: LIBRARY_DESCRIPTION,
     canonical,
-    body: `<main class="ssr-page sb-page"><h1>Biblioteca</h1><p>${escape(LIBRARY_DESCRIPTION)}</p><ul class="ssr-library">${items}</ul></main>`,
+    body: `<main class="ssr-page sb-page"><h1>Libreria</h1><p>${escape(LIBRARY_DESCRIPTION)}</p><ul class="ssr-library">${items}</ul></main>`,
     ld: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: 'Biblioteca PoliTost',
+      name: 'Libreria PoliTost',
       url: canonical,
       inLanguage: 'it',
       description: LIBRARY_DESCRIPTION,

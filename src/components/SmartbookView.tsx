@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
@@ -10,6 +11,7 @@ import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
+import { pinnedElement } from '../lib/scrollPin';
 import { chapterProgress } from '../lib/chapterProgress';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
@@ -30,6 +32,7 @@ function readingMinutes(chapter: Chapter): number {
 
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, practice = [] }: SmartbookViewProps) {
   const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
+  const { hash } = useLocation();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
@@ -45,6 +48,14 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     return () => setParagraphs([]);
   }, [chapter, setParagraphs, setActiveParagraphId]);
 
+  // A link to a paragraph makes it the current one, from the first render and on every later hash
+  // in this chapter (in-text links, back and forward). The last paragraphs share one scroll position,
+  // so the page may not move and the observer below would never hear of the change.
+  useEffect(() => {
+    const linked = chapter.paragraphs.find((p) => `#${p.id}` === hash);
+    if (linked) setActiveParagraphId(linked.id);
+  }, [chapter, hash, setActiveParagraphId]);
+
   useEffect(() => {
     // header + breathing room. The band runs to 55% of the viewport:
     // scrolling a heading clear of the header can land it just below 40%.
@@ -58,6 +69,13 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
         for (const entry of entries) {
           if (entry.isIntersecting) intersections.set(entry.target, entry);
           else intersections.delete(entry.target);
+        }
+        // A landing on a paragraph holds it until the reader moves: the last paragraphs never reach
+        // the band, and figures loading above shift everything while the page settles.
+        const landed = pinnedElement()?.closest('[data-para-id]')?.getAttribute('data-para-id');
+        if (landed && chapter.paragraphs.some((p) => p.id === landed)) {
+          setActiveParagraphId(landed);
+          return;
         }
         const closest = closestIntersectingParagraph(
           [...intersections.values()],

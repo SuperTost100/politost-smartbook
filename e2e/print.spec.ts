@@ -68,7 +68,22 @@ test.describe('Print preview', () => {
     // This chapter: exercises off by default, solutions on but waiting for them.
     const exercises = page.getByRole('switch', { name: 'Esercizi alla fine del capitolo' });
     await expect(exercises).toHaveAttribute('aria-checked', 'false');
-    await expect(page.getByRole('switch', { name: 'Soluzioni' })).toBeDisabled();
+    const solutions = page.getByRole('switch', { name: 'Soluzioni' });
+    await expect(solutions).toBeDisabled();
+    // Disabled reads as off, and the choice underneath comes back with the exercises.
+    await expect(solutions).toHaveAttribute('aria-checked', 'false');
+    await exercises.click();
+    await expect(solutions).toBeEnabled();
+    await expect(solutions).toHaveAttribute('aria-checked', 'true');
+    await expect(solutions).toHaveAccessibleDescription('In fondo agli esercizi del capitolo');
+    await solutions.click();
+    await expect(solutions).toHaveAccessibleDescription('Non vengono stampate');
+    await exercises.click();
+    await expect(solutions).toBeDisabled();
+    await exercises.click();
+    await expect(solutions).toHaveAttribute('aria-checked', 'false');
+    await solutions.click();
+    await exercises.click();
     await expect(page.getByRole('switch', { name: 'Formulario in fondo' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Tutto il libro' }).click();
@@ -110,6 +125,8 @@ test.describe('Print preview', () => {
     await expect(page.locator('.print-chapter-title')).toHaveCount(3);
     await expect(page.getByRole('switch', { name: 'Esercizi alla fine di ogni capitolo' })).toHaveAttribute('aria-checked', 'false');
     await expect(page.getByRole('switch', { name: 'Formulario in fondo' })).toHaveAttribute('aria-checked', 'false');
+    // The default, on, shows once the exercises are on.
+    await page.getByRole('switch', { name: 'Esercizi alla fine di ogni capitolo' }).click();
     await expect(page.getByRole('switch', { name: 'Soluzioni' })).toHaveAttribute('aria-checked', 'true');
   });
 

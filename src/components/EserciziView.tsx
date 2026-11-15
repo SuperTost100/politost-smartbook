@@ -24,6 +24,7 @@ import {
   filterByDifficulty,
   findEntry,
   neighbourEntries,
+  pagerNote,
   plural,
   type Difficulty,
   type EntryScope,
@@ -193,7 +194,7 @@ export function EserciziView({
   if (index && typeof scope === 'number') {
     const { prev, next } = neighbourEntries(index, scope);
     const target = (e?: ExerciseIndexEntry): PagerTarget | null =>
-      e ? { number: e.number!, title: e.title, href: href(e.scope), note: plural(e.count, 'esercizio', 'esercizi') } : null;
+      e ? { number: e.number!, title: e.title, href: href(e.scope), note: pagerNote(exercises, index, e, difficulty) } : null;
     pager = <ChapterPager prev={target(prev)} next={target(next)} />;
   }
 

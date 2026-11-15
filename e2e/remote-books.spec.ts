@@ -128,6 +128,30 @@ test.describe('Remote books', () => {
   test('refuses a package that does not match the catalog hash', async ({ page }) => {
     await serveBooks(page, catalog({ sha256: '0'.repeat(64) }));
     await page.goto('/libro/remoto');
+    await expect(page.getByRole('heading', { level: 1, name: 'Non riesco ad aprire il libro' })).toBeVisible();
     await expect(page.getByRole('alert')).toContainText('non corrisponde al catalogo');
+    await expect(page.getByRole('banner')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Torna alla libreria' })).toBeVisible();
+  });
+
+  test('a failed download explains itself in Italian and the retry opens the book', async ({ page }) => {
+    await page.route(`${BOOKS_URL}/catalog.json`, (route) => route.fulfill({ json: catalog() }));
+    let blocked = true;
+    await page.route(`${BOOKS_URL}/books/**`, (route) => (blocked
+      ? route.abort('internetdisconnected')
+      : route.fulfill({ body: Buffer.from(PACKAGE), contentType: 'application/octet-stream' })));
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Apri Libro remoto' }).click();
+
+    const notice = page.getByRole('alert');
+    await expect(page.getByRole('heading', { level: 1, name: 'Non riesco ad aprire il libro' })).toBeVisible();
+    await expect(notice).toContainText('Controlla la connessione');
+    await expect(notice).not.toContainText('Failed to fetch');
+    await expect(page.getByRole('banner')).toBeVisible();
+    await expect(notice.getByRole('link', { name: 'Torna alla libreria' })).toHaveAttribute('href', '/');
+
+    blocked = false;
+    await notice.getByRole('button', { name: 'Riprova' }).click();
+    await expect(page.getByText('Questo capitolo arriva dal catalogo remoto')).toBeVisible();
   });
 });
