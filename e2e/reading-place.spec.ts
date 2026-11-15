@@ -187,3 +187,23 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
     });
   });
 }
+
+test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
+  // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const saved = () =>
+    page.evaluate(() => {
+      const place = JSON.parse(localStorage.getItem('politost-last-read') ?? '{}').esempio;
+      return place ? `${place.chapterId}:${place.paragraphId ?? 'top'}` : 'none';
+    });
+
+  await page.goto('/libro/esempio/capitolo/nel-libro');
+  // The outline on the right lands on a paragraph without changing the address.
+  await page.locator('.sb-rail').getByText('Collegamenti tra le parti').click();
+  await expect.poll(saved).toBe('nel-libro:p3');
+
+  // A click on the chapter index is not a scroll, so the landing is still held when the chapter changes.
+  await page.locator('.sb-toc a[href$="/capitolo/prova-tu"]').click();
+  await expect(page).toHaveURL(/\/capitolo\/prova-tu$/);
+  await expect.poll(saved).toBe('prova-tu:top');
+});

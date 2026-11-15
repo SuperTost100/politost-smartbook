@@ -33,6 +33,9 @@ function scrollsThePage(event: Event): boolean {
 
 /** The element a landing points at, until the reader scrolls on purpose or lands elsewhere. */
 export function pinnedElement(): Element | null {
+  // A chapter change removes the target from the page. Paragraph ids repeat across chapters, so a
+  // landing kept past its own chapter would name a paragraph of the new one.
+  if (current && !current.element.isConnected) current.release();
   return current?.element ?? null;
 }
 
