@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
@@ -31,6 +32,7 @@ function readingMinutes(chapter: Chapter): number {
 
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, practice = [] }: SmartbookViewProps) {
   const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
+  const { hash } = useLocation();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
@@ -42,11 +44,17 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     setParagraphs(
       chapter.paragraphs.map((p, i) => ({ id: p.id, number: `${chapter.meta.number}.${i + 1}`, title: p.title })),
     );
-    // A link to a paragraph opens on that paragraph, so it is the one saved from the first render.
-    const linked = chapter.paragraphs.find((p) => `#${p.id}` === window.location.hash);
-    setActiveParagraphId((linked ?? chapter.paragraphs[0])?.id);
+    setActiveParagraphId(chapter.paragraphs[0]?.id);
     return () => setParagraphs([]);
   }, [chapter, setParagraphs, setActiveParagraphId]);
+
+  // A link to a paragraph makes it the current one, from the first render and on every later hash
+  // in this chapter (in-text links, back and forward). The last paragraphs share one scroll position,
+  // so the page may not move and the observer below would never hear of the change.
+  useEffect(() => {
+    const linked = chapter.paragraphs.find((p) => `#${p.id}` === hash);
+    if (linked) setActiveParagraphId(linked.id);
+  }, [chapter, hash, setActiveParagraphId]);
 
   useEffect(() => {
     // header + breathing room. The band runs to 55% of the viewport:

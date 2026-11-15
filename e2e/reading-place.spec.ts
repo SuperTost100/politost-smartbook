@@ -15,6 +15,7 @@ function chapter(): string {
     const lines = i >= PARAGRAPHS - 1 ? 2 : 14;
     parts.push(`## p${i} | Paragrafo ${i}\n`);
     for (let l = 0; l < lines; l++) parts.push(sentence.repeat(3) + '\n');
+    if (i === PARAGRAPHS - 1) parts.push(`Continua con il [paragrafo finale](ref:chapter/1#p${PARAGRAPHS}).\n`);
     if (i < PARAGRAPHS - 1) parts.push(`:::image{src="assets/fig${i}.svg" alt="Figura ${i}" caption="Fig. 1.${i} — Figura"}\n:::\n`);
   }
   return parts.join('\n');
@@ -95,6 +96,37 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
         }
       });
     }
+
+    test('moving between the last two paragraphs, which share the bottom of the page, saves each one', async ({ page }) => {
+      const last = `p${PARAGRAPHS}`;
+      const before = `p${PARAGRAPHS - 1}`;
+      // Tall enough that neither of them can scroll up to the header.
+      await page.setViewportSize({ width: viewport.width, height: 2600 });
+      await page.goto(`/libro/lungo/capitolo/lungo#${before}`);
+      await expect.poll(() => savedParagraph(page)).toBe(before);
+      const atBottom = () => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - window.innerHeight - window.scrollY) <= 1);
+      await expect.poll(atBottom).toBe(true);
+
+      // An in-text link to the next paragraph of the same chapter: the page stays at the bottom.
+      await page.getByRole('button', { name: 'paragrafo finale' }).click();
+      await expect(page).toHaveURL(new RegExp(`#${last}$`));
+      expect(await atBottom()).toBe(true);
+      await expect.poll(() => savedParagraph(page)).toBe(last);
+
+      // Back and forward between the two hashes.
+      await page.goBack();
+      await expect(page).toHaveURL(new RegExp(`#${before}$`));
+      await expect.poll(() => savedParagraph(page)).toBe(before);
+      await page.goForward();
+      await expect(page).toHaveURL(new RegExp(`#${last}$`));
+      await expect.poll(() => savedParagraph(page)).toBe(last);
+      if (viewport.width >= 1440) {
+        await expect(page.locator('.sb-rail a[aria-current="location"]')).toHaveAttribute('href', `#${last}`);
+        // The outline goes through its own path: it sets the paragraph it jumps to.
+        await page.locator(`.sb-rail a[href="#${before}"]`).click();
+        await expect.poll(() => savedParagraph(page)).toBe(before);
+      }
+    });
 
     test('going to Esercizi and back through Capitoli five times keeps the place', async ({ page }) => {
       await page.goto('/libro/lungo/capitolo/lungo#p6');
