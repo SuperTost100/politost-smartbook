@@ -163,9 +163,9 @@ interface CardRow {
  * spans the whole row, and the formula is fitted to that. The span is decided for the page, so a
  * phone (one card per row on screen) prints the same rows as a computer.
  */
-function cardRows(root: Element, toPrint: number): Map<HTMLElement, CardRow> {
+function cardRows(cards: HTMLElement[], toPrint: number): Map<HTMLElement, CardRow> {
   const rows = new Map<HTMLElement, CardRow>();
-  for (const card of root.querySelectorAll<HTMLElement>('.formula-grid > .formulario-card')) {
+  for (const card of cards) {
     const grid = card.parentElement!;
     const row = contentBoxWidth(grid) + toPrint;
     rows.set(card, { row, half: (row - parseFloat(getComputedStyle(grid).columnGap)) / 2, chrome: horizontalChrome(card) });
@@ -187,20 +187,34 @@ function printFormulaName(el: HTMLElement): string {
 
 const round = (fit: number) => (Math.floor(fit * 1000) / 1000).toString();
 
-/** Fits the formulas under `root`, whose sheet is `toPrint` px narrower than the page (negative: wider). */
-function fitPart(root: Element, sheet: Element, toPrint: number): void {
-  const displays = [...root.querySelectorAll<HTMLElement>('.katex-display')];
-  const inlines = [...root.querySelectorAll<HTMLElement>('.katex')].filter((k) => !k.parentElement?.closest('.katex-display'));
+/**
+ * The blocks the sheet is fitted in: a paragraph, an exercise, a solution, a chapter of the formula
+ * sheet. Measuring lays out the block, so one block at a time keeps each task short. The formulas of
+ * a part outside any block (a heading, the cover) are fitted with the part itself.
+ */
+const UNIT = '.paragraph-section, .exercise-card, .print-solution, .formulario-chapter';
+const UNIT_OR_PART = `${UNIT}, .print-part`;
+
+/** The elements under `root` that belong to it rather than to a smaller unit inside it. */
+function own<T extends Element>(root: Element, selector: string): T[] {
+  return [...root.querySelectorAll<T>(selector)].filter((el) => el.closest(UNIT_OR_PART) === root);
+}
+
+/** Fits the formulas of `root`, whose sheet is `toPrint` px narrower than the page (negative: wider). */
+function fitUnit(root: Element, sheet: Element, toPrint: number): void {
+  const displays = own<HTMLElement>(root, '.katex-display');
+  const inlines = own<HTMLElement>(root, '.katex').filter((k) => !k.parentElement?.closest('.katex-display'));
+  const ownCards = own<HTMLElement>(root, '.formula-grid > .formulario-card');
   // Measure every formula at full size: clear the previous fit first, then read, then write.
   for (const el of displays) {
     el.style.removeProperty(SCREEN_FIT);
     el.style.removeProperty(PRINT_FIT);
   }
   for (const el of inlines) el.style.removeProperty(INLINE_PRINT_FIT);
-  for (const card of root.querySelectorAll('.formulario-card')) card.classList.remove(WIDE_CARD);
+  for (const card of ownCards) card.classList.remove(WIDE_CARD);
 
   // A first width in place picks the formulas that may not fit; only those are copied and measured.
-  const cards = cardRows(root, toPrint);
+  const cards = cardRows(ownCards, toPrint);
   const box = measuringBox(sheet);
   const display = displays.flatMap((el) => {
     const html = el.querySelector<HTMLElement>('.katex-html');
@@ -283,6 +297,46 @@ function fitPart(root: Element, sheet: Element, toPrint: number): void {
   }
 }
 
+interface SheetFits {
+  /** Each unit fitted so far, with the sheet width it was fitted at. */
+  fitted: WeakMap<Element, number>;
+  observer: MutationObserver;
+}
+
+const sheets = new WeakMap<HTMLElement, SheetFits>();
+
+/** Attributes that never change a width: the ids and hrefs linkPrintRefs sets. */
+const LAYOUT_NEUTRAL = new Set(['id', 'href']);
+
+/** Forget the fit of every unit whose content changed, so only those are measured again. */
+function forgetChanged(fits: SheetFits, records: MutationRecord[]): void {
+  for (const record of records) {
+    if (record.type === 'attributes' && LAYOUT_NEUTRAL.has(record.attributeName!)) continue;
+    const node = record.type === 'characterData' ? record.target.parentElement : (record.target as Element);
+    const unit = node?.closest(UNIT_OR_PART);
+    if (unit) fits.fitted.delete(unit);
+  }
+}
+
+function sheetFits(sheet: HTMLElement): SheetFits {
+  let fits = sheets.get(sheet);
+  if (!fits) {
+    const created: SheetFits = { fitted: new WeakMap(), observer: new MutationObserver((records) => forgetChanged(created, records)) };
+    created.observer.observe(sheet, { subtree: true, childList: true, characterData: true, attributes: true });
+    sheets.set(sheet, (fits = created));
+  }
+  return fits;
+}
+
+/** Units of work while fitting: start another unit in the same task only within this many ms. */
+const SLICE_MS = 10;
+
+/** Let the browser paint and answer input. */
+function yieldToBrowser(): Promise<void> {
+  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+  return scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 /**
  * Chromium shrinks the whole printed document when anything in it is wider than the page, so one
  * long formula would print a whole book at 80%. Each display formula wider than its column is
@@ -293,17 +347,63 @@ function fitPart(root: Element, sheet: Element, toPrint: number): void {
  * (cards, list indents, the solution id column) has a fixed width. Widths are measured on copies at
  * a fixed spot (measuringBox), so a formula gets the same print scale at every preview width.
  *
- * Measuring lays out the parts kept off screen (`content-visibility: auto`), which takes seconds
- * for a whole book, so it goes one part per task and the page keeps answering input.
+ * Measuring lays out the units kept off screen (`content-visibility: auto`), which takes seconds
+ * for a whole book, so the units go a few per task and the page keeps answering input. A unit is
+ * measured again only when its content or the sheet width changed since its last fit, so changing
+ * an option fits only the parts it added or changed.
+ *
+ * KaTeX measures narrower before its fonts arrive, and laying out a unit can request fonts no other
+ * unit used: the units fitted while fonts were loading are fitted again once they arrive.
  */
 export async function fitWideFormulas(sheet: HTMLElement, cancelled: () => boolean = () => false): Promise<void> {
+  const fits = sheetFits(sheet);
+  forgetChanged(fits, fits.observer.takeRecords());
   const column = contentBoxWidth(sheet);
   // Negative where the screen sheet is wider than the page: on screens from about 700px to 860px the
   // sheet takes the whole width.
   const toPrint = PRINT_COLUMN - column;
-  for (const part of sheet.querySelectorAll('.print-part')) {
-    if (cancelled()) return;
-    fitPart(part, sheet, toPrint);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+  let units = [...sheet.querySelectorAll('.print-part')].flatMap((part) => [part, ...part.querySelectorAll(UNIT)]);
+  for (let pass = 0; pass < 3; pass++) {
+    let fontsRequested = false;
+    const onLoading = () => {
+      fontsRequested = true;
+    };
+    document.fonts?.addEventListener('loading', onLoading);
+    const fitted: Element[] = [];
+    let slice = performance.now();
+    for (const unit of units) {
+      if (performance.now() - slice > SLICE_MS) {
+        await yieldToBrowser();
+        slice = performance.now();
+        // The sheet can only change width while this waits. Start again at the new width: the units
+        // fitted so far are recorded at the old one, so the new run fits them again.
+        if (!cancelled() && contentBoxWidth(sheet) !== column) {
+          document.fonts?.removeEventListener('loading', onLoading);
+          return fitWideFormulas(sheet, cancelled);
+        }
+      }
+      if (cancelled()) break;
+      // React may have changed the sheet while this waited.
+      forgetChanged(fits, fits.observer.takeRecords());
+      if (!unit.isConnected || fits.fitted.get(unit) === column) continue;
+      fitUnit(unit, sheet, toPrint);
+      // The fit's own changes to the sheet.
+      fits.observer.takeRecords();
+      fits.fitted.set(unit, column);
+      fitted.push(unit);
+    }
+    // The last unit's font requests arrive as an event.
+    await yieldToBrowser();
+    document.fonts?.removeEventListener('loading', onLoading);
+    const fontsPending = fontsRequested || document.fonts?.status === 'loading';
+    if (cancelled()) {
+      // A cancelled run never fits these again with the fonts loaded, so the next run must.
+      if (fontsPending) for (const unit of fitted) fits.fitted.delete(unit);
+      return;
+    }
+    if (!fontsPending) return;
+    await document.fonts.ready;
+    for (const unit of fitted) fits.fitted.delete(unit);
+    units = fitted;
   }
 }

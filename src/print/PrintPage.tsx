@@ -459,20 +459,8 @@ export function PrintPage({ kind }: PrintPageProps) {
       await document.fonts?.ready;
       if (cancelled) return;
       if (sheet) {
-        // KaTeX measures narrower before its fonts arrive, and measuring lays out the parts kept
-        // off screen, which can request fonts no other part used: fit again once those arrive.
-        for (let pass = 0; pass < 3; pass++) {
-          let fontsRequested = false;
-          const onLoading = () => {
-            fontsRequested = true;
-          };
-          document.fonts?.addEventListener('loading', onLoading);
-          await fitWideFormulas(sheet, isCancelled);
-          document.fonts?.removeEventListener('loading', onLoading);
-          if (cancelled) return;
-          if (!fontsRequested) break;
-          await document.fonts.ready;
-        }
+        await fitWideFormulas(sheet, isCancelled);
+        if (cancelled) return;
         let width = sheet.clientWidth;
         resizes = new ResizeObserver(() => {
           if (sheet.clientWidth === width) return;

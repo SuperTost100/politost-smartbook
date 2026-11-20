@@ -688,6 +688,28 @@
     content-visibility: auto;
     contain-intrinsic-size: auto 1600px;
   }
+
+  /* The same inside a part, one paragraph, exercise or solution at a time, so that measuring a
+     formula (fitWideFormulas) lays out its block and not a whole chapter. */
+  .print-sheet .print-part--deferred :is(.paragraph-section, .exercise-card, .print-solution, .formulario-chapter) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
+  }
+
+  /* A paragraph laid out on its own keeps the bottom margins of its last blocks inside it, where
+     they used to collapse into the gap before the next title. Dropping them keeps that gap as wide
+     as in print. Exercises and solutions have a border or padding at the bottom, and a formula-sheet
+     chapter ends with its grid of cards, so no margin collapses out of them. */
+  .print-sheet .print-part--deferred .paragraph-section {
+    margin-bottom: 0;
+  }
+
+  .print-sheet .print-part--deferred .paragraph-body > .content-flow > :last-child,
+  .print-sheet .print-part--deferred .paragraph-body > .content-flow > :is(.content-list, .content-quote):last-child > :last-child,
+  .print-sheet .print-part--deferred .paragraph-body > .content-flow > :is(.content-list, .content-quote):last-child > :last-child > :last-child,
+  .print-sheet .print-part--deferred .paragraph-body > .content-flow > :is(.content-list, .content-quote):last-child > :last-child > :is(.content-list, .content-quote):last-child > :last-child {
+    margin-bottom: 0;
+  }
 }
 
 /* ── Watermark (licensed copies) ──────────────────────────────── */

@@ -6,6 +6,7 @@ import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/for
 import { refLabel } from '../lib/chapterNav';
 import { glueMathPunctuation } from '../lib/mathGlue';
 import { useScrollableMath } from '../hooks/useScrollableMath';
+import { withoutMathml } from '../print/printMath';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
 import { Formula } from './ds/Formula';
 import { Figure } from './ds/Figure';
@@ -35,7 +36,11 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
         switch (seg.type) {
           case 'text':
             return (
-              <span key={i} className="content-flow-inline" dangerouslySetInnerHTML={{ __html: glueMathPunctuation(seg.html) }} />
+              <span
+                key={i}
+                className="content-flow-inline"
+                dangerouslySetInnerHTML={{ __html: glueMathPunctuation(isPrint ? withoutMathml(seg.html) : seg.html) }}
+              />
             );
           case 'strong':
             return <strong key={i}><InlineFlow segments={seg.children} ctx={ctx} /></strong>;
@@ -83,6 +88,15 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
   );
 }
 
+/** Each numbered formula's print HTML, kept while the book is loaded, so a part renders again without KaTeX. */
+const numberedHtml = new WeakMap<FormulaRef, string>();
+
+function printedFormulaHtml(f: FormulaRef, variant: ContentFlowVariant): string {
+  let html = numberedHtml.get(f);
+  if (html === undefined) numberedHtml.set(f, (html = withoutMathml(renderNumberedFormulaHtml(f, variant))));
+  return html;
+}
+
 function Blocks({ blocks, ctx }: { blocks: ContentBlock[]; ctx: RenderContext }) {
   return blocks.map((block, i) => <Fragment key={i}>{renderBlock(block, ctx)}</Fragment>);
 }
@@ -108,7 +122,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
         </p>
       );
     case 'math':
-      return <div className="content-math" dangerouslySetInnerHTML={{ __html: block.html }} />;
+      return <div className="content-math" dangerouslySetInnerHTML={{ __html: isPrint ? withoutMathml(block.html) : block.html }} />;
     case 'list': {
       const items = block.items.map((item, j) => (
         <li key={j}>
@@ -150,7 +164,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
           className="numbered-formula"
           data-formula-id={f.id}
           data-formula-chapter={f.chapter}
-          dangerouslySetInnerHTML={{ __html: renderNumberedFormulaHtml(f, ctx.variant) }}
+          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx.variant) }}
         />
       );
     }
