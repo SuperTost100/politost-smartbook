@@ -204,6 +204,76 @@ for (const key of ['End', 'Control+End']) {
   });
 }
 
+// Paragraphs of many one-line blocks, whose estimated heights are far from the real ones: on the way
+// back to such a chapter the same scroll offset shows other text.
+const TALL = {
+  ...CONFIG,
+  id: 'alto',
+  title: 'Libro alto',
+  chapters: [{ id: 'alto', number: 1, title: 'Capitolo alto', file: '01-alto.md', printable: true }],
+};
+const tallChapter = () => {
+  const parts = ['---\nchapter: 1\ntitle: Capitolo alto\n---\n'];
+  for (let i = 1; i <= 12; i++) {
+    parts.push(`## p${i} | Paragrafo ${i}\n`);
+    for (let l = 1; l <= 60; l++) {
+      parts.push(`Riga ${l} del paragrafo ${i}.\n`);
+      // Numbered formulas cut the paragraph into pieces that appear one at a time.
+      if (l % 15 === 0) parts.push(`:::formula{id="1.${i * 10 + l / 15}" label="Formula ${l / 15}"}\n$$y = ${l}x$$\n:::\n`);
+    }
+  }
+  return parts.join('\n');
+};
+const TALL_PACKAGE = zipSync({
+  'smartbook.json': strToU8(JSON.stringify(TALL)),
+  'chapters/01-alto.md': strToU8(tallChapter()),
+  'esercizi.md': strToU8(EXERCISES),
+});
+
+async function serveTallBook(page: Page) {
+  await page.route(`${BOOKS_URL}/catalog.json`, (route) => route.fulfill({
+    json: {
+      catalogVersion: 1,
+      generatedAt: '2026-10-12T00:00:00Z',
+      books: [{
+        id: 'alto', title: 'Libro alto', subject: 'Fisica', authors: ['Ada Lovelace'], version: '1.0.0', specVersion: '1.2',
+        chapters: 1, package: 'books/alto@1.0.0.ptsb', bytes: TALL_PACKAGE.byteLength,
+        sha256: createHash('sha256').update(TALL_PACKAGE).digest('hex'),
+      }],
+    },
+  }));
+  await page.route(`${BOOKS_URL}/books/**`, (route) =>
+    route.fulfill({ body: Buffer.from(TALL_PACKAGE), contentType: 'application/octet-stream' }));
+}
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 }]) {
+  test(`back to a chapter at ${viewport.width}px shows the same text at the same place`, async ({ page }) => {
+    await serveTallBook(page);
+    await page.setViewportSize(viewport);
+    await page.goto('/libro/alto/capitolo/alto');
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    // Read down the chapter as a reader would, so the paragraphs above take their real heights.
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    for (let i = 0; i < 40; i++) await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(500);
+    const probe = page.getByText('Riga 30 del paragrafo 7.', { exact: true });
+    await probe.evaluate((el) => window.scrollBy({ top: el.getBoundingClientRect().top - 300, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    const before = await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page).toHaveURL(/\/esercizi/);
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    // Once the chapter has filled in, and still a moment later.
+    await page.waitForTimeout(2500);
+    expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+    await page.waitForTimeout(1000);
+    expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+  });
+}
+
 test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
   // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.
   await page.setViewportSize({ width: 1440, height: 900 });

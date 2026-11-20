@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Routes, Route, Navigate, Link, useParams, Outlet, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, Link, useParams, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { ensureBookContent, loadSmartbook, isCloudBook } from '../lib/loader';
 import { bookOpenProblem } from '../lib/remoteCatalog';
 import { useCloudChapter } from '../hooks/useCloudChapter';
@@ -10,6 +10,7 @@ import { bookFormulas, scopeSearch, plural, practiceCounts } from '../lib/exerci
 import { sectionPath } from '../lib/sectionRoutes';
 import { getReadingPosition, readingPositionPath } from '../lib/readingPosition';
 import { pinIntoView } from '../lib/scrollPin';
+import { readScrollAnchor } from '../lib/scrollAnchor';
 import type { PracticeLink } from '../components/ds/PracticeLinks';
 import { auditChapterOpen } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -41,9 +42,12 @@ function SectionLoading({ children }: { children?: ReactNode }) {
 }
 
 function useScrollToHash() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, key } = useLocation();
+  const navigationType = useNavigationType();
   useEffect(() => {
     if (!hash) return;
+    // Back or forward to a place the reader left: the chapter returns to it (scrollAnchor), not to the hash.
+    if (navigationType === 'POP' && readScrollAnchor(key)) return;
     let id: string;
     try {
       id = decodeURIComponent(hash.slice(1));
@@ -65,7 +69,7 @@ function useScrollToHash() {
       clearTimeout(timer);
       release?.();
     };
-  }, [pathname, hash]);
+  }, [pathname, hash, key, navigationType]);
 }
 
 function useBookData(): SmartbookData | null {

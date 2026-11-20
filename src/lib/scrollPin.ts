@@ -39,10 +39,17 @@ export function pinnedElement(): Element | null {
   return current?.element ?? null;
 }
 
-export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = 'instant'): () => void {
+/**
+ * `top`, when given, is where the element's top goes, in pixels from the top of the viewport, instead
+ * of under the header at its scroll margin: the place it had when the reader left (scrollAnchor).
+ */
+export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = 'instant', top?: number): () => void {
   current?.release();
 
-  const align = () => element.scrollIntoView({ behavior: 'instant', block: 'start' });
+  const align = () => {
+    if (top === undefined) element.scrollIntoView({ behavior: 'instant', block: 'start' });
+    else window.scrollBy({ top: element.getBoundingClientRect().top - top, behavior: 'instant' });
+  };
   // While a smooth scroll runs, a correction would cut it short: correct once it ends.
   let settled = behavior === 'instant';
   let aligning = true;
@@ -75,7 +82,8 @@ export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = '
   };
   current = pin;
 
-  element.scrollIntoView({ behavior, block: 'start' });
+  if (top === undefined) element.scrollIntoView({ behavior, block: 'start' });
+  else align();
   resizes.observe(document.body);
   if (!settled) window.addEventListener('scrollend', settle);
   for (const type of READER_INPUT) window.addEventListener(type, onInput, { capture: true, passive: true });
