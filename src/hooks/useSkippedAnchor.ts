@@ -26,9 +26,10 @@ export function useSkippedAnchor(articleRef: RefObject<HTMLElement | null>, sect
       atBottom = lastY > 0 && lastY >= root.scrollHeight - window.innerHeight - 1;
     };
     // The event comes after the resize it causes, so the set still names the paragraph as skipped there.
+    // The containment can sit on a frame inside the section.
     const onSkip = (event: Event) => {
-      const target = event.target as Element;
-      if (!target.matches(sectionSelector)) return;
+      const target = (event.target as Element).closest(sectionSelector);
+      if (!target) return;
       if ((event as ContentVisibilityAutoStateChangeEvent).skipped) skipped.add(target);
       else skipped.delete(target);
     };

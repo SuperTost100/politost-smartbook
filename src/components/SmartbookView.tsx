@@ -268,26 +268,30 @@ const ChapterArticle = memo(function ChapterArticle({
           data-para-id={para.id}
           ref={(el) => { paraRefs.current[para.id] = el; }}
           className="paragraph-section"
-          style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
         >
-          <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
-            {para.title}
-          </ParagraphHeading>
-          <div className="paragraph-body">
-            {pieces[i].map((piece, j) =>
-              shown.has(`${i}.${j}`) ? (
-                <ContentFlow
-                  key={j}
-                  content={piece}
-                  formulaIndex={formulaIndex}
-                  resolveAsset={resolveAsset}
-                  onRefClick={onRefClick}
-                  boxStyle="tinted"
-                />
-              ) : (
-                <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
-              ),
-            )}
+          <div
+            className="paragraph-frame"
+            style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
+          >
+            <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
+              {para.title}
+            </ParagraphHeading>
+            <div className="paragraph-body">
+              {pieces[i].map((piece, j) =>
+                shown.has(`${i}.${j}`) ? (
+                  <ContentFlow
+                    key={j}
+                    content={piece}
+                    formulaIndex={formulaIndex}
+                    resolveAsset={resolveAsset}
+                    onRefClick={onRefClick}
+                    boxStyle="tinted"
+                  />
+                ) : (
+                  <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
+                ),
+              )}
+            </div>
           </div>
         </section>
       ))}

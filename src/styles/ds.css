@@ -150,8 +150,12 @@ a.sb-btn { color: var(--ink); }
 .paragraph-section + .paragraph-section { margin-top: 52px; }
 /* A chapter's paragraphs run to thousands of pixels each: the browser lays out and paints only those
    near the screen, so scrolling and hit testing stay cheap on a slow laptop. SmartbookView sets each
-   paragraph's estimated height, and `auto` keeps its real height once it has been on screen. */
-.chapter-content .paragraph-section { content-visibility: auto; contain-intrinsic-size: auto 4000px; }
+   paragraph's estimated height, and `auto` keeps its real height once it has been on screen.
+   The containment clips what a paragraph draws outside its box, such as a box's bleed into the margin,
+   shadows and focus rings, so it sits on a frame that reaches past the section on every side; the
+   section keeps its place and size, which the landing and the outline measure. */
+.chapter-content .paragraph-section { display: flow-root; }
+.paragraph-frame { content-visibility: auto; contain-intrinsic-size: auto 4000px; padding: 16px 24px; margin: -16px -24px; }
 .sb-phead { position: relative; display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font: 500 30px/36px var(--font-serif); letter-spacing: -0.015em; color: var(--ink); }
 .sb-phead-num { display: inline-grid; place-items: center; flex: none; min-width: 46px; height: 30px; padding: 0 8px; border-radius: 9px; background: var(--bg); color: var(--primary-text); font: 700 14px/1 var(--font-sans); letter-spacing: 0; font-variant-numeric: tabular-nums; box-shadow: var(--raised-sm); transform: translateY(-4px); }
 [data-theme="dark"] .sb-phead-num { background: var(--surface); }
