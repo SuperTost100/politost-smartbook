@@ -110,6 +110,9 @@ a.sb-btn { color: var(--ink); }
 .smartbook-view { position: relative; max-width: var(--reading-width); margin: 0 auto var(--space-4); padding: 56px 60px 52px; border-radius: var(--radius-xs); background: var(--page); box-shadow: var(--shadow-paper); }
 .smartbook-view::before, .smartbook-view::after { content: ""; position: absolute; z-index: -1; inset: 6px 6px -6px; border-radius: var(--radius-xs); background: var(--page); box-shadow: var(--shadow-paper); }
 .smartbook-view::after { inset: 12px 12px -12px; opacity: .8; }
+/* The page edges behind the sheet span the whole chapter: as scroll anchors they would hold the page still
+   while text above the screen changes height, so the text on screen would move instead. */
+.smartbook-view::before, .smartbook-view::after { overflow-anchor: none; }
 .sb-page-reading { max-width: var(--reading-width); margin-inline: auto; }
 
 /* The page as the Worker sends it, before the app starts (deploy/politost/worker.js). Crawlers read this. */
@@ -145,6 +148,14 @@ a.sb-btn { color: var(--ink); }
 /* ParagraphHeading */
 .paragraph-section { scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
 .paragraph-section + .paragraph-section { margin-top: 52px; }
+/* A chapter's paragraphs run to thousands of pixels each: the browser lays out and paints only those
+   near the screen, so scrolling and hit testing stay cheap on a slow laptop. SmartbookView sets each
+   paragraph's estimated height, and `auto` keeps its real height once it has been on screen.
+   The containment clips what a paragraph draws outside its box, such as a box's bleed into the margin,
+   shadows and focus rings, so it sits on a frame that reaches past the section on every side; the
+   section keeps its place and size, which the landing and the outline measure. */
+.chapter-content .paragraph-section { display: flow-root; }
+.paragraph-frame { content-visibility: auto; contain-intrinsic-size: auto 4000px; padding: 16px 24px; margin: -16px -24px; }
 .sb-phead { position: relative; display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font: 500 30px/36px var(--font-serif); letter-spacing: -0.015em; color: var(--ink); }
 .sb-phead-num { display: inline-grid; place-items: center; flex: none; min-width: 46px; height: 30px; padding: 0 8px; border-radius: 9px; background: var(--bg); color: var(--primary-text); font: 700 14px/1 var(--font-sans); letter-spacing: 0; font-variant-numeric: tabular-nums; box-shadow: var(--raised-sm); transform: translateY(-4px); }
 [data-theme="dark"] .sb-phead-num { background: var(--surface); }
@@ -181,7 +192,8 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-prose .katex[data-wide]:focus-visible, .print-sheet [data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 .math-glue:has(> .katex[data-wide]) { white-space: normal; }
 .sb-prose mark { background: var(--star-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
-.sb-prose > :last-child { margin-bottom: 0; }
+/* A chapter paragraph is several flows in a row (SmartbookView): only the last one drops its last margin. */
+.sb-prose:where(:not(.paragraph-body > :not(:last-child))) > :last-child { margin-bottom: 0; }
 
 /* Formula: an engraved plate with a raised number. */
 .sb-formula { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-4); margin: 26px 0; padding: 20px 18px 14px 22px; border-radius: 16px; background: var(--code-bg); box-shadow: inset 2px 2px 5px var(--shade), inset -2px -2px 5px var(--highlight); scroll-margin-top: calc(var(--header-height) + var(--space-6)); font-family: var(--font-serif); }

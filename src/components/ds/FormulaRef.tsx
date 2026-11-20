@@ -3,8 +3,7 @@ import type { KeyboardEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Popover } from 'antd';
 import type { FormulaRef as FormulaRefData } from '../../types/smartbook';
-import { renderFormulaLatex } from '../../lib/formulaRender';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { formulaHtml } from '../../lib/formulaHtmlCache';
 import { formulaSheetPath } from '../../lib/sectionRoutes';
 
 interface FormulaRefProps {
@@ -101,7 +100,7 @@ function FormulaPreview({ formula, bookId, actionRef, onActionKeyDown, onActionB
       </div>
       <div
         className="sb-fref-pop-math"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(formula.latex)) }}
+        dangerouslySetInnerHTML={{ __html: formulaHtml(formula.latex) }}
       />
       {bookId && (
         <div className="sb-fref-pop-foot">

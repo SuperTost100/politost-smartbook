@@ -228,7 +228,7 @@ All in this repo.
 2. **CSP.** `scripts/generate-headers.mjs` appends `VITE_BOOKS_URL` to `connect-src` and `img-src`, next to `VITE_API_URL`.
 3. **`src/lib/remoteCatalog.ts` (new).**
    - `initRemoteBooks()` fetches `catalog.json` and registers entries in a new `remoteRegistry` in `loader.ts`, with `source: 'remote'`. Skip entries whose `specVersion` is newer than `CONTENT_FORMAT_VERSION`, or show them with a "update the reader" notice.
-   - `ensureRemoteBook(id)` fetches the package, checks `bytes` and `sha256` (`crypto.subtle.digest`), then calls `parsePtsbFile(new File([blob], name))`. That's the same parser the upload button uses, with the same zip limits. Reject `encrypted` packages, since remote books are public only.
+   - `ensureRemoteBook(id)` fetches the package, checks `bytes` and `sha256` (`crypto.subtle.digest`), then calls `parsePtsbFile(new File([blob], name), { latex: false })`. That's the same parser the upload button uses, with the same zip limits and structural checks. A matching hash means CI already checked the formulas, so the reader skips only the KaTeX check, which renders every formula of the book. An imported file gets every check. Reject `encrypted` packages, since remote books are public only.
    - Cache packages in IndexedDB keyed by `id@version`. `ptsbStore.ts` already does this for uploads, so reuse it with a separate store name. Opening a book a second time works offline.
 4. **`loader.ts`.** `loadBundle` and `getCatalog` gain the remote registry. Precedence is uploaded > remote > builtin, so an author can test a local `.ptsb` over the published one.
 5. **`App.tsx`.** Call `initRemoteBooks()` next to `initBuiltinBooks()`. A failed catalog fetch logs and leaves the home page with builtin books only.

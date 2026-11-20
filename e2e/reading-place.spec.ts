@@ -188,6 +188,22 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
   });
 }
 
+for (const key of ['End', 'Control+End']) {
+  test(`one press of ${key} reaches the end of a chapter whose paragraphs are not laid out yet`, async ({ page }) => {
+    await serveBook(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/libro/lungo/capitolo/lungo');
+    await expect(page.locator('#p1')).toBeVisible();
+    await page.keyboard.press(key);
+    const atBottom = () => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - window.innerHeight - window.scrollY) <= 1);
+    await expect.poll(atBottom).toBe(true);
+    // And it stays there once every paragraph has its real height.
+    await page.waitForTimeout(1500);
+    expect(await atBottom()).toBe(true);
+    await expect(page.getByRole('link', { name: /Capitolo|Esercizi|Libreria/ }).last()).toBeInViewport();
+  });
+}
+
 test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
   // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.
   await page.setViewportSize({ width: 1440, height: 900 });

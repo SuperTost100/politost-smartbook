@@ -1,20 +1,103 @@
 import { useLayoutEffect, type RefObject } from 'react';
-import { formulaName, markScrolling } from '../lib/scrollableMath';
+import { flagWideFormulas } from '../lib/scrollableMath';
 
-/** The boxes a display formula scrolls in: chapter text, numbered formulas and formula-sheet rows. */
-const SCROLL_BOXES = '.content-math, .katex-block, .sb-formula-math, .sb-fcard-math';
+/** The width each root had when it was last measured. */
+const measuredWidth = new WeakMap<HTMLElement, number>();
+const mounted = new Set<HTMLElement>();
+/** Roots the browser is not laying out yet (content-visibility), measured once they come near the screen. */
+const waiting = new Set<HTMLElement>();
+const toCheck = new Set<HTMLElement>();
+const toMeasure = new Set<HTMLElement>();
+let flushQueued = false;
+let fontsPending = false;
 
-/** The width the text has: that of the nearest ancestor that is not an inline box, minus its padding. */
-function lineWidth(el: HTMLElement): number {
-  let block = el.parentElement;
-  while (block && getComputedStyle(block).display.startsWith('inline')) block = block.parentElement;
-  if (!block) return Infinity;
-  const style = getComputedStyle(block);
-  return block.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+/** Whether the browser lays out the root now. Older browsers without the check measure every root. */
+function isRendered(root: HTMLElement): boolean {
+  return typeof root.checkVisibility !== 'function' || root.checkVisibility({ contentVisibilityAuto: true });
 }
 
-/** A numbered formula's box carries its number and label (`data-formula-id`, `data-formula-label`). */
-const boxName = (el: HTMLElement) => formulaName(el.dataset.formulaId, el.dataset.formulaLabel);
+function flush() {
+  flushQueued = false;
+  const now: HTMLElement[] = [];
+  for (const root of toCheck) {
+    if (!mounted.has(root) || toMeasure.has(root)) continue;
+    if (isRendered(root)) now.push(root);
+    else wait(root);
+  }
+  for (const root of toMeasure) if (mounted.has(root)) now.push(root);
+  toCheck.clear();
+  toMeasure.clear();
+  if (now.length === 0) return;
+  // Read with the other widths, before the writes.
+  for (const root of now) measuredWidth.set(root, root.clientWidth);
+  flagWideFormulas(now);
+  for (const root of now) {
+    waiting.delete(root);
+    nearScreen?.unobserve(root);
+  }
+  // The layout just asked for the fonts the formulas use, KaTeX's among them: they change the widths once they arrive.
+  if (document.fonts?.status === 'loading' && !fontsPending) {
+    fontsPending = true;
+    void document.fonts.ready.then(() => {
+      fontsPending = false;
+      for (const root of mounted) queue(root, false);
+    });
+  }
+}
+
+/** One measure for every root that changed in the same task: a chapter mounts dozens of them at once. */
+function queue(root: HTMLElement, force: boolean) {
+  (force ? toMeasure : toCheck).add(root);
+  if (flushQueued) return;
+  flushQueued = true;
+  queueMicrotask(flush);
+}
+
+// Created on first use: these do not exist where the module is imported for tests.
+let resizes: ResizeObserver | null = null;
+let nearScreen: IntersectionObserver | null = null;
+
+function wait(root: HTMLElement) {
+  if (waiting.has(root)) return;
+  waiting.add(root);
+  nearScreen ??= new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) if (entry.isIntersecting) queue(entry.target as HTMLElement, true);
+    },
+    { rootMargin: '100% 0px' },
+  );
+  nearScreen.observe(root);
+  if (waiting.size === 1) document.addEventListener('contentvisibilityautostatechange', onVisibilityChange, true);
+}
+
+/** A part of the page the browser starts laying out again: measure the roots inside it. */
+function onVisibilityChange(event: Event) {
+  if ((event as ContentVisibilityAutoStateChangeEvent).skipped) return;
+  const target = event.target as Node;
+  for (const root of waiting) if (target.contains(root)) queue(root, true);
+}
+
+function register(root: HTMLElement) {
+  mounted.add(root);
+  queue(root, false);
+  resizes ??= new ResizeObserver((entries) => {
+    for (const { target } of entries) {
+      const root = target as HTMLElement;
+      // The first report of a root comes right after it is observed: only a new width is news.
+      if (mounted.has(root) && measuredWidth.get(root) !== root.clientWidth) queue(root, false);
+    }
+  });
+  resizes.observe(root);
+}
+
+function unregister(root: HTMLElement) {
+  mounted.delete(root);
+  waiting.delete(root);
+  measuredWidth.delete(root);
+  resizes?.unobserve(root);
+  nearScreen?.unobserve(root);
+  if (waiting.size === 0) document.removeEventListener('contentvisibilityautostatechange', onVisibilityChange, true);
+}
 
 /**
  * Formulas wider than their column scroll sideways, and get `data-wide` and a Tab stop with a name
@@ -25,6 +108,11 @@ const boxName = (el: HTMLElement) => formulaName(el.dataset.formulaId, el.datase
  * differently on the baseline, so the others stay ordinary inline text. A display formula already
  * sits in a scroll box; the hook only finds the boxes that scroll.
  *
+ * The roots mounted together are measured together before the next paint. A root the browser is not
+ * laying out yet (a paragraph far from the screen, see content-visibility in ds.css) is measured when
+ * it comes near the screen, so opening a chapter does not lay out all of it. A root is measured again
+ * when its width changes and when the web fonts its formulas use arrive.
+ *
  * `content` names what the root shows, for a root that keeps its size when its content changes
  * (the formula sheet changing chapter).
  */
@@ -32,24 +120,7 @@ export function useScrollableMath(ref: RefObject<HTMLElement | null>, enabled: b
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root || !enabled) return;
-    const flag = () => {
-      for (const math of root.querySelectorAll<HTMLElement>('.katex')) {
-        if (math.closest('.katex-display')) continue;
-        let natural = 0;
-        for (const base of math.querySelectorAll<HTMLElement>('.katex-base')) natural = Math.max(natural, base.offsetWidth);
-        markScrolling(math, natural > lineWidth(math) + 1, boxName);
-      }
-      // Inner boxes first: a box around one that scrolls does not scroll itself, whatever it measures.
-      for (const box of [...root.querySelectorAll<HTMLElement>(SCROLL_BOXES)].reverse()) {
-        const wide = box.scrollWidth > box.clientWidth + 1 && !box.querySelector(':is(.content-math, .katex-block)[data-wide]');
-        markScrolling(box, wide, boxName);
-      }
-    };
-    flag();
-    const observer = new ResizeObserver(flag);
-    observer.observe(root);
-    // Web fonts change the widths once they arrive.
-    void document.fonts?.ready.then(flag);
-    return () => observer.disconnect();
+    register(root);
+    return () => unregister(root);
   }, [ref, enabled, content]);
 }

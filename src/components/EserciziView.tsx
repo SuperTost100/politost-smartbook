@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import type { ChapterMeta, Exercise, FormulaRef } from '../types/smartbook';
 import { ContentFlow } from './ContentFlow';
@@ -11,6 +11,8 @@ import { ChapterPicker } from './ds/ChapterPicker';
 import { useIndexDrawer } from './shell/indexDrawer';
 import { preprocessContent } from '../lib/parser';
 import { useRefClick } from '../hooks/useRefClick';
+import { useProgressiveCount } from '../hooks/useProgressiveCount';
+import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { useChapterView, useFocusOnScopeChange } from '../hooks/useChapterView';
 import { lastReadChapter } from '../lib/readingPosition';
 import { sectionPath } from '../lib/sectionRoutes';
@@ -49,6 +51,8 @@ interface EserciziViewProps {
 }
 
 const NO_CHAPTERS: ChapterMeta[] = [];
+/** Exercises shown at once, as many as a chapter has; "Tutti" lists hundreds, and the rest follow in later tasks. */
+const FIRST_EXERCISES = 30;
 
 interface ExerciseItemProps {
   exercise: Exercise;
@@ -108,6 +112,10 @@ export function EserciziView({
   useFocusOnScopeChange(scope, location.hash, titleRef);
 
   const linkedExercise = linkedId(location.hash, EXERCISE_HASH);
+  // The cards appear in batches, each question parsed in its own task, and a linked exercise is there from the start.
+  const linkedIndex = linkedExercise ? shown.findIndex((ex) => ex.id === linkedExercise) : -1;
+  const prepare = useCallback((i: number) => void cachedContentBlocks(preprocessContent(shown[i].question)), [shown]);
+  const shownCount = useProgressiveCount(shown.length, Math.max(FIRST_EXERCISES, linkedIndex + 1), prepare, shown);
   const linked = linkedExercise ? exercises.find((ex) => ex.id === linkedExercise) : undefined;
   const redirect = scopeRedirect(view, linked, index && scope == null && !linked ? lastReadChapter(bookId, chapters) : undefined);
   if (redirect != null) return <Navigate replace to={{ search: redirect, hash: location.hash }} />;
@@ -152,9 +160,9 @@ export function EserciziView({
       </div>
     );
   } else if (index && scope === 'tutti') {
-    body = <GroupedList index={index} shown={shown} href={href} item={item} />;
+    body = <GroupedList index={index} shown={shown} shownCount={shownCount} href={href} item={item} />;
   } else {
-    body = <div className="sb-stack">{shown.map(item)}</div>;
+    body = <div className="sb-stack">{shown.slice(0, shownCount).map(item)}</div>;
   }
 
   let pager = null;
@@ -187,13 +195,16 @@ export function EserciziView({
 interface GroupedListProps {
   index: ChapterIndex;
   shown: Exercise[];
+  /** How many of `shown` are on the page yet; the headings count all of them. */
+  shownCount: number;
   href: (scope: IndexScope) => string;
   item: (ex: Exercise) => React.ReactNode;
 }
 
 /** "Tutti": the exercises under a heading per chapter, with how many of the chapter's are shown. */
-function GroupedList({ index, shown, href, item }: GroupedListProps) {
+function GroupedList({ index, shown, shownCount, href, item }: GroupedListProps) {
   const groups = new Map<EntryScope, Exercise[]>();
+  const onPage = new Set(shown.slice(0, shownCount));
   for (const ex of shown) {
     const scope = entryScopeOf(ex, index);
     const list = groups.get(scope);
@@ -204,7 +215,8 @@ function GroupedList({ index, shown, href, item }: GroupedListProps) {
     <>
       {index.entries.map((entry) => {
         const items = groups.get(entry.scope);
-        if (!items) return null;
+        // A chapter shows up with its first card.
+        if (!items || !onPage.has(items[0])) return null;
         const total = plural(entry.count, 'esercizio', 'esercizi');
         const headingId = `group-${entry.scope}`;
         return (
@@ -219,7 +231,7 @@ function GroupedList({ index, shown, href, item }: GroupedListProps) {
               <Link to={href(entry.scope)}>{entry.title}</Link>
               <span className="sb-exgroup-count">{items.length === entry.count ? total : `${items.length} di ${total}`}</span>
             </h2>
-            <div className="sb-stack">{items.map(item)}</div>
+            <div className="sb-stack">{items.filter((ex) => onPage.has(ex)).map(item)}</div>
           </section>
         );
       })}

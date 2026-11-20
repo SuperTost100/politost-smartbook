@@ -1,14 +1,12 @@
-import { useMemo } from 'react';
 import type { FormulaRef } from '../../types/smartbook';
-import { renderFormulaLatex } from '../../lib/formulaRender';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { formulaHtml } from '../../lib/formulaHtmlCache';
 
 /**
  * A numbered display formula: math centred, number chip right, label below. `showLabel` false leaves
  * the label out where the text around already names the formula (a box with the same title).
  */
 export function Formula({ formula, showLabel = true }: { formula: FormulaRef; showLabel?: boolean }) {
-  const html = useMemo(() => sanitizeHtml(renderFormulaLatex(formula.latex)), [formula.latex]);
+  const html = formulaHtml(formula.latex);
   return (
     <div className="sb-formula" id={`formula-${formula.id}`} data-formula-id={formula.id}>
       <div

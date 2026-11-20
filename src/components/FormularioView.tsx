@@ -7,7 +7,8 @@ import { ChapterPicker } from './ds/ChapterPicker';
 import { ChapterPager, type PagerTarget } from './ds/ChapterPager';
 import { useIndexDrawer } from './shell/indexDrawer';
 import { useChapterView, useFocusOnScopeChange } from '../hooks/useChapterView';
-import { useScrollableMath } from '../hooks/useScrollableMath';
+import { useProgressiveCount } from '../hooks/useProgressiveCount';
+import { formulaHtml } from '../lib/formulaHtmlCache';
 import { lastReadChapter } from '../lib/readingPosition';
 import { sectionPath } from '../lib/sectionRoutes';
 import {
@@ -50,10 +51,8 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
   const location = useLocation();
   const drawer = useIndexDrawer();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
   const basePath = sectionPath(bookId, 'formulario');
   useFocusOnScopeChange(scope, location.hash, titleRef);
-  useScrollableMath(rootRef, true, scope);
 
   const byChapter = useMemo(() => {
     const map = new Map<number, FormulaRef[]>();
@@ -65,6 +64,16 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
     return map;
   }, [formulas]);
   const chapterIds = useMemo(() => new Map(config.chapters.map((c) => [c.number, c.id])), [config.chapters]);
+  // "Tutte" shows its chapters one card at a time, each card's formulas rendered in their own task.
+  const cardChapters = useMemo(
+    () => (index ? config.chapters.filter((c) => byChapter.has(c.number)) : config.chapters),
+    [index, config.chapters, byChapter],
+  );
+  const prepareCard = useCallback(
+    (i: number) => byChapter.get(cardChapters[i].number)?.forEach((f) => formulaHtml(f.latex)),
+    [byChapter, cardChapters],
+  );
+  const shownCards = useProgressiveCount(typeof scope === 'number' ? 0 : cardChapters.length, 1, prepareCard, cardChapters);
   const hrefFor = useCallback(
     (f: FormulaRef) => `/libro/${bookId}/capitolo/${chapterIds.get(f.chapter)}#formula-${f.id}`,
     [bookId, chapterIds],
@@ -89,10 +98,9 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
     body = <FormulaCard formulas={byChapter.get(scope) ?? NO_FORMULAS} hrefFor={hrefFor} />;
   } else {
     // "Tutte" lists the chapters with formulas; without the index the page shows every chapter, as it always did.
-    const shown = index ? config.chapters.filter((c) => byChapter.has(c.number)) : config.chapters;
     body = (
       <div className="sb-stack">
-        {shown.map((c) => (
+        {cardChapters.slice(0, shownCards).map((c) => (
           <FormulaCard
             key={c.id}
             chapter={c.number}
@@ -115,7 +123,7 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
   }
 
   return (
-    <div ref={rootRef} className="formulario-view sb-page">
+    <div className="formulario-view sb-page">
       <SectionHeader
         lead={trigger}
         eyebrow={trigger || !entry ? undefined : `Capitolo ${entry.number}`}

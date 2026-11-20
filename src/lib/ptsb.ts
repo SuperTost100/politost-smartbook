@@ -1,12 +1,19 @@
-import { PTSB_ZIP_LIMITS, parsePtsbEntries, ptsbKind, safeUnzip, type PtsbBundle } from '@politost/content-core';
+import {
+  PTSB_ZIP_LIMITS,
+  parsePtsbEntries,
+  ptsbKind,
+  safeUnzip,
+  type BundleValidateOptions,
+  type PtsbBundle,
+} from '@politost/content-core';
 import type { PtsbEncryptedHeader, StoredBookBundle } from '../types/ptsb';
 import { b64decode, decryptPayload, parseEncryptedHeader } from './ptsbCrypto';
 import { fetchContentKey } from './api';
 import { getReaderConfig } from '../config/readerConfig';
 
 /** Plain-package parsing lives in content-core. The reader adds decryption and the import date. */
-function toStored(entries: Record<string, Uint8Array>): StoredBookBundle {
-  const bundle: Partial<PtsbBundle> = parsePtsbEntries(entries);
+function toStored(entries: Record<string, Uint8Array>, options?: BundleValidateOptions): StoredBookBundle {
+  const bundle: Partial<PtsbBundle> = parsePtsbEntries(entries, options);
   delete bundle.manifest;
   return { ...(bundle as Omit<PtsbBundle, 'manifest'>), importedAt: new Date().toISOString() };
 }
@@ -30,7 +37,13 @@ async function decryptLicensedFile(
   return decryptPayload(cek, payloadIv, ciphertext, headerBytes);
 }
 
-export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
+/**
+ * Reads a `.ptsb`. `options` goes to the validator: a package from the books site whose SHA-256
+ * matches the catalog passes `{ latex: false }`, because the books repository already checked its
+ * formulas with KaTeX before it listed the hash, and that check is most of opening a book for the
+ * first time. A file the student imports gets every check.
+ */
+export async function parsePtsbFile(file: File, options?: BundleValidateOptions): Promise<StoredBookBundle> {
   const max = PTSB_ZIP_LIMITS.maxCompressedBytes;
   if (file.size > max) {
     throw new Error(`File troppo grande (max ${max / (1024 * 1024)} MB)`);
@@ -40,7 +53,7 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
   const kind = ptsbKind(buf);
 
   if (kind === 'zip') {
-    return toStored(safeUnzip(buf));
+    return toStored(safeUnzip(buf), options);
   }
 
   if (kind === 'encrypted') {
@@ -53,7 +66,7 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
     if (access !== 'licensed' && access !== 'public') {
       throw new Error('Libro protetto: accedi e verifica la licenza per aprire questo file.');
     }
-    return toStored(safeUnzip(zipBytes));
+    return toStored(safeUnzip(zipBytes), options);
   }
 
   throw new Error('Formato file non riconosciuto. Usa un file .ptsb valido.');
@@ -62,3 +75,4 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
 export function isEncryptedPtsb(buffer: ArrayBuffer): boolean {
   return ptsbKind(new Uint8Array(buffer)) === 'encrypted';
 }
+

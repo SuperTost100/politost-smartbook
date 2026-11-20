@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useLocation } from 'react-router-dom';
-import type { Chapter } from '../types/smartbook';
+import type { Chapter, FormulaRef } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
 import { ChapterHeader } from './ds/ChapterHeader';
@@ -9,10 +9,17 @@ import { ChapterPager } from './ds/ChapterPager';
 import { PracticeLinks, type PracticeLink } from './ds/PracticeLinks';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
+import { useSkippedAnchor } from '../hooks/useSkippedAnchor';
+import { useProgressiveCount } from '../hooks/useProgressiveCount';
+import { cachedContentBlocks } from '../lib/contentBlocksCache';
+import { mountOrder, pieceForHash, splitContentPieces } from '../lib/contentPieces';
+import { formulaHtml } from '../lib/formulaHtmlCache';
+import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 import { pinnedElement } from '../lib/scrollPin';
 import { chapterProgress } from '../lib/chapterProgress';
+import { estimateTextHeight, HEADING_HEIGHT } from '../lib/heightEstimate';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
 interface SmartbookViewProps {
@@ -23,6 +30,11 @@ interface SmartbookViewProps {
   /** Links to this chapter's exercises (and the exam questions after the last chapter), before the pager. */
   practice?: PracticeLink[];
 }
+
+/** Text per piece of a paragraph, about a screen: a piece is what one task parses and shows. */
+const PIECE_CHARS = 1500;
+/** Text shown at once when the chapter opens, enough to fill the screen at the landing. */
+const FIRST_CHARS = 3000;
 
 /** ~200 words per minute, rounded up, at least one minute. */
 function readingMinutes(chapter: Chapter): number {
@@ -39,6 +51,75 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   // The chapter re-renders on every change of the active paragraph, so the text work runs once per chapter.
   const minutes = useMemo(() => readingMinutes(chapter), [chapter]);
   const contents = useMemo(() => chapter.paragraphs.map((p) => preprocessContent(p.content)), [chapter]);
+
+  // The browser skips the layout of paragraphs far from the screen (content-visibility in ds.css) and
+  // gives them this height until it lays them out. It depends on the width of the text.
+  const articleRef = useRef<HTMLElement>(null);
+  const [columnWidth, setColumnWidth] = useState(0);
+  useLayoutEffect(() => {
+    const article = articleRef.current;
+    if (!article) return;
+    const measure = () => setColumnWidth((article.querySelector('.content-flow') ?? article).clientWidth);
+    measure();
+    // The observer also reports every change of height while the chapter fills in: the same width does not re-render.
+    const observer = new ResizeObserver(measure);
+    observer.observe(article);
+    return () => observer.disconnect();
+  }, []);
+  useSkippedAnchor(articleRef, '.paragraph-section', chapter);
+  // A long paragraph appears a piece at a time: first the pieces at the landing, then the rest of the
+  // chapter in later tasks (useProgressiveCount), so the text shows quickly and the page keeps answering.
+  // A piece not shown yet keeps its estimated height. The piece a link points at is always shown.
+  const pieces = useMemo(() => contents.map((content) => splitContentPieces(content, PIECE_CHARS)), [contents]);
+  const pieceHeights = useMemo(
+    () => (columnWidth > 0 ? pieces.map((list) => list.map((piece) => estimateTextHeight(piece, columnWidth))) : null),
+    [pieces, columnWidth],
+  );
+  const paragraphIds = useMemo(() => chapter.paragraphs.map((p) => p.id), [chapter]);
+  const [landing] = useState(hash);
+  const order = useMemo(() => mountOrder(pieces, pieceForHash(pieces, paragraphIds, landing)), [pieces, paragraphIds, landing]);
+  const firstCount = useMemo(() => {
+    let chars = 0;
+    let n = 0;
+    while (n < order.length && (n === 0 || chars < FIRST_CHARS)) chars += pieces[order[n][0]][order[n++][1]].length;
+    return n;
+  }, [order, pieces]);
+  const prepare = useCallback((index: number) => {
+    const [i, j] = order[index];
+    cachedContentBlocks(pieces[i][j]);
+  }, [order, pieces]);
+  const shownCount = useProgressiveCount(order.length, firstCount, prepare, order);
+  // Once the chapter is all on the page, the chapters before and after it are parsed while the reader
+  // reads, within the caches' limits, so moving to one only has to put it on the page. The work waits
+  // while the reader scrolls.
+  const settled = shownCount >= order.length;
+  useEffect(() => {
+    if (!settled) return;
+    const at = allChapters.findIndex((c) => c.meta.id === chapter.meta.id);
+    const neighbours = [allChapters[at + 1], allChapters[at - 1]].filter((c): c is Chapter => Boolean(c));
+    let scrolledAt = 0;
+    const onScroll = () => {
+      scrolledAt = performance.now();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const stop = runWhenIdle(
+      neighbours.flatMap((c) => [
+        ...c.paragraphs.flatMap((p) => splitContentPieces(preprocessContent(p.content), PIECE_CHARS)).map((piece) => () => void cachedContentBlocks(piece)),
+        ...c.formulas.map((f) => () => void formulaHtml(f.latex)),
+      ]),
+      () => performance.now() - scrolledAt < 1000,
+    );
+    return () => {
+      stop();
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [settled, allChapters, chapter]);
+  const shown = useMemo(() => {
+    const set = new Set(order.slice(0, shownCount).map(([i, j]) => `${i}.${j}`));
+    const linked = pieceForHash(pieces, paragraphIds, hash);
+    if (linked) set.add(`${linked[0]}.${linked[1]}`);
+    return set;
+  }, [order, shownCount, pieces, paragraphIds, hash]);
 
   useEffect(() => {
     setParagraphs(
@@ -132,33 +213,88 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
         minutes={minutes}
       />
 
-      <article className="chapter-content">
-        {chapter.paragraphs.map((para, i) => (
-          <section
-            key={para.id}
-            id={para.id}
-            data-para-id={para.id}
-            ref={(el) => { paraRefs.current[para.id] = el; }}
-            className="paragraph-section"
-          >
-            <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
-              {para.title}
-            </ParagraphHeading>
-            <div className="paragraph-body">
-              <ContentFlow
-                content={contents[i]}
-                formulaIndex={formulaIndex}
-                resolveAsset={resolveAsset}
-                onRefClick={handleRefClick}
-                boxStyle="tinted"
-              />
-            </div>
-          </section>
-        ))}
-      </article>
+      <ChapterArticle
+        chapter={chapter}
+        pieces={pieces}
+        pieceHeights={pieceHeights}
+        shown={shown}
+        formulaIndex={formulaIndex}
+        resolveAsset={resolveAsset}
+        onRefClick={handleRefClick}
+        articleRef={articleRef}
+        paraRefs={paraRefs}
+      />
 
       <PracticeLinks links={practice} />
       <ChapterPager prev={prev} next={next} />
     </div>
   );
 }
+
+interface ChapterArticleProps {
+  chapter: Chapter;
+  pieces: string[][];
+  pieceHeights: number[][] | null;
+  /** The pieces on the page, as "paragraph.piece". */
+  shown: Set<string>;
+  formulaIndex: Map<string, FormulaRef>;
+  resolveAsset?: (src: string) => string | undefined;
+  onRefClick: (e: React.MouseEvent) => void;
+  articleRef: RefObject<HTMLElement | null>;
+  paraRefs: RefObject<Record<string, HTMLElement | null>>;
+}
+
+/**
+ * The chapter's text. Memoized: the view re-renders whenever the active paragraph changes as the
+ * reader scrolls, and the text stays the same, so scrolling only updates the outline.
+ */
+const ChapterArticle = memo(function ChapterArticle({
+  chapter,
+  pieces,
+  pieceHeights,
+  shown,
+  formulaIndex,
+  resolveAsset,
+  onRefClick,
+  articleRef,
+  paraRefs,
+}: ChapterArticleProps) {
+  return (
+    <article ref={articleRef} className="chapter-content">
+      {chapter.paragraphs.map((para, i) => (
+        <section
+          key={para.id}
+          id={para.id}
+          data-para-id={para.id}
+          ref={(el) => { paraRefs.current[para.id] = el; }}
+          className="paragraph-section"
+        >
+          <div
+            className="paragraph-frame"
+            style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
+          >
+            <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
+              {para.title}
+            </ParagraphHeading>
+            <div className="paragraph-body">
+              {pieces[i].map((piece, j) =>
+                shown.has(`${i}.${j}`) ? (
+                  <ContentFlow
+                    key={j}
+                    content={piece}
+                    formulaIndex={formulaIndex}
+                    resolveAsset={resolveAsset}
+                    onRefClick={onRefClick}
+                    boxStyle="tinted"
+                  />
+                ) : (
+                  <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
+                ),
+              )}
+            </div>
+          </div>
+        </section>
+      ))}
+    </article>
+  );
+});

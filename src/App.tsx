@@ -10,10 +10,6 @@ import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { initBuiltinBooks, initRemoteBooks, initUploadedBooks } from './lib/loader';
 import { initCloudBooks } from './lib/cloudLoader';
 import { Home } from './pages/Home';
-import { AuthPage } from './pages/AuthPage';
-import { AuthCallbackPage } from './pages/AuthCallbackPage';
-import { AcceptTermsPage } from './pages/AcceptTermsPage';
-import { RedeemPage } from './pages/RedeemPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { getReaderConfig } from './config/readerConfig';
 import { useReaderFeatures } from './context/ReaderConfigContext';
@@ -21,10 +17,17 @@ import { useReaderFeatures } from './context/ReaderConfigContext';
 const SmartbookRouter = lazy(() =>
   import('./pages/SmartbookPage').then((m) => ({ default: m.SmartbookRouter })),
 );
+// The account pages bring antd's forms, which the library does not need to show itself.
+const AuthPage = lazy(() => import('./pages/AuthPage').then((m) => ({ default: m.AuthPage })));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then((m) => ({ default: m.AuthCallbackPage })));
+const AcceptTermsPage = lazy(() => import('./pages/AcceptTermsPage').then((m) => ({ default: m.AcceptTermsPage })));
+const RedeemPage = lazy(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const LegalPage = lazy(() => import('./pages/LegalPage').then((m) => ({ default: m.LegalPage })));
 const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
 
 const queryClient = new QueryClient();
+
+const PAGE_LOADING = <div className="app-loading"><p>Caricamento…</p></div>;
 
 const CONSENT_OPEN = ['/auth', '/termini', '/privacy', '/cookie', '/docs'];
 
@@ -76,10 +79,10 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         {authEnabled && (
           <>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/auth/accept-terms" element={<AcceptTermsPage />} />
-            <Route path="/redeem" element={<RedeemPage />} />
+            <Route path="/auth" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AuthPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/auth/callback" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AuthCallbackPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/auth/accept-terms" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AcceptTermsPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/redeem" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><RedeemPage /></Suspense></RouteErrorBoundary>} />
           </>
         )}
         <Route

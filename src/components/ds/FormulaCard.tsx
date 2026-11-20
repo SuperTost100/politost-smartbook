@@ -1,8 +1,8 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import type { FormulaRef } from '../../types/smartbook';
-import { renderFormulaLatex } from '../../lib/formulaRender';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { formulaHtml } from '../../lib/formulaHtmlCache';
+import { useScrollableMath } from '../../hooks/useScrollableMath';
 
 interface FormulaCardProps {
   /** The chapter's heading: number and title. Left out where the page title already names the chapter. */
@@ -21,8 +21,11 @@ interface FormulaCardProps {
  * it (useScrollableMath flags it), so it can be scrolled and focused without leaving the page.
  */
 export const FormulaCard = memo(function FormulaCard({ chapter, title, titleHref, formulas, hrefFor }: FormulaCardProps) {
+  const rootRef = useRef<HTMLElement>(null);
+  // The card keeps its size when the formula sheet changes chapter, so the formulas name what it shows.
+  useScrollableMath(rootRef, true, formulas);
   return (
-    <section className="sb-fcard">
+    <section ref={rootRef} className="sb-fcard">
       {title != null && (
         <header className="sb-fcard-head">
           <span className="sb-eyebrow">Capitolo {chapter}</span>
@@ -42,7 +45,7 @@ export const FormulaCard = memo(function FormulaCard({ chapter, title, titleHref
               className="sb-fcard-math"
               data-formula-id={f.id}
               data-formula-label={f.label}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(f.latex)) }}
+              dangerouslySetInnerHTML={{ __html: formulaHtml(f.latex) }}
             />
           </div>
         ))
