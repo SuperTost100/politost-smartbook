@@ -1,6 +1,7 @@
 import type { SmartbookConfig } from '../../types/smartbook';
 import { PrintBrand } from '../PrintDocument';
 import type { BookPlan } from '../parts';
+import { hrefTo, printIds } from '../../lib/printLinks';
 
 /** The cover of the whole book: subject, title, authors and version, then what the document contains. */
 export function PrintCover({ config, contents }: { config: SmartbookConfig; contents: string }) {
@@ -19,7 +20,10 @@ export function PrintCover({ config, contents }: { config: SmartbookConfig; cont
   );
 }
 
-/** What the document contains, in order. No page numbers: the browser paginates after the app has rendered. */
+/**
+ * What the document contains, in order, each entry a link to its part. No page numbers: the browser
+ * paginates after the app has rendered.
+ */
 export function PrintIndex({ plan, otherTitle }: { plan: BookPlan; otherTitle: string }) {
   return (
     <section>
@@ -29,29 +33,33 @@ export function PrintIndex({ plan, otherTitle }: { plan: BookPlan; otherTitle: s
           const count = plan.exercises?.get(c.meta.number)?.length ?? 0;
           return (
             <li key={c.meta.id}>
-              <div className="print-index-row">
+              <a className="print-index-row" href={hrefTo(printIds.chapter(c.meta.number))}>
                 <span className="print-index-n">{c.meta.number}</span>
                 <span>{c.meta.title}</span>
-              </div>
-              {count > 0 && <div className="print-index-sub">Esercizi del capitolo {c.meta.number} · {count}</div>}
+              </a>
+              {count > 0 && (
+                <a className="print-index-sub" href={hrefTo(printIds.chapterExercises(c.meta.number))}>
+                  Esercizi del capitolo {c.meta.number} · {count}
+                </a>
+              )}
             </li>
           );
         })}
-        {plan.other.length > 0 && <IndexAppendix title={otherTitle} />}
-        {plan.formulario && <IndexAppendix title="Formulario" />}
-        {plan.exams && <IndexAppendix title="Prove d'esame" />}
+        {plan.other.length > 0 && <IndexAppendix title={otherTitle} target={printIds.otherExercises} />}
+        {plan.formulario && <IndexAppendix title="Formulario" target={printIds.formulario} />}
+        {plan.exams && <IndexAppendix title="Prove d'esame" target={printIds.exams} />}
       </ol>
     </section>
   );
 }
 
-function IndexAppendix({ title }: { title: string }) {
+function IndexAppendix({ title, target }: { title: string; target: string }) {
   return (
     <li>
-      <div className="print-index-row print-index-appendix">
+      <a className="print-index-row print-index-appendix" href={hrefTo(target)}>
         <span className="print-index-n" />
         <span>{title}</span>
-      </div>
+      </a>
     </li>
   );
 }

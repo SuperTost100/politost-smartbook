@@ -6,6 +6,7 @@ import { PrintCover, PrintIndex } from './bodies/PrintBookFront';
 import { PrintChapter } from './bodies/PrintChapter';
 import { PrintExerciseSection } from './bodies/PrintExercises';
 import { PrintFormulario } from './bodies/PrintFormulario';
+import { printIds } from '../lib/printLinks';
 
 export interface PrintContext {
   formulaIndex: Map<string, FormulaRef>;
@@ -96,7 +97,7 @@ export function bookParts(
       deferLayout: true,
       node: (
         <>
-          <header className="print-chapter-opener">
+          <header className="print-chapter-opener" id={printIds.chapter(n)}>
             <p className="print-kicker">Capitolo {n}</p>
             <h2 className="print-chapter-title">{chapter.meta.title}</h2>
           </header>
@@ -115,6 +116,7 @@ export function bookParts(
           <PrintExerciseSection
             exercises={exercises}
             title={`Esercizi del capitolo ${n}`}
+            id={printIds.chapterExercises(n)}
             heading="h3"
             idPrefix="ex"
             solutions={solutions}
@@ -134,7 +136,7 @@ export function bookParts(
       deferLayout: true,
       node: (
         <>
-          <h2 className="print-h2">{OTHER_TITLE}</h2>
+          <h2 className="print-h2" id={printIds.otherExercises}>{OTHER_TITLE}</h2>
           <PrintExerciseSection
             exercises={plan.other}
             heading="h3"
@@ -156,7 +158,7 @@ export function bookParts(
       runningHead: { page: 'formulario', head: 'Formulario' },
       node: (
         <>
-          <h2 className="print-h2">Formulario</h2>
+          <h2 className="print-h2" id={printIds.formulario}>Formulario</h2>
           <PrintFormulario chapters={plan.chapters} />
         </>
       ),
@@ -171,7 +173,7 @@ export function bookParts(
       deferLayout: true,
       node: (
         <>
-          <h2 className="print-h2">Prove d'esame</h2>
+          <h2 className="print-h2" id={printIds.exams}>Prove d'esame</h2>
           <PrintExerciseSection
             exercises={plan.exams}
             heading="h3"

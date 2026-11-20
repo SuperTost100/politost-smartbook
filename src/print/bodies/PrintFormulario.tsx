@@ -1,6 +1,7 @@
 import type { Chapter } from '../../types/smartbook';
 import { renderFormulaLatex } from '../../lib/formulaRender';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { printIds } from '../../lib/printLinks';
 
 interface PrintFormularioProps {
   chapters: Chapter[];
@@ -24,7 +25,7 @@ export function PrintFormulario({ chapters, headings = true }: PrintFormularioPr
           ) : (
             <div className="formula-grid">
               {ch.formulas.map((f) => (
-                <div key={f.id} className="formulario-card" id={`formula-${f.id}`}>
+                <div key={f.id} className="formulario-card" id={printIds.formulaCard(f.id)}>
                   <div className="formulario-card-header">
                     <span className="formula-num">({f.id})</span>
                     <span className="formula-label">{f.label}</span>

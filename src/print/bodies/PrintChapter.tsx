@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { Chapter, FormulaRef } from '../../types/smartbook';
 import { preprocessContent } from '../../lib/parser';
 import { ContentFlow } from '../../components/ContentFlow';
+import { printIds } from '../../lib/printLinks';
 
 interface PrintChapterProps {
   chapter: Chapter;
@@ -15,9 +16,9 @@ interface PrintChapterProps {
 export const PrintChapter = memo(function PrintChapter({ chapter, formulaIndex, resolveAsset, heading = 'h2' }: PrintChapterProps) {
   const Heading = heading;
   return (
-    <div data-print-chapter={chapter.meta.id}>
+    <div data-print-chapter={chapter.meta.id} data-print-chapter-n={chapter.meta.number}>
       {chapter.paragraphs.map((para, i) => (
-        <section key={para.id} className="paragraph-section">
+        <section key={para.id} className="paragraph-section" id={printIds.paragraph(chapter.meta.number, para.id)}>
           <Heading className="paragraph-title">
             <span className="para-num">{chapter.meta.number}.{i + 1}</span> {para.title}
           </Heading>

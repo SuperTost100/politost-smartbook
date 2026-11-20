@@ -42,7 +42,8 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
           case 'em':
             return <em key={i}><InlineFlow segments={seg.children} ctx={ctx} /></em>;
           case 'anchor':
-            return seg.href && !isPrint ? (
+            // In print only web addresses stay links: a PDF has nowhere to open a relative one.
+            return seg.href && (!isPrint || /^https?:\/\//i.test(seg.href)) ? (
               <a key={i} href={seg.href} target="_blank" rel="noopener noreferrer">
                 <InlineFlow segments={seg.children} ctx={ctx} />
               </a>
@@ -52,9 +53,13 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
           case 'hover': {
             if (!ctx.formulaIndex) return <Fragment key={i}>({seg.formulaId})</Fragment>;
             if (isPrint) {
-              const exists = ctx.formulaIndex.has(seg.formulaId);
-              return (
-                <span key={i} className={exists ? 'formula-ref' : 'formula-missing'}>
+              // linkPrintRefs adds the href once it knows which chapters the document prints.
+              return ctx.formulaIndex.has(seg.formulaId) ? (
+                <a key={i} className="formula-ref" data-print-ref={`formula/${seg.formulaId}`}>
+                  ({seg.formulaId})
+                </a>
+              ) : (
+                <span key={i} className="formula-missing">
                   ({seg.formulaId})
                 </span>
               );
@@ -63,10 +68,10 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
           }
           case 'link':
             return isPrint ? (
-              <span key={i} className="smartbook-ref" data-ref={seg.ref}>
+              <a key={i} className="smartbook-ref" data-print-ref={seg.ref}>
                 <InlineFlow segments={seg.children} ctx={ctx} />
                 <span className="smartbook-ref-target"> {refLabel(seg.ref)}</span>
-              </span>
+              </a>
             ) : (
               <button key={i} type="button" className="smartbook-ref sb-link" data-ref={seg.ref}>
                 <InlineFlow segments={seg.children} ctx={ctx} />
@@ -144,6 +149,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
         <div
           className="numbered-formula"
           data-formula-id={f.id}
+          data-formula-chapter={f.chapter}
           dangerouslySetInnerHTML={{ __html: renderNumberedFormulaHtml(f, ctx.variant) }}
         />
       );
