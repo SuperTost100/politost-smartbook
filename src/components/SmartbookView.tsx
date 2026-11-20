@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
@@ -10,6 +10,9 @@ import { PracticeLinks, type PracticeLink } from './ds/PracticeLinks';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
 import { useSkippedAnchor } from '../hooks/useSkippedAnchor';
+import { useProgressiveCount } from '../hooks/useProgressiveCount';
+import { cachedContentBlocks } from '../lib/contentBlocksCache';
+import { mountOrder, pieceForHash, splitContentPieces } from '../lib/contentPieces';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 import { pinnedElement } from '../lib/scrollPin';
@@ -25,6 +28,11 @@ interface SmartbookViewProps {
   /** Links to this chapter's exercises (and the exam questions after the last chapter), before the pager. */
   practice?: PracticeLink[];
 }
+
+/** Text per piece of a paragraph, about a screen: a piece is what one task parses and shows. */
+const PIECE_CHARS = 1500;
+/** Text shown at once when the chapter opens, enough to fill the screen at the landing. */
+const FIRST_CHARS = 3000;
 
 /** ~200 words per minute, rounded up, at least one minute. */
 function readingMinutes(chapter: Chapter): number {
@@ -57,10 +65,34 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     return () => observer.disconnect();
   }, []);
   useSkippedAnchor(articleRef, '.paragraph-section', chapter);
-  const heights = useMemo(
-    () => (columnWidth > 0 ? contents.map((content) => HEADING_HEIGHT + estimateTextHeight(content, columnWidth)) : null),
-    [contents, columnWidth],
+  // A long paragraph appears a piece at a time: first the pieces at the landing, then the rest of the
+  // chapter in later tasks (useProgressiveCount), so the text shows quickly and the page keeps answering.
+  // A piece not shown yet keeps its estimated height. The piece a link points at is always shown.
+  const pieces = useMemo(() => contents.map((content) => splitContentPieces(content, PIECE_CHARS)), [contents]);
+  const pieceHeights = useMemo(
+    () => (columnWidth > 0 ? pieces.map((list) => list.map((piece) => estimateTextHeight(piece, columnWidth))) : null),
+    [pieces, columnWidth],
   );
+  const paragraphIds = useMemo(() => chapter.paragraphs.map((p) => p.id), [chapter]);
+  const [landing] = useState(hash);
+  const order = useMemo(() => mountOrder(pieces, pieceForHash(pieces, paragraphIds, landing)), [pieces, paragraphIds, landing]);
+  const firstCount = useMemo(() => {
+    let chars = 0;
+    let n = 0;
+    while (n < order.length && (n === 0 || chars < FIRST_CHARS)) chars += pieces[order[n][0]][order[n++][1]].length;
+    return n;
+  }, [order, pieces]);
+  const prepare = useCallback((index: number) => {
+    const [i, j] = order[index];
+    cachedContentBlocks(pieces[i][j]);
+  }, [order, pieces]);
+  const shownCount = useProgressiveCount(order.length, firstCount, prepare, order);
+  const shown = useMemo(() => {
+    const set = new Set(order.slice(0, shownCount).map(([i, j]) => `${i}.${j}`));
+    const linked = pieceForHash(pieces, paragraphIds, hash);
+    if (linked) set.add(`${linked[0]}.${linked[1]}`);
+    return set;
+  }, [order, shownCount, pieces, paragraphIds, hash]);
 
   useEffect(() => {
     setParagraphs(
@@ -162,19 +194,26 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
             data-para-id={para.id}
             ref={(el) => { paraRefs.current[para.id] = el; }}
             className="paragraph-section"
-            style={heights ? { containIntrinsicSize: `auto ${heights[i]}px` } : undefined}
+            style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
           >
             <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
               {para.title}
             </ParagraphHeading>
             <div className="paragraph-body">
-              <ContentFlow
-                content={contents[i]}
-                formulaIndex={formulaIndex}
-                resolveAsset={resolveAsset}
-                onRefClick={handleRefClick}
-                boxStyle="tinted"
-              />
+              {pieces[i].map((piece, j) =>
+                shown.has(`${i}.${j}`) ? (
+                  <ContentFlow
+                    key={j}
+                    content={piece}
+                    formulaIndex={formulaIndex}
+                    resolveAsset={resolveAsset}
+                    onRefClick={handleRefClick}
+                    boxStyle="tinted"
+                  />
+                ) : (
+                  <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
+                ),
+              )}
             </div>
           </section>
         ))}

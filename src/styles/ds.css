@@ -188,7 +188,8 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-prose .katex[data-wide]:focus-visible, .print-sheet [data-wide]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
 .math-glue:has(> .katex[data-wide]) { white-space: normal; }
 .sb-prose mark { background: var(--star-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
-.sb-prose > :last-child { margin-bottom: 0; }
+/* A chapter paragraph is several flows in a row (SmartbookView): only the last one drops its last margin. */
+.sb-prose:where(:not(.paragraph-body > :not(:last-child))) > :last-child { margin-bottom: 0; }
 
 /* Formula: an engraved plate with a raised number. */
 .sb-formula { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-4); margin: 26px 0; padding: 20px 18px 14px 22px; border-radius: 16px; background: var(--code-bg); box-shadow: inset 2px 2px 5px var(--shade), inset -2px -2px 5px var(--highlight); scroll-margin-top: calc(var(--header-height) + var(--space-6)); font-family: var(--font-serif); }
