@@ -64,3 +64,30 @@ test('a new paragraph in a fitted part is measured on its own', async () => {
   root.querySelectorAll('.print-part')[1].insertAdjacentHTML('beforeend', section('c'));
   assert.deepEqual(await measured(root, () => fitWideFormulas(root)), ['c']);
 });
+
+test('a sheet that changes width while fitting is fitted again at the new width', async () => {
+  const root = sheet();
+  const proto = window.Element.prototype;
+  const original = proto.getBoundingClientRect;
+  const realNow = performance.now.bind(performance);
+  let width = 800;
+  let clock = 0;
+  const fits: string[] = [];
+  // Every unit takes longer than a slice, so the fit yields before each one.
+  performance.now = () => (clock += 50);
+  proto.getBoundingClientRect = function (this: Element) {
+    if (this === root) return { ...original.call(this), width } as DOMRect;
+    const id = this.closest('.paragraph-section')?.id;
+    if (id && fits.at(-1) !== `${id}@${width}`) fits.push(`${id}@${width}`);
+    if (id === 'a') width = 600;
+    return original.call(this);
+  };
+  try {
+    await fitWideFormulas(root);
+  } finally {
+    proto.getBoundingClientRect = original;
+    performance.now = realNow;
+  }
+  // Section a was fitted at 800, the sheet became 600 wide, and both sections were fitted at 600.
+  assert.deepEqual(fits, ['a@800', 'a@600', 'b@600']);
+});

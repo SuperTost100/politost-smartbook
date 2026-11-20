@@ -375,6 +375,12 @@ export async function fitWideFormulas(sheet: HTMLElement, cancelled: () => boole
       if (performance.now() - slice > SLICE_MS) {
         await yieldToBrowser();
         slice = performance.now();
+        // The sheet can only change width while this waits. Start again at the new width: the units
+        // fitted so far are recorded at the old one, so the new run fits them again.
+        if (!cancelled() && contentBoxWidth(sheet) !== column) {
+          document.fonts?.removeEventListener('loading', onLoading);
+          return fitWideFormulas(sheet, cancelled);
+        }
       }
       if (cancelled()) break;
       // React may have changed the sheet while this waited.
@@ -389,7 +395,13 @@ export async function fitWideFormulas(sheet: HTMLElement, cancelled: () => boole
     // The last unit's font requests arrive as an event.
     await yieldToBrowser();
     document.fonts?.removeEventListener('loading', onLoading);
-    if (cancelled() || !(fontsRequested || document.fonts?.status === 'loading')) return;
+    const fontsPending = fontsRequested || document.fonts?.status === 'loading';
+    if (cancelled()) {
+      // A cancelled run never fits these again with the fonts loaded, so the next run must.
+      if (fontsPending) for (const unit of fitted) fits.fitted.delete(unit);
+      return;
+    }
+    if (!fontsPending) return;
     await document.fonts.ready;
     for (const unit of fitted) fits.fitted.delete(unit);
     units = fitted;
