@@ -1,4 +1,4 @@
-import { useEffect, useId, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Drawer } from 'antd';
 import { plural } from '../lib/exerciseNav';
 import { EXERCISE_LIMITS, type ExerciseLimit, type PrintOptions } from '../lib/printOptions';
@@ -101,6 +101,29 @@ function Choice<T extends string | number>({
   );
 }
 
+/**
+ * Marks the chapter list `data-more` while rows are hidden below its bottom edge, so the fade over
+ * them shows only then. An attribute, not state: scrolling never re-renders the form.
+ */
+function useMoreBelow(count: number) {
+  const ref = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => el.toggleAttribute('data-more', el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    // The phone sheet lays the list out after it opens.
+    const resizes = new ResizeObserver(update);
+    resizes.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      resizes.disconnect();
+    };
+  }, [count]);
+  return ref;
+}
+
 export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendingScope, chapters, currentChapter, counts }: PrintOptionsFormProps) {
   const set = (patch: Partial<PrintOptions>) => onChange({ ...options, ...patch });
   const isBook = kind === 'libro';
@@ -108,6 +131,7 @@ export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendi
   const exerciseList = kind === 'esercizi' || kind === 'esami';
   const allChapters = options.chapters.length === chapters.length;
   const limitId = useId();
+  const chapterList = useMoreBelow(isBook ? chapters.length : 0);
 
   const toggleChapter = (n: number, on: boolean) => {
     const next = on ? [...options.chapters, n] : options.chapters.filter((c) => c !== n);
@@ -161,7 +185,7 @@ export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendi
               {allChapters ? 'Deseleziona tutti' : 'Seleziona tutti'}
             </button>
           </div>
-          <ul className="print-chapter-list">
+          <ul className="print-chapter-list" ref={chapterList}>
             {chapters.map((c) => (
               <li key={c.number}>
                 <label>

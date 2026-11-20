@@ -1,4 +1,5 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type MouseEvent, type ReactNode } from 'react';
+import { inDocumentTarget } from '../lib/printLinks';
 import markMono from '../../design-system/logo/ptsb-mark-mono.svg';
 import './styles/document.css';
 
@@ -83,10 +84,23 @@ export function PrintBrand() {
   );
 }
 
+/**
+ * On screen a link inside the document scrolls the preview to its target. Left to the browser, it
+ * would add a history entry for the hash and scroll smoothly through the whole book.
+ */
+function followInDocumentLink(e: MouseEvent<HTMLElement>) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const link = (e.target as Element).closest('a[href^="#"]');
+  const target = link && inDocumentTarget(e.currentTarget, link.getAttribute('href'));
+  if (!target) return;
+  e.preventDefault();
+  target.scrollIntoView({ block: 'start', behavior: 'instant' });
+}
+
 /** One A4-width sheet: on screen it is the preview, in print it is the document. */
 export function PrintDocument({ bookTitle, documentTitle, watermarkLabel, opener = true, parts, mounted, progress }: PrintDocumentProps) {
   return (
-    <article className="print-sheet" data-theme="light" aria-label={`${bookTitle} · ${documentTitle}`} aria-busy={progress != null}>
+    <article className="print-sheet" data-theme="light" aria-label={`${bookTitle} · ${documentTitle}`} aria-busy={progress != null} onClick={followInDocumentLink}>
       <style>{pageRules(bookTitle, documentTitle, parts)}</style>
       {watermarkLabel && (
         <div className="print-watermark" aria-hidden>

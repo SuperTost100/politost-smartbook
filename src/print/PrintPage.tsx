@@ -38,6 +38,7 @@ import { buildPrintUrl, getReturnUrl, type PrintSection } from './routes';
 import { PrintDocument, type PrintPart } from './PrintDocument';
 import { useProgressiveParts } from './useProgressiveParts';
 import { fitWideFormulas } from './fitFormulas';
+import { linkPrintRefs } from '../lib/printLinks';
 import {
   bookParts,
   cachedPick,
@@ -452,6 +453,8 @@ export function PrintPage({ kind }: PrintPageProps) {
     void (async () => {
       const sheet = document.querySelector<HTMLElement>('.print-sheet');
       const isCancelled = () => cancelled;
+      // Every part is mounted, so each reference knows whether its target is printed.
+      if (sheet) linkPrintRefs(sheet);
       if (sheet) await waitForImages(sheet);
       await document.fonts?.ready;
       if (cancelled) return;
