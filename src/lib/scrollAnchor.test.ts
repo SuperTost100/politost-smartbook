@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { anchorAt, anchorElement, readScrollAnchor, saveScrollAnchor, type ScrollAnchor } from './scrollAnchor.ts';
+import { anchorAt, anchorElement, forgetScrollAnchor, readScrollAnchor, saveScrollAnchor, type ScrollAnchor } from './scrollAnchor.ts';
 
 function memoryStorage(): Storage {
   const data = new Map<string, string>();
@@ -84,4 +84,22 @@ test('an anchor names a block of a piece, the piece, or the paragraph', () => {
   // A piece not on the page yet, or a paragraph that is gone, names nothing.
   assert.equal(at('p3', 2, 0), null);
   assert.equal(at('p9', 0, 0), null);
+});
+
+test('below the last paragraph, at the end of the chapter, the anchor is the last paragraph where it is', () => {
+  const { document } = new JSDOM(
+    '<article><section class="paragraph-section" id="p1"></section><section class="paragraph-section" id="p2"></section><nav class="sb-pager"></nav></article>',
+  ).window;
+  const article = document.querySelector('article')!;
+  const [first, last] = [...article.querySelectorAll('section')];
+  first.getBoundingClientRect = () => ({ top: -9000, bottom: -5000 }) as DOMRect;
+  last.getBoundingClientRect = () => ({ top: -4800, bottom: -120 }) as DOMRect;
+  assert.deepEqual(anchorAt(article, CHAPTER, 180, 78), { chapter: CHAPTER, paragraph: 'p2', piece: -1, block: -1, top: -4800 });
+});
+
+test('a place with no anchor forgets the one saved before', () => {
+  const storage = memoryStorage();
+  saveScrollAnchor('a', anchor, () => storage);
+  forgetScrollAnchor('a', () => storage);
+  assert.equal(readScrollAnchor('a', CHAPTER, () => storage), undefined);
 });

@@ -18,7 +18,7 @@ import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 import { pinIntoView, pinnedElement, READER_INPUT, scrollsThePage } from '../lib/scrollPin';
-import { anchorAt, anchorElement, readScrollAnchor, saveScrollAnchor } from '../lib/scrollAnchor';
+import { anchorAt, anchorElement, forgetScrollAnchor, readScrollAnchor, saveScrollAnchor } from '../lib/scrollAnchor';
 import { chapterProgress } from '../lib/chapterProgress';
 import { estimateTextHeight, HEADING_HEIGHT } from '../lib/heightEstimate';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
@@ -144,7 +144,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   // The block at the top of the screen, under the header, is saved for this history entry whenever the
   // reader stops scrolling, and once more when the entry is left. An entry being restored keeps its
   // saved place until the reader scrolls: passing through it with quick Back and Forward presses
-  // would otherwise save wherever the restore had got to.
+  // would otherwise save wherever the restore had got to. A place with no anchor forgets the old one.
   useLayoutEffect(() => {
     const article = articleRef.current;
     if (!article) return;
@@ -157,6 +157,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
       const box = article.getBoundingClientRect();
       const anchor = anchorAt(article, chapterKey, box.left + box.width / 2, ptsbLayout.headerHeight + 8);
       if (anchor) saveScrollAnchor(entry, anchor);
+      else forgetScrollAnchor(entry);
     };
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onScroll = () => {

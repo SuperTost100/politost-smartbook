@@ -54,6 +54,18 @@ export function saveScrollAnchor(entry: string, anchor: ScrollAnchor, getStorage
   }
 }
 
+export function forgetScrollAnchor(entry: string, getStorage: () => Storage = sessionStore): void {
+  try {
+    const storage = getStorage();
+    const store = readStore(storage);
+    if (!(entry in store)) return;
+    delete store[entry];
+    storage.setItem(STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    // Storage disabled: nothing was saved either.
+  }
+}
+
 /** The anchor saved for this history entry, if it belongs to `chapter`. */
 export function readScrollAnchor(entry: string, chapter: string, getStorage: () => Storage = sessionStore): ScrollAnchor | undefined {
   try {
@@ -67,13 +79,18 @@ export function readScrollAnchor(entry: string, chapter: string, getStorage: () 
 /**
  * The anchor for what is at `y` pixels from the top of the viewport: the block of chapter text there,
  * or the paragraph when the point falls between blocks. Above the first paragraph (the chapter's
- * header) it is the first paragraph where it is now, so a return to the top is a return to the top.
- * Null elsewhere outside the chapter's paragraphs.
+ * header) it is the first paragraph where it is now, so a return to the top is a return to the top;
+ * below the last paragraph (the end of the chapter, the pager) it is the last paragraph where it is
+ * now. Null elsewhere outside the chapter's paragraphs.
  */
 export function anchorAt(article: Element, chapter: string, x: number, y: number): ScrollAnchor | null {
   const first = article.querySelector<HTMLElement>('.paragraph-section');
   const firstTop = first?.getBoundingClientRect().top;
   if (first && firstTop !== undefined && y < firstTop) return { chapter, paragraph: first.id, piece: -1, block: -1, top: Math.round(firstTop) };
+  const sections = article.querySelectorAll<HTMLElement>('.paragraph-section');
+  const last = sections[sections.length - 1];
+  const lastBox = last?.getBoundingClientRect();
+  if (last && lastBox && y > lastBox.bottom) return { chapter, paragraph: last.id, piece: -1, block: -1, top: Math.round(lastBox.top) };
   const hit = document.elementFromPoint(x, y);
   const section = hit?.closest<HTMLElement>('.paragraph-section');
   if (!hit || !section || !article.contains(section)) return null;

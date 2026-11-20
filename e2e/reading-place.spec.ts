@@ -342,6 +342,25 @@ test.describe('Returns to a chapter', () => {
     }
   });
 
+  test('back to a chapter left from its very end on a phone shows the end again', async ({ page }) => {
+    // A short screen, so the end of the chapter (its links and the pager) fills it.
+    await page.setViewportSize({ width: 375, height: 420 });
+    await page.goto('/libro/alto/capitolo/alto');
+    // A place saved in the middle first, which the end must replace.
+    await readDown(page, 20);
+    await page.keyboard.press('End');
+    const next = page.getByRole('link', { name: /Capitolo successivo/ });
+    await expect.poll(() => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - innerHeight - scrollY) <= 1)).toBe(true);
+    await page.waitForTimeout(600);
+    const before = await next.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    await next.click();
+    await expect(page).toHaveURL(/\/capitolo\/altro$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    await page.waitForTimeout(2500);
+    expect(await next.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+  });
+
   test('back to a chapter that the reader had scrolled back to the top opens at the top', async ({ page }) => {
     await page.goto('/libro/alto/capitolo/alto');
     await readDown(page, 30);
