@@ -3,6 +3,7 @@ import type { Chapter, FormulaRef } from '../../types/smartbook';
 import { renderFormulaLatex } from '../../lib/formulaRender';
 import { sanitizeHtml } from '../../lib/sanitizeHtml';
 import { printIds } from '../../lib/printLinks';
+import { withoutMathml } from '../printMath';
 
 interface PrintFormularioProps {
   chapters: Chapter[];
@@ -15,7 +16,7 @@ const cardHtml = new WeakMap<FormulaRef, string>();
 
 function formulaHtml(f: FormulaRef): string {
   let html = cardHtml.get(f);
-  if (html === undefined) cardHtml.set(f, (html = sanitizeHtml(renderFormulaLatex(f.latex))));
+  if (html === undefined) cardHtml.set(f, (html = withoutMathml(sanitizeHtml(renderFormulaLatex(f.latex)))));
   return html;
 }
 
