@@ -16,6 +16,8 @@ export interface SmartbookData {
   ide: IdeSnippet[];
   grafici: GraficoConfig[];
   assets: Record<string, string>;
+  /** BookBundle.mathTrusted of the copy this data comes from. */
+  mathTrusted: boolean;
 }
 
 export interface CatalogEntry {
@@ -40,6 +42,12 @@ export interface BookBundle {
   delivery?: 'local' | 'cloud';
   /** Builtin chapter files and assets are filled when that book opens. */
   contentLoaded?: boolean;
+  /**
+   * Whether KaTeX's output for this copy's formulas may skip DOMPurify (content-core's
+   * `mathTrusted`). True only for the books bundled with the app and for catalog packages whose
+   * bytes matched the SHA-256 in catalog.json. Imported files and cloud books are false.
+   */
+  mathTrusted: boolean;
 }
 
 const configLoaders = import.meta.glob('../content/*/smartbook.json', {
@@ -141,6 +149,7 @@ export function initBuiltinBooks(): Promise<void> {
             grafici: [],
             assets: {},
             contentLoaded: false,
+            mathTrusted: true,
           });
         }),
       );
@@ -171,6 +180,7 @@ async function loadContent(id: string): Promise<void> {
   const remote = remoteRegistry.get(id);
   if (remote && !remote.bundle && !uploadedRegistry.has(id) && !cloudRegistry.has(id)) {
     try {
+      // fetchRemoteBook returns only a package whose hash matched the catalog.
       const stored = await fetchRemoteBook(remote.entry);
       remote.bundle = storedToBundle(stored, remoteAssetUrls, 'remote');
       dataCache.delete(id);
@@ -229,6 +239,7 @@ function storedToBundle(
     ide: stored.ide,
     grafici: stored.grafici,
     assets: assetUrls,
+    mathTrusted: kind === 'remote',
   };
 }
 
@@ -306,8 +317,8 @@ export function isCloudBook(id: string): boolean {
   return cloudRegistry.has(id);
 }
 
-export function registerCloudBook(bundle: BookBundle): void {
-  cloudRegistry.set(bundle.config.id, { ...bundle, delivery: 'cloud' });
+export function registerCloudBook(bundle: Omit<BookBundle, 'mathTrusted'>): void {
+  cloudRegistry.set(bundle.config.id, { ...bundle, delivery: 'cloud', mathTrusted: false });
 }
 
 export function setCloudBookAssets(bookId: string, assets: Record<string, string>): void {
@@ -330,7 +341,7 @@ function loadBundle(id: string): BookBundle | undefined {
 }
 
 function bundleToData(bundle: BookBundle): SmartbookData {
-  const { config, chapterFiles, eserciziRaw, esamiRaw, ide, grafici, assets } = bundle;
+  const { config, chapterFiles, eserciziRaw, esamiRaw, ide, grafici, assets, mathTrusted } = bundle;
   const chapters = config.chapters.map((meta) => {
     const raw = chapterFiles[meta.file] ?? '';
     const parsed = parseChapterMarkdown(raw, meta.number);
@@ -345,6 +356,7 @@ function bundleToData(bundle: BookBundle): SmartbookData {
     ide,
     grafici,
     assets,
+    mathTrusted,
   };
 }
 

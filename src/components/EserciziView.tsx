@@ -13,6 +13,7 @@ import { preprocessContent } from '../lib/parser';
 import { useRefClick } from '../hooks/useRefClick';
 import { useProgressiveCount } from '../hooks/useProgressiveCount';
 import { cachedContentBlocks } from '../lib/contentBlocksCache';
+import { useMathTrusted } from '../context/MathTrustContext';
 import { useChapterView, useFocusOnScopeChange } from '../hooks/useChapterView';
 import { lastReadChapter } from '../lib/readingPosition';
 import { sectionPath } from '../lib/sectionRoutes';
@@ -114,7 +115,11 @@ export function EserciziView({
   const linkedExercise = linkedId(location.hash, EXERCISE_HASH);
   // The cards appear in batches, each question parsed in its own task, and a linked exercise is there from the start.
   const linkedIndex = linkedExercise ? shown.findIndex((ex) => ex.id === linkedExercise) : -1;
-  const prepare = useCallback((i: number) => void cachedContentBlocks(preprocessContent(shown[i].question)), [shown]);
+  const mathTrusted = useMathTrusted();
+  const prepare = useCallback(
+    (i: number) => void cachedContentBlocks(preprocessContent(shown[i].question), mathTrusted),
+    [shown, mathTrusted],
+  );
   const shownCount = useProgressiveCount(shown.length, Math.max(FIRST_EXERCISES, linkedIndex + 1), prepare, shown);
   const linked = linkedExercise ? exercises.find((ex) => ex.id === linkedExercise) : undefined;
   const redirect = scopeRedirect(view, linked, index && scope == null && !linked ? lastReadChapter(bookId, chapters) : undefined);

@@ -2,6 +2,7 @@ import { memo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import type { FormulaRef } from '../../types/smartbook';
 import { formulaHtml } from '../../lib/formulaHtmlCache';
+import { useMathTrusted } from '../../context/MathTrustContext';
 import { useScrollableMath } from '../../hooks/useScrollableMath';
 
 interface FormulaCardProps {
@@ -24,6 +25,7 @@ export const FormulaCard = memo(function FormulaCard({ chapter, title, titleHref
   const rootRef = useRef<HTMLElement>(null);
   // The card keeps its size when the formula sheet changes chapter, so the formulas name what it shows.
   useScrollableMath(rootRef, true, formulas);
+  const mathTrusted = useMathTrusted();
   return (
     <section ref={rootRef} className="sb-fcard">
       {title != null && (
@@ -45,7 +47,7 @@ export const FormulaCard = memo(function FormulaCard({ chapter, title, titleHref
               className="sb-fcard-math"
               data-formula-id={f.id}
               data-formula-label={f.label}
-              dangerouslySetInnerHTML={{ __html: formulaHtml(f.latex) }}
+              dangerouslySetInnerHTML={{ __html: formulaHtml(f.latex, mathTrusted) }}
             />
           </div>
         ))

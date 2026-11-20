@@ -9,6 +9,7 @@ import { refLabel } from '../lib/chapterNav';
 import { glueMathPunctuation } from '../lib/mathGlue';
 import { useScrollableMath } from '../hooks/useScrollableMath';
 import { withoutMathml } from '../print/printMath';
+import { useMathTrusted } from '../context/MathTrustContext';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
 import { Formula } from './ds/Formula';
 import { Figure } from './ds/Figure';
@@ -38,6 +39,8 @@ interface RenderContext {
   resolveAsset?: (src: string) => string | undefined;
   variant: ContentFlowVariant;
   boxStyle: BoxStyle;
+  /** The book's MathTrustContext, for the numbered formulas. */
+  mathTrusted: boolean;
   /** Inside a box with a title: the title as boxTitleKey gives it, so a formula label repeating it is hidden. */
   boxTitle?: string;
 }
@@ -102,16 +105,23 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
   );
 }
 
-/** Each numbered formula's print HTML, kept while the book is loaded, so a part renders again without KaTeX. */
-const numberedHtml = new WeakMap<FormulaRef, string>();
-/** The same without the label, for a formula inside a box whose title is that label. */
-const numberedHtmlUnlabelled = new WeakMap<FormulaRef, string>();
+/**
+ * Each numbered formula's print HTML, kept while the book is loaded, so a part renders again without
+ * KaTeX: with and without the label (left out inside a box whose title is that label), and with
+ * and without `mathTrusted`, so trusted HTML is never served where it was not asked for.
+ */
+const numberedHtml = {
+  trusted: { labelled: new WeakMap<FormulaRef, string>(), unlabelled: new WeakMap<FormulaRef, string>() },
+  sanitized: { labelled: new WeakMap<FormulaRef, string>(), unlabelled: new WeakMap<FormulaRef, string>() },
+};
 
-function printedFormulaHtml(f: FormulaRef, variant: ContentFlowVariant, label = true): string {
-  const cache = label ? numberedHtml : numberedHtmlUnlabelled;
+function printedFormulaHtml(f: FormulaRef, variant: ContentFlowVariant, mathTrusted: boolean, label = true): string {
+  const byLabel = mathTrusted ? numberedHtml.trusted : numberedHtml.sanitized;
+  const cache = label ? byLabel.labelled : byLabel.unlabelled;
   let html = cache.get(f);
   if (html === undefined) {
-    cache.set(f, (html = withoutMathml(renderNumberedFormulaHtml(label ? f : { ...f, label: '' }, variant))));
+    const formula = label ? f : { ...f, label: '' };
+    cache.set(f, (html = withoutMathml(renderNumberedFormulaHtml(formula, variant, { mathTrusted }))));
   }
   return html;
 }
@@ -302,7 +312,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
           className="numbered-formula"
           data-formula-id={f.id}
           data-formula-chapter={f.chapter}
-          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx.variant, showLabel) }}
+          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx.variant, ctx.mathTrusted, showLabel) }}
         />
       );
     }
@@ -336,11 +346,12 @@ export const ContentFlow = memo(function ContentFlow({
   variant = 'screen',
   boxStyle = 'flat',
 }: ContentFlowProps) {
-  const blocks = useMemo(() => cachedContentBlocks(content), [content]);
+  const mathTrusted = useMathTrusted();
+  const blocks = useMemo(() => cachedContentBlocks(content, mathTrusted), [content, mathTrusted]);
   // One object per set of props, so the boxes' own contexts (BoxView) stay the same between renders.
   const ctx = useMemo<RenderContext>(
-    () => ({ formulaIndex, resolveAsset, variant, boxStyle }),
-    [formulaIndex, resolveAsset, variant, boxStyle],
+    () => ({ formulaIndex, resolveAsset, variant, boxStyle, mathTrusted }),
+    [formulaIndex, resolveAsset, variant, boxStyle, mathTrusted],
   );
   const rootRef = useRef<HTMLDivElement>(null);
   useScrollableMath(rootRef, variant !== 'print');

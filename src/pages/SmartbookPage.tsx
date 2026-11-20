@@ -20,6 +20,7 @@ import { SmartbookView } from '../components/SmartbookView';
 import { FormularioView } from '../components/FormularioView';
 import { EserciziView } from '../components/EserciziView';
 import { LicenseGate } from '../components/LicenseGate';
+import { MathTrustProvider } from '../context/MathTrustContext';
 import { BookLoadFailed, BookNotFound } from '../components/BookNotFound';
 import { NoticeBlock } from '../components/NoticePage';
 import { NotFoundPage } from './NotFoundPage';
@@ -257,77 +258,79 @@ function BookRoutes() {
   if (!data) return <BookNotFound />;
 
   return (
-    <LicenseGate bookId={bookId!} access={data.config.access ?? 'public'}>
-      <Routes>
-        <Route
-          path="stampa/capitolo/:chapterId"
-          element={
-            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
-              <PrintPage kind="capitolo" />
-            </Suspense>
-          }
-        />
-        <Route
-          path="stampa/libro"
-          element={
-            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
-              <PrintPage kind="libro" />
-            </Suspense>
-          }
-        />
-        <Route
-          path="stampa/formulario"
-          element={
-            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
-              <PrintPage kind="formulario" />
-            </Suspense>
-          }
-        />
-        <Route
-          path="stampa/esercizi"
-          element={
-            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
-              <PrintPage kind="esercizi" />
-            </Suspense>
-          }
-        />
-        <Route
-          path="stampa/esami"
-          element={
-            <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
-              <PrintPage kind="esami" />
-            </Suspense>
-          }
-        />
-
-        <Route element={<BookShell activeSection="smartbook" showChapterIndex />}>
-          <Route index element={<FirstChapterRedirect />} />
-          <Route path="capitolo/:chapterId" element={<ChapterContent />} />
-        </Route>
-
-        <Route element={<BookShell activeSection="formulario" />}>
-          <Route path="formulario" element={<FormularioRoute />} />
-        </Route>
-
-        <Route element={<BookShell activeSection="esercizi" />}>
-          <Route path="esercizi" element={<EserciziRoute />} />
-        </Route>
-
-        <Route element={<BookShell activeSection="esami" />}>
-          <Route path="esami" element={<EsamiRoute />} />
-        </Route>
-
-        <Route element={<BookShell activeSection="ide" />}>
-          <Route path="laboratorio" element={<IdeRoute />} />
-        </Route>
-
-        <Route element={<BookShell activeSection="grafici" />}>
-          <Route path="grafici" element={<GraficiRoute />} />
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </LicenseGate>
+    <MathTrustProvider book={data} serving={loadSmartbook}>
+      <LicenseGate bookId={bookId!} access={data.config.access ?? 'public'}>
+        <Routes>
+          <Route
+            path="stampa/capitolo/:chapterId"
+            element={
+              <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+                <PrintPage kind="capitolo" />
+              </Suspense>
+            }
+          />
+          <Route
+            path="stampa/libro"
+            element={
+              <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+                <PrintPage kind="libro" />
+              </Suspense>
+            }
+          />
+          <Route
+            path="stampa/formulario"
+            element={
+              <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+                <PrintPage kind="formulario" />
+              </Suspense>
+            }
+          />
+          <Route
+            path="stampa/esercizi"
+            element={
+              <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+                <PrintPage kind="esercizi" />
+              </Suspense>
+            }
+          />
+          <Route
+            path="stampa/esami"
+            element={
+              <Suspense fallback={<SectionLoading>Caricamento anteprima di stampa…</SectionLoading>}>
+                <PrintPage kind="esami" />
+              </Suspense>
+            }
+          />
+  
+          <Route element={<BookShell activeSection="smartbook" showChapterIndex />}>
+            <Route index element={<FirstChapterRedirect />} />
+            <Route path="capitolo/:chapterId" element={<ChapterContent />} />
+          </Route>
+  
+          <Route element={<BookShell activeSection="formulario" />}>
+            <Route path="formulario" element={<FormularioRoute />} />
+          </Route>
+  
+          <Route element={<BookShell activeSection="esercizi" />}>
+            <Route path="esercizi" element={<EserciziRoute />} />
+          </Route>
+  
+          <Route element={<BookShell activeSection="esami" />}>
+            <Route path="esami" element={<EsamiRoute />} />
+          </Route>
+  
+          <Route element={<BookShell activeSection="ide" />}>
+            <Route path="laboratorio" element={<IdeRoute />} />
+          </Route>
+  
+          <Route element={<BookShell activeSection="grafici" />}>
+            <Route path="grafici" element={<GraficiRoute />} />
+          </Route>
+  
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </LicenseGate>
+    </MathTrustProvider>
   );
 }
 
