@@ -223,3 +223,9 @@ test('a landing in one chapter does not name a paragraph of the next chapter', a
   await expect(page).toHaveURL(/\/capitolo\/prova-tu$/);
   await expect.poll(saved).toBe('prova-tu:top');
 });
+
+test('a hash that is not valid percent encoding opens the chapter at the top', async ({ page }) => {
+  await page.goto('/libro/esempio/capitolo/nel-libro#%');
+  await expect(page.locator('.chapter-content')).toBeVisible();
+  await expect(page.getByText('Non riesco a mostrare questa pagina')).toHaveCount(0);
+});

@@ -250,7 +250,8 @@ button.sb-link, .smartbook-ref.sb-link { display: inline; padding: 0; border: 0;
 .sb-box--line > .sb-box-proof { margin-left: calc(-1 * var(--box-bleed)); padding-left: calc(var(--box-pad) - 1px); border-left: 1px dashed var(--box-line); }
 .sb-box-proof-body { padding: 2px 0 16px; }
 .sb-box-proof .sb-box-label { color: var(--ink-muted); }
-.sb-box-proof-toggle { display: flex; align-items: center; gap: 8px; min-height: 46px; color: var(--ink-muted); font: 700 14px/20px var(--font-sans); cursor: pointer; list-style: none; transition: color .15s ease-out; }
+/* The side padding, taken back by the margin, keeps the focus ring off the icon. */
+.sb-box-proof-toggle { display: flex; align-items: center; gap: 8px; min-height: 46px; margin-inline: -8px; padding-inline: 8px; color: var(--ink-muted); font: 700 14px/20px var(--font-sans); cursor: pointer; list-style: none; transition: color .15s ease-out; }
 .sb-box-proof-toggle::-webkit-details-marker { display: none; }
 .sb-box-proof-toggle:hover { color: var(--ink); }
 .sb-box-proof-toggle:focus-visible { outline-offset: -2px; border-radius: 8px; }

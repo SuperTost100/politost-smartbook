@@ -44,7 +44,13 @@ function useScrollToHash() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (!hash) return;
-    const id = decodeURIComponent(hash.slice(1));
+    let id: string;
+    try {
+      id = decodeURIComponent(hash.slice(1));
+    } catch {
+      // A hash such as "#%" is not valid percent encoding and names nothing.
+      return;
+    }
     // A cloud chapter renders after its download, so keep looking for the target for a few seconds.
     let tries = 30;
     let timer: ReturnType<typeof setTimeout> | undefined;
