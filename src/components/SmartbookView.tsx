@@ -79,7 +79,9 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   );
   const paragraphIds = useMemo(() => chapter.paragraphs.map((p) => p.id), [chapter]);
   // Back, forward or a reload returns to the text the reader left (scrollAnchor), not to a pixel offset.
-  const chapterKey = `${bookId}/${chapter.meta.id}`;
+  // The hash belongs to the place: a hash typed in the address of the open chapter is a new history
+  // entry whose key is "default", like the tab's first entry, and it must land on its target.
+  const chapterKey = `${bookId}/${chapter.meta.id}${hash}`;
   const restore = useMemo(() => {
     const anchor = navigationType === 'POP' ? readScrollAnchor(entry, chapterKey) : undefined;
     const paragraph = anchor ? paragraphIds.indexOf(anchor.paragraph) : -1;

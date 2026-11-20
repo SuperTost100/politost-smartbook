@@ -300,6 +300,16 @@ test.describe('Returns to a chapter', () => {
     await expect.poll(() => headingTop(page, 'p3')).toBe(94);
   });
 
+  test('the same chapter with a new hash typed in the address lands on that hash', async ({ page }) => {
+    await page.goto('/libro/alto/capitolo/alto');
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    await page.evaluate(() => window.scrollTo({ top: (document.documentElement.scrollHeight - innerHeight) * 0.7, behavior: 'instant' }));
+    await page.waitForTimeout(1500);
+    // A new hash on the open page is a new history entry with the key "default", like the first one.
+    await page.goto('/libro/alto/capitolo/alto#p3');
+    await expect.poll(() => headingTop(page, 'p3')).toBe(94);
+  });
+
   test('back to a chapter that the reader had scrolled back to the top opens at the top', async ({ page }) => {
     await page.goto('/libro/alto/capitolo/alto');
     await readDown(page, 30);

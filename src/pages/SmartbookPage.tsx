@@ -48,7 +48,7 @@ function useScrollToHash() {
   useEffect(() => {
     if (!hash) return;
     // Back or forward to a place the reader left: the chapter returns to it (scrollAnchor), not to the hash.
-    if (navigationType === 'POP' && chapterId && readScrollAnchor(key, `${bookId}/${chapterId}`)) return;
+    if (navigationType === 'POP' && chapterId && readScrollAnchor(key, `${bookId}/${chapterId}${hash}`)) return;
     let id: string;
     try {
       id = decodeURIComponent(hash.slice(1));
