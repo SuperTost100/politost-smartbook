@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useLocation } from 'react-router-dom';
-import type { Chapter } from '../types/smartbook';
+import type { Chapter, FormulaRef } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
 import { ChapterHeader } from './ds/ChapterHeader';
@@ -213,41 +213,84 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
         minutes={minutes}
       />
 
-      <article ref={articleRef} className="chapter-content">
-        {chapter.paragraphs.map((para, i) => (
-          <section
-            key={para.id}
-            id={para.id}
-            data-para-id={para.id}
-            ref={(el) => { paraRefs.current[para.id] = el; }}
-            className="paragraph-section"
-            style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
-          >
-            <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
-              {para.title}
-            </ParagraphHeading>
-            <div className="paragraph-body">
-              {pieces[i].map((piece, j) =>
-                shown.has(`${i}.${j}`) ? (
-                  <ContentFlow
-                    key={j}
-                    content={piece}
-                    formulaIndex={formulaIndex}
-                    resolveAsset={resolveAsset}
-                    onRefClick={handleRefClick}
-                    boxStyle="tinted"
-                  />
-                ) : (
-                  <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
-                ),
-              )}
-            </div>
-          </section>
-        ))}
-      </article>
+      <ChapterArticle
+        chapter={chapter}
+        pieces={pieces}
+        pieceHeights={pieceHeights}
+        shown={shown}
+        formulaIndex={formulaIndex}
+        resolveAsset={resolveAsset}
+        onRefClick={handleRefClick}
+        articleRef={articleRef}
+        paraRefs={paraRefs}
+      />
 
       <PracticeLinks links={practice} />
       <ChapterPager prev={prev} next={next} />
     </div>
   );
 }
+
+interface ChapterArticleProps {
+  chapter: Chapter;
+  pieces: string[][];
+  pieceHeights: number[][] | null;
+  /** The pieces on the page, as "paragraph.piece". */
+  shown: Set<string>;
+  formulaIndex: Map<string, FormulaRef>;
+  resolveAsset?: (src: string) => string | undefined;
+  onRefClick: (e: React.MouseEvent) => void;
+  articleRef: RefObject<HTMLElement | null>;
+  paraRefs: RefObject<Record<string, HTMLElement | null>>;
+}
+
+/**
+ * The chapter's text. Memoized: the view re-renders whenever the active paragraph changes as the
+ * reader scrolls, and the text stays the same, so scrolling only updates the outline.
+ */
+const ChapterArticle = memo(function ChapterArticle({
+  chapter,
+  pieces,
+  pieceHeights,
+  shown,
+  formulaIndex,
+  resolveAsset,
+  onRefClick,
+  articleRef,
+  paraRefs,
+}: ChapterArticleProps) {
+  return (
+    <article ref={articleRef} className="chapter-content">
+      {chapter.paragraphs.map((para, i) => (
+        <section
+          key={para.id}
+          id={para.id}
+          data-para-id={para.id}
+          ref={(el) => { paraRefs.current[para.id] = el; }}
+          className="paragraph-section"
+          style={pieceHeights ? { containIntrinsicSize: `auto ${HEADING_HEIGHT + pieceHeights[i].reduce((a, b) => a + b, 0)}px` } : undefined}
+        >
+          <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
+            {para.title}
+          </ParagraphHeading>
+          <div className="paragraph-body">
+            {pieces[i].map((piece, j) =>
+              shown.has(`${i}.${j}`) ? (
+                <ContentFlow
+                  key={j}
+                  content={piece}
+                  formulaIndex={formulaIndex}
+                  resolveAsset={resolveAsset}
+                  onRefClick={onRefClick}
+                  boxStyle="tinted"
+                />
+              ) : (
+                <div key={j} className="paragraph-pending" style={{ height: pieceHeights?.[i][j] ?? 0 }} />
+              ),
+            )}
+          </div>
+        </section>
+      ))}
+    </article>
+  );
+});
