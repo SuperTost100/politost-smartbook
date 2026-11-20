@@ -1,8 +1,7 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import type { FormulaRef } from '../../types/smartbook';
-import { renderFormulaLatex } from '../../lib/formulaRender';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { formulaHtml } from '../../lib/formulaHtmlCache';
 
 interface FormulaCardProps {
   /** The chapter's heading: number and title. Left out where the page title already names the chapter. */
@@ -42,7 +41,7 @@ export const FormulaCard = memo(function FormulaCard({ chapter, title, titleHref
               className="sb-fcard-math"
               data-formula-id={f.id}
               data-formula-label={f.label}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderFormulaLatex(f.latex)) }}
+              dangerouslySetInnerHTML={{ __html: formulaHtml(f.latex) }}
             />
           </div>
         ))
