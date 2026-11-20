@@ -34,12 +34,16 @@ export function useSkippedAnchor(articleRef: RefObject<HTMLElement | null>, sect
       else skipped.delete(target);
     };
     const observer = new ResizeObserver((entries) => {
+      // Leaving the chapter empties it before the effect stops: that is no change to follow.
+      if (!article.isConnected) return;
       let shift = 0;
+      let grew = false;
       const moved = window.scrollY - lastY;
       for (const { target, borderBoxSize } of entries) {
         const height = borderBoxSize[0].blockSize;
         const before = heights.get(target);
         heights.set(target, height);
+        if (before !== undefined && height > before) grew = true;
         if (before === undefined || !skipped.has(target)) continue;
         const top = target.getBoundingClientRect().top + moved;
         // Only a paragraph that started above the screen and ended before its bottom moves what the reader sees.
@@ -49,7 +53,7 @@ export function useSkippedAnchor(articleRef: RefObject<HTMLElement | null>, sect
       if (pinnedElement()) return;
       const missing = shift - moved;
       // A reader who went to the end of the chapter stays there as the paragraphs at the end take their height.
-      if (atBottom) window.scrollTo({ top: root.scrollHeight, behavior: 'instant' });
+      if (atBottom && grew) window.scrollTo({ top: root.scrollHeight, behavior: 'instant' });
       else if (shift !== 0 && Math.abs(missing) >= 1) window.scrollBy({ top: missing, behavior: 'instant' });
       lastY = window.scrollY;
     });
