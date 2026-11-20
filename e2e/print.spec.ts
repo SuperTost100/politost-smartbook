@@ -113,6 +113,27 @@ test.describe('Print preview', () => {
     await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
   });
 
+  test('an index entry clicked before its chapter is on the page goes there once it is, and leaves the address alone', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/libro/esempio/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    // A slow computer, so the chapters are still to come when the index appears.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 });
+    await page.goto('/libro/esempio/stampa/libro', { waitUntil: 'commit' });
+    const entry = page.locator('.print-index a[href="#cap-3"]');
+    await entry.waitFor();
+    const before = await page.evaluate(() => ({ url: location.href, history: history.length, mounted: Boolean(document.getElementById('cap-3')) }));
+    await entry.click();
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    expect(before.mounted, 'the chapter is not on the page yet when the entry is clicked').toBe(false);
+    const target = page.locator('#cap-3');
+    await expect.poll(() => target.evaluate((el) => Math.abs(Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)))), { timeout: 15_000 }).toBeLessThanOrEqual(1);
+    expect(await page.evaluate(() => ({ url: location.href, history: history.length }))).toEqual({ url: before.url, history: before.history });
+    // One step back leaves the print preview.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
+  });
+
   test('with no chapter chosen the sheet says what to do and printing waits', async ({ page }) => {
     await page.goto('/libro/esempio/stampa/libro', PRINT_GOTO_OPTIONS);
     await page.getByRole('button', { name: 'Deseleziona tutti' }).click();

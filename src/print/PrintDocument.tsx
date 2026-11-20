@@ -85,19 +85,36 @@ export function PrintBrand() {
   );
 }
 
+/** How long a link waits for a part that is not on the page yet: the parts appear one after another. */
+const TARGET_WAIT_MS = 15_000;
+let waitingFor: ReturnType<typeof setInterval> | undefined;
+
 /**
  * On screen a link inside the document scrolls the preview to its target and holds it there while
  * the parts around it take their real height (content-visibility), until the reader scrolls
  * (pinIntoView). Left to the browser, it would add a history entry for the hash and scroll smoothly
- * through the whole book.
+ * through the whole book. A target whose part is not on the page yet is waited for, and the link
+ * gives up quietly if it never comes; either way the address does not change.
  */
 function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   const link = (e.target as Element).closest('a[href^="#"]');
-  const target = link && inDocumentTarget(e.currentTarget, link.getAttribute('href'));
-  if (!target) return;
+  const href = link?.getAttribute('href');
+  if (!link || !href || href.length < 2) return;
   e.preventDefault();
-  pinIntoView(target);
+  const root = e.currentTarget;
+  clearInterval(waitingFor);
+  const target = inDocumentTarget(root, href);
+  if (target) {
+    pinIntoView(target);
+    return;
+  }
+  const started = performance.now();
+  waitingFor = setInterval(() => {
+    const found = root.isConnected ? inDocumentTarget(root, href) : null;
+    if (found) pinIntoView(found);
+    if (found || !root.isConnected || performance.now() - started > TARGET_WAIT_MS) clearInterval(waitingFor);
+  }, 100);
 }
 
 /** One A4-width sheet: on screen it is the preview, in print it is the document. */
