@@ -19,20 +19,39 @@ const anchor: ScrollAnchor = { paragraph: 'p3', piece: 1, block: 4, top: 120 };
 
 test('an anchor is kept per history entry, and the oldest leave past a hundred', () => {
   const storage = memoryStorage();
-  saveScrollAnchor('a', anchor, storage);
-  assert.deepEqual(readScrollAnchor('a', storage), anchor);
-  assert.equal(readScrollAnchor('b', storage), undefined);
-  for (let i = 0; i < 100; i++) saveScrollAnchor(`e${i}`, anchor, storage);
-  assert.equal(readScrollAnchor('a', storage), undefined);
-  assert.deepEqual(readScrollAnchor('e99', storage), anchor);
+  const get = () => storage;
+  saveScrollAnchor('a', anchor, get);
+  assert.deepEqual(readScrollAnchor('a', get), anchor);
+  assert.equal(readScrollAnchor('b', get), undefined);
+  for (let i = 0; i < 100; i++) saveScrollAnchor(`e${i}`, anchor, get);
+  assert.equal(readScrollAnchor('a', get), undefined);
+  assert.deepEqual(readScrollAnchor('e99', get), anchor);
 });
 
 test('a broken store reads as no anchor', () => {
   const storage = memoryStorage();
   storage.setItem('politost-scroll-anchors', '{"a":{"paragraph":3}}');
-  assert.equal(readScrollAnchor('a', storage), undefined);
+  assert.equal(readScrollAnchor('a', () => storage), undefined);
   storage.setItem('politost-scroll-anchors', 'not json');
-  assert.equal(readScrollAnchor('a', storage), undefined);
+  assert.equal(readScrollAnchor('a', () => storage), undefined);
+});
+
+test('storage that the browser blocks reads as no anchor and saves nothing', () => {
+  const blocked = () => {
+    throw new DOMException('The operation is insecure.', 'SecurityError');
+  };
+  assert.equal(readScrollAnchor('a', blocked), undefined);
+  assert.doesNotThrow(() => saveScrollAnchor('a', anchor, blocked));
+  // The default storage too: its getter throws where storage is disabled by policy.
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, get: blocked });
+  try {
+    assert.equal(readScrollAnchor('a'), undefined);
+    assert.doesNotThrow(() => saveScrollAnchor('a', anchor));
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'sessionStorage', descriptor);
+    else delete (globalThis as { sessionStorage?: Storage }).sessionStorage;
+  }
 });
 
 test('an anchor names a block of a piece, the piece, or the paragraph', () => {

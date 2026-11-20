@@ -35,8 +35,12 @@ function isAnchor(value: unknown): value is ScrollAnchor {
   return typeof v.paragraph === 'string' && Number.isInteger(v.piece) && Number.isInteger(v.block) && typeof v.top === 'number';
 }
 
-export function saveScrollAnchor(entry: string, anchor: ScrollAnchor, storage: Storage = sessionStorage): void {
+/** sessionStorage, looked up inside the callers' try: the getter itself throws where storage is blocked. */
+const sessionStore = () => sessionStorage;
+
+export function saveScrollAnchor(entry: string, anchor: ScrollAnchor, getStorage: () => Storage = sessionStore): void {
   try {
+    const storage = getStorage();
     const store = readStore(storage);
     delete store[entry];
     store[entry] = anchor;
@@ -48,9 +52,9 @@ export function saveScrollAnchor(entry: string, anchor: ScrollAnchor, storage: S
   }
 }
 
-export function readScrollAnchor(entry: string, storage: Storage = sessionStorage): ScrollAnchor | undefined {
+export function readScrollAnchor(entry: string, getStorage: () => Storage = sessionStore): ScrollAnchor | undefined {
   try {
-    const anchor = readStore(storage)[entry];
+    const anchor = readStore(getStorage())[entry];
     return isAnchor(anchor) ? anchor : undefined;
   } catch {
     return undefined;
