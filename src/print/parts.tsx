@@ -156,6 +156,7 @@ export function bookParts(
       label: 'il formulario',
       newPage: true,
       runningHead: { page: 'formulario', head: 'Formulario' },
+      deferLayout: true,
       node: (
         <>
           <h2 className="print-h2" id={printIds.formulario}>Formulario</h2>

@@ -83,6 +83,15 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
   );
 }
 
+/** Each numbered formula's print HTML, kept while the book is loaded, so a part renders again without KaTeX. */
+const numberedHtml = new WeakMap<FormulaRef, string>();
+
+function printedFormulaHtml(f: FormulaRef, variant: ContentFlowVariant): string {
+  let html = numberedHtml.get(f);
+  if (html === undefined) numberedHtml.set(f, (html = renderNumberedFormulaHtml(f, variant)));
+  return html;
+}
+
 function Blocks({ blocks, ctx }: { blocks: ContentBlock[]; ctx: RenderContext }) {
   return blocks.map((block, i) => <Fragment key={i}>{renderBlock(block, ctx)}</Fragment>);
 }
@@ -150,7 +159,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
           className="numbered-formula"
           data-formula-id={f.id}
           data-formula-chapter={f.chapter}
-          dangerouslySetInnerHTML={{ __html: renderNumberedFormulaHtml(f, ctx.variant) }}
+          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx.variant) }}
         />
       );
     }

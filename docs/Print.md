@@ -89,9 +89,9 @@ Each chapter of the whole book is a named page (`page: p-cap-3`) with its own `@
 A whole book with every extra is large: Chimica di base is about 325,000 elements. The preview stays responsive this way:
 
 - `useProgressiveParts` mounts the cover and the index at once, then one part per task in a transition. The sheet shows which part it is preparing.
-- `PrintChapter` and `PrintExerciseSection` are memoized and the exercise picks are cached per list, so a switch re-renders only the parts it changes.
+- `PrintChapter`, `PrintExerciseSection` and each chapter of the formula sheet are memoized and the exercise picks are cached per list, so a switch re-renders only the parts it changes. The HTML of each numbered formula and formula-sheet card is kept per formula while the book is loaded.
 - The panel shows a new option at once from local state. The URL changes after the next paint, in a transition, and the sheet follows it, so a switch never waits for the sheet to re-render.
-- On screen, chapters and exercise sections use `content-visibility: auto`. Print lays out everything.
+- On screen, chapters, exercise sections and the formula sheet use `content-visibility: auto`, and so do the paragraphs, exercises, solutions and formula-sheet chapters inside them. Print lays out everything.
 
 **Stampa o salva PDF** stays disabled, reading **Preparazione…**, until every part is mounted, its images and fonts have loaded and its wide formulas are fitted. Ctrl+P waits the same way.
 
