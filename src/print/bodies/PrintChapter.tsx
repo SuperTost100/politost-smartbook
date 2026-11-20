@@ -28,6 +28,7 @@ export const PrintChapter = memo(function PrintChapter({ chapter, formulaIndex, 
               content={preprocessContent(para.content)}
               formulaIndex={formulaIndex}
               resolveAsset={resolveAsset}
+              boxStyle="tinted"
             />
           </div>
         </section>
