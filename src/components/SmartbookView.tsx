@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 import type { Chapter, FormulaRef } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
 import { ContentFlow } from './ContentFlow';
@@ -17,7 +17,8 @@ import { formulaHtml } from '../lib/formulaHtmlCache';
 import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
-import { pinnedElement } from '../lib/scrollPin';
+import { pinIntoView, pinnedElement, READER_INPUT, scrollsThePage } from '../lib/scrollPin';
+import { anchorAt, anchorElement, forgetScrollAnchor, readScrollAnchor, saveScrollAnchor } from '../lib/scrollAnchor';
 import { chapterProgress } from '../lib/chapterProgress';
 import { estimateTextHeight, HEADING_HEIGHT } from '../lib/heightEstimate';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
@@ -44,7 +45,8 @@ function readingMinutes(chapter: Chapter): number {
 
 export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, practice = [] }: SmartbookViewProps) {
   const { setParagraphs, activeParagraphId, setActiveParagraphId } = useReaderProgress();
-  const { hash } = useLocation();
+  const { hash, key: entry } = useLocation();
+  const navigationType = useNavigationType();
   const paraRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const formulaIndex = useMemo(() => buildFormulaIndex(allChapters), [allChapters]);
@@ -76,8 +78,19 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     [pieces, columnWidth],
   );
   const paragraphIds = useMemo(() => chapter.paragraphs.map((p) => p.id), [chapter]);
-  const [landing] = useState(hash);
-  const order = useMemo(() => mountOrder(pieces, pieceForHash(pieces, paragraphIds, landing)), [pieces, paragraphIds, landing]);
+  // Back, forward or a reload returns to the text the reader left (scrollAnchor), not to a pixel offset.
+  // The hash belongs to the place: a hash typed in the address of the open chapter is a new history
+  // entry whose key is "default", like the tab's first entry, and it must land on its target.
+  const chapterKey = `${bookId}/${chapter.meta.id}${hash}`;
+  const restore = useMemo(() => {
+    const anchor = navigationType === 'POP' ? readScrollAnchor(entry, chapterKey) : undefined;
+    const paragraph = anchor ? paragraphIds.indexOf(anchor.paragraph) : -1;
+    return anchor && paragraph >= 0 && anchor.piece < pieces[paragraph].length
+      ? { anchor, piece: [paragraph, Math.max(0, anchor.piece)] as const }
+      : undefined;
+  }, [navigationType, entry, chapterKey, paragraphIds, pieces]);
+  const [landing] = useState(() => restore?.piece ?? pieceForHash(pieces, paragraphIds, hash));
+  const order = useMemo(() => mountOrder(pieces, landing), [pieces, landing]);
   const firstCount = useMemo(() => {
     let chars = 0;
     let n = 0;
@@ -116,10 +129,52 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   }, [settled, allChapters, chapter]);
   const shown = useMemo(() => {
     const set = new Set(order.slice(0, shownCount).map(([i, j]) => `${i}.${j}`));
-    const linked = pieceForHash(pieces, paragraphIds, hash);
+    const linked = restore?.piece ?? pieceForHash(pieces, paragraphIds, hash);
     if (linked) set.add(`${linked[0]}.${linked[1]}`);
     return set;
-  }, [order, shownCount, pieces, paragraphIds, hash]);
+  }, [order, shownCount, pieces, paragraphIds, hash, restore]);
+
+  useLayoutEffect(() => {
+    const article = articleRef.current;
+    const target = article && restore && anchorElement(article, restore.anchor);
+    // The pin ends with the entry: Forward can leave without any input that would release it.
+    return target ? pinIntoView(target, 'instant', restore.anchor.top) : undefined;
+  }, [restore]);
+
+  // The block at the top of the screen, under the header, is saved for this history entry whenever the
+  // reader stops scrolling, and once more when the entry is left. An entry being restored keeps its
+  // saved place until the reader scrolls: passing through it with quick Back and Forward presses
+  // would otherwise save wherever the restore had got to. A place with no anchor forgets the old one.
+  useLayoutEffect(() => {
+    const article = articleRef.current;
+    if (!article) return;
+    let readerMoved = !restore;
+    const onInput = (event: Event) => {
+      if (scrollsThePage(event)) readerMoved = true;
+    };
+    const save = () => {
+      if (!readerMoved) return;
+      const box = article.getBoundingClientRect();
+      const anchor = anchorAt(article, chapterKey, box.left + box.width / 2, ptsbLayout.headerHeight + 8);
+      if (anchor) saveScrollAnchor(entry, anchor);
+      else forgetScrollAnchor(entry);
+    };
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onScroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(save, 150);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', save);
+    for (const type of READER_INPUT) window.addEventListener(type, onInput, { capture: true, passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', save);
+      for (const type of READER_INPUT) window.removeEventListener(type, onInput, true);
+      save();
+    };
+  }, [entry, chapterKey, restore]);
 
   useEffect(() => {
     setParagraphs(

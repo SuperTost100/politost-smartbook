@@ -204,6 +204,177 @@ for (const key of ['End', 'Control+End']) {
   });
 }
 
+// Paragraphs of many one-line blocks, whose estimated heights are far from the real ones: on the way
+// back to such a chapter the same scroll offset shows other text.
+const TALL = {
+  ...CONFIG,
+  id: 'alto',
+  title: 'Libro alto',
+  chapters: [
+    { id: 'alto', number: 1, title: 'Capitolo alto', file: '01-alto.md', printable: true },
+    { id: 'altro', number: 2, title: 'Un altro capitolo alto', file: '02-altro.md', printable: true },
+  ],
+};
+const tallChapter = (n = 1) => {
+  const parts = [`---\nchapter: ${n}\ntitle: Capitolo ${n}\n---\n`];
+  for (let i = 1; i <= 12; i++) {
+    parts.push(`## p${i} | Paragrafo ${i}\n`);
+    for (let l = 1; l <= 60; l++) {
+      parts.push(`Riga ${l} del paragrafo ${i}.\n`);
+      // Numbered formulas cut the paragraph into pieces that appear one at a time.
+      if (l % 15 === 0) parts.push(`:::formula{id="${n}.${i * 10 + l / 15}" label="Formula ${l / 15}"}\n$$y = ${l}x$$\n:::\n`);
+    }
+  }
+  return parts.join('\n');
+};
+const TALL_PACKAGE = zipSync({
+  'smartbook.json': strToU8(JSON.stringify(TALL)),
+  'chapters/01-alto.md': strToU8(tallChapter()),
+  'chapters/02-altro.md': strToU8(tallChapter(2)),
+  'esercizi.md': strToU8(EXERCISES),
+});
+
+async function serveTallBook(page: Page) {
+  await page.route(`${BOOKS_URL}/catalog.json`, (route) => route.fulfill({
+    json: {
+      catalogVersion: 1,
+      generatedAt: '2026-10-12T00:00:00Z',
+      books: [{
+        id: 'alto', title: 'Libro alto', subject: 'Fisica', authors: ['Ada Lovelace'], version: '1.0.0', specVersion: '1.2',
+        chapters: 2, package: 'books/alto@1.0.0.ptsb', bytes: TALL_PACKAGE.byteLength,
+        sha256: createHash('sha256').update(TALL_PACKAGE).digest('hex'),
+      }],
+    },
+  }));
+  await page.route(`${BOOKS_URL}/books/**`, (route) =>
+    route.fulfill({ body: Buffer.from(TALL_PACKAGE), contentType: 'application/octet-stream' }));
+}
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 }]) {
+  test(`back to a chapter at ${viewport.width}px shows the same text at the same place`, async ({ page }) => {
+    await serveTallBook(page);
+    await page.setViewportSize(viewport);
+    await page.goto('/libro/alto/capitolo/alto');
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    // Read down the chapter as a reader would, so the paragraphs above take their real heights.
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    for (let i = 0; i < 40; i++) await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(500);
+    const probe = page.getByText('Riga 30 del paragrafo 7.', { exact: true });
+    await probe.evaluate((el) => window.scrollBy({ top: el.getBoundingClientRect().top - 300, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    const before = await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page).toHaveURL(/\/esercizi/);
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    // Once the chapter has filled in, and still a moment later.
+    await page.waitForTimeout(2500);
+    expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+    await page.waitForTimeout(1000);
+    expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+  });
+}
+
+test.describe('Returns to a chapter', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveTallBook(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  const readDown = async (page: Page, wheels: number) => {
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    await page.mouse.move(720, 450);
+    for (let i = 0; i < wheels; i++) await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(600);
+  };
+  const headingTop = (page: Page, id: string) => page.locator(`#${id}`).evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+  test("a direct load of another chapter in the same tab lands on its own hash, not on the first chapter's place", async ({ page }) => {
+    // Both loads are the first entry of their document, whose history key is the same.
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 40);
+    await page.goto('/libro/alto/capitolo/altro#p3');
+    await expect.poll(() => headingTop(page, 'p3')).toBe(94);
+  });
+
+  test('the same chapter with a new hash typed in the address lands on that hash', async ({ page }) => {
+    await page.goto('/libro/alto/capitolo/alto');
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    await page.evaluate(() => window.scrollTo({ top: (document.documentElement.scrollHeight - innerHeight) * 0.7, behavior: 'instant' }));
+    await page.waitForTimeout(1500);
+    // A new hash on the open page is a new history entry with the key "default", like the first one.
+    await page.goto('/libro/alto/capitolo/alto#p3');
+    await expect.poll(() => headingTop(page, 'p3')).toBe(94);
+  });
+
+  test('quick Back, Back, Forward through chapters keeps the place of the chapter passed through', async ({ page }) => {
+    const nav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 30);
+    await page.locator('.sb-toc a[href$="/capitolo/altro"]').click();
+    await expect(page).toHaveURL(/\/capitolo\/altro$/);
+    await readDown(page, 50);
+    const probe = page.getByText('Riga 30 del paragrafo 8.', { exact: true });
+    await probe.evaluate((el) => window.scrollBy({ top: el.getBoundingClientRect().top - 300, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    const before = await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    await nav.getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    for (let round = 1; round <= 3; round++) {
+      // Back to the second chapter and on to the first, then Forward to the second, without waiting.
+      await page.evaluate(async () => {
+        const step = (delta: number) => new Promise((resolve) => {
+          window.addEventListener('popstate', resolve, { once: true });
+          history.go(delta);
+        });
+        await step(-1);
+        await step(-1);
+        await step(1);
+      });
+      await page.waitForTimeout(3000);
+      await expect(page).toHaveURL(/\/capitolo\/altro$/);
+      expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top)), `round ${round}`).toBe(before);
+      await page.evaluate(() => history.go(1));
+      await expect(page.locator('.esercizi-view')).toBeVisible();
+    }
+  });
+
+  test('back to a chapter left from its very end on a phone shows the end again', async ({ page }) => {
+    // A short screen, so the end of the chapter (its links and the pager) fills it.
+    await page.setViewportSize({ width: 375, height: 420 });
+    await page.goto('/libro/alto/capitolo/alto');
+    // A place saved in the middle first, which the end must replace.
+    await readDown(page, 20);
+    await page.keyboard.press('End');
+    const next = page.getByRole('link', { name: /Capitolo successivo/ });
+    await expect.poll(() => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - innerHeight - scrollY) <= 1)).toBe(true);
+    await page.waitForTimeout(600);
+    const before = await next.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    await next.click();
+    await expect(page).toHaveURL(/\/capitolo\/altro$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    await page.waitForTimeout(2500);
+    expect(await next.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+  });
+
+  test('back to a chapter that the reader had scrolled back to the top opens at the top', async ({ page }) => {
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 30);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+});
+
 test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
   // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -222,4 +393,10 @@ test('a landing in one chapter does not name a paragraph of the next chapter', a
   await page.locator('.sb-toc a[href$="/capitolo/prova-tu"]').click();
   await expect(page).toHaveURL(/\/capitolo\/prova-tu$/);
   await expect.poll(saved).toBe('prova-tu:top');
+});
+
+test('a hash that is not valid percent encoding opens the chapter at the top', async ({ page }) => {
+  await page.goto('/libro/esempio/capitolo/nel-libro#%');
+  await expect(page.locator('.chapter-content')).toBeVisible();
+  await expect(page.getByText('Non riesco a mostrare questa pagina')).toHaveCount(0);
 });

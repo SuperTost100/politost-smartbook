@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { PRINT_ROUTES, assertPrintMediaHidesChrome, assertPrintPreview, assertUniqueIds } from './helpers/print';
 import { preparePlatformShell, PRINT_GOTO_OPTIONS } from './helpers/platform';
-import { openTestBook, WIDE_BOOK } from './helpers/books';
+import { openTestBook, WIDE_BOOK, type TestBook } from './helpers/books';
 
 /** The printed text column: A4 less the 18 mm side margins, in CSS px. */
 const PRINT_COLUMN = Math.floor((174 * 96) / 25.4);
@@ -111,6 +111,45 @@ test.describe('Print preview', () => {
     await expect(page).toHaveURL(/\/stampa\/capitolo\/nel-libro\?esercizi=3&soluzioni=0&return=/);
     await page.getByRole('link', { name: 'Torna al libro' }).click();
     await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
+  });
+
+  test('an index entry clicked before its chapter is on the page goes there once it is, and leaves the address alone', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/libro/esempio/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    // A slow computer, so the chapters are still to come when the index appears.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 });
+    await page.goto('/libro/esempio/stampa/libro', { waitUntil: 'commit' });
+    const entry = page.locator('.print-index a[href="#cap-3"]');
+    await entry.waitFor();
+    const before = await page.evaluate(() => ({ url: location.href, history: history.length, mounted: Boolean(document.getElementById('cap-3')) }));
+    await entry.click();
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    expect(before.mounted, 'the chapter is not on the page yet when the entry is clicked').toBe(false);
+    const target = page.locator('#cap-3');
+    await expect.poll(() => target.evaluate((el) => Math.abs(Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)))), { timeout: 15_000 }).toBeLessThanOrEqual(1);
+    expect(await page.evaluate(() => ({ url: location.href, history: history.length }))).toEqual({ url: before.url, history: before.history });
+    // One step back leaves the print preview.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
+  });
+
+  test('an index entry still waiting for its chapter lets go when the reader scrolls elsewhere', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 });
+    await page.goto('/libro/esempio/stampa/libro', { waitUntil: 'commit' });
+    const entry = page.locator('.print-index a[href="#cap-3"]');
+    await entry.waitFor();
+    expect(await page.evaluate(() => Boolean(document.getElementById('cap-3')))).toBe(false);
+    await entry.click();
+    await page.mouse.wheel(0, 200);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled({ timeout: 30_000 });
+    await page.waitForTimeout(1000);
+    // The chapter appeared seconds after the reader scrolled: the page stays where the reader is.
+    const top = await page.locator('#cap-3').evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    expect(top).toBeGreaterThan(900);
   });
 
   test('with no chapter chosen the sheet says what to do and printing waits', async ({ page }) => {
@@ -237,6 +276,46 @@ test.describe('Print preview', () => {
     await assertPrintPreview(page, PRINT_ROUTES[0]);
     await page.getByRole('link', { name: 'Torna al libro' }).click();
     await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
+  });
+});
+
+test.describe('Links in a long print preview', () => {
+  // Chapters long enough that the blocks between a link and its target are laid out only near the screen.
+  const paragraph = (c: number, p: number) => [
+    `## p${p} | Paragrafo ${p}`, '',
+    ...Array.from({ length: 12 }, (_, l) => `Riga ${l + 1} del paragrafo ${c}.${p}, con una formula $x_{${l}} = ${l}$.\n`),
+  ].join('\n');
+  const LONG_BOOK: TestBook = {
+    id: 'lungo-stampa',
+    title: 'Lungo da stampare',
+    chapters: [1, 2, 3].map((c) => ({
+      id: `cap${c}`, number: c, title: `Capitolo ${c}`,
+      markdown: [`---\nchapter: ${c}\ntitle: Capitolo ${c}\n---\n`, ...Array.from({ length: 25 }, (_, p) => paragraph(c, p + 1))].join('\n'),
+    })),
+    esercizi: ['---', 'type: esercizi', 'printable: true', '---', '',
+      ...[1, 2, 3].flatMap((c) => Array.from({ length: 15 }, (_, e) => [
+        `:::exercise{id="E${c}.${e + 1}" chapter="${c}" difficulty="facile"}`, '## Domanda', `Quanto fa ${c} + ${e}?`, '',
+        ':::solution', ...Array.from({ length: 6 }, (_, l) => `Riga ${l + 1}: fa ${c + e}.\n`), ':::', ':::', '',
+      ].join('\n'))),
+    ].join('\n'),
+  };
+
+  test('every link lands its target under the toolbar and keeps it there', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await preparePlatformShell(page);
+    await openTestBook(page, LONG_BOOK);
+    await page.goto(`/libro/${LONG_BOOK.id}/stampa/libro?esercizi=tutti&soluzioni=1`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled({ timeout: 30_000 });
+    const offset = (id: string) =>
+      page.locator(`[id="${id}"]`).evaluate((el) => Math.round(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)));
+    for (const [from, to] of [['E1.2', 'E2.10'], ['E3.3', 'E1.9'], ['E2.7', 'E2.13'], ['E1.15', 'E3.1']]) {
+      for (const [link, target] of [[`ex-${from}`, `ex-${from}-soluzione`], [`ex-${from}-soluzione`, `ex-${from}`], [`ex-${to}`, `ex-${to}-soluzione`]]) {
+        await page.locator(`[id="${link}"] a[href="#${target}"]`).first().evaluate((a) => a.scrollIntoView({ block: 'center', behavior: 'instant' }));
+        await page.locator(`[id="${link}"] a[href="#${target}"]`).first().click();
+        await page.waitForTimeout(800);
+        expect(Math.abs(await offset(target)), `${link} to ${target}`).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });
 

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigationType } from 'react-router-dom';
 import type { Chapter, FormulaRef, SmartbookConfig } from '../types/smartbook';
 import { SectionHeader } from './ds/SectionHeader';
 import { FormulaCard } from './ds/FormulaCard';
@@ -73,7 +73,14 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
     (i: number) => byChapter.get(cardChapters[i].number)?.forEach((f) => formulaHtml(f.latex)),
     [byChapter, cardChapters],
   );
-  const shownCards = useProgressiveCount(typeof scope === 'number' ? 0 : cardChapters.length, 1, prepareCard, cardChapters);
+  // Back or forward shows every card at once, so the browser restores the place the reader left.
+  const returning = useNavigationType() === 'POP';
+  const shownCards = useProgressiveCount(
+    typeof scope === 'number' ? 0 : cardChapters.length,
+    returning ? cardChapters.length : 1,
+    prepareCard,
+    cardChapters,
+  );
   const hrefFor = useCallback(
     (f: FormulaRef) => `/libro/${bookId}/capitolo/${chapterIds.get(f.chapter)}#formula-${f.id}`,
     [bookId, chapterIds],

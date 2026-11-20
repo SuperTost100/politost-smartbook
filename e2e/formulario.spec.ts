@@ -162,6 +162,33 @@ test.describe('Formula sheet by chapter', () => {
   });
 });
 
+test('back to "Tutte" after opening a formula far down shows the same row at the same place', async ({ page }) => {
+  // Ten chapters of formulas: the cards of "Tutte" appear one after another.
+  const book: TestBook = {
+    id: 'molte-formule',
+    title: 'Molte formule',
+    chapters: Array.from({ length: 10 }, (_, c) => ({
+      id: `c${c + 1}`, number: c + 1, title: `Capitolo ${c + 1}`,
+      markdown: [`---\nchapter: ${c + 1}\ntitle: Capitolo ${c + 1}\n---\n`, '## p1 | Formule\n',
+        ...Array.from({ length: 25 }, (_, f) => `:::formula{id="${c + 1}.${f + 1}" label="Formula ${f + 1}"}\n$$y = ${f + 1}x + ${c}$$\n:::\n`)].join('\n'),
+    })),
+  };
+  await preparePlatformShell(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTestBook(page, book);
+  await page.goto(`/libro/${book.id}/formulario?capitolo=tutte`);
+  const row = page.locator('[id="formula-8.12"]');
+  await row.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await page.waitForTimeout(500);
+  const before = await row.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+  await row.locator('a').click();
+  await expect(page).toHaveURL(/\/capitolo\/c8#formula-8\.12$/);
+  await expect(page.locator('.paragraph-section')).toHaveCount(1);
+  await page.goBack();
+  await expect(page).toHaveURL(/capitolo=tutte$/);
+  await expect.poll(() => row.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
+});
+
 test.describe('Formula sheet on a phone', () => {
   test.beforeEach(async ({ page }) => {
     await preparePlatformShell(page);
