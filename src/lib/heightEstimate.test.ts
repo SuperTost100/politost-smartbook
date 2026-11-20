@@ -25,3 +25,9 @@ test('a paragraph of Fisica 1 lands near its measured height', () => {
   const height = 61 + estimateTextHeight(text, 658);
   assert.ok(Math.abs(height - 572) / 572 < 0.15, `estimated ${height}`);
 });
+
+test('a box adds its frame, and its ::: lines do not count as text', () => {
+  const plain = estimateTextHeight(prose, 700);
+  const boxed = estimateTextHeight(`:::definition{id="1.1" title="palla"}\n${prose}\n:::`, 700);
+  assert.ok(boxed > plain + 50 && boxed < plain + 120, `boxed ${boxed}, plain ${plain}`);
+});

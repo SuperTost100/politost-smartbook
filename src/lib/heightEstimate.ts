@@ -14,8 +14,10 @@ export function estimateTextHeight(content: string, width: number): number {
   const display = count(content, /\$\$/g) / 2;
   const formulas = count(content, /<!--FORMULA:/g);
   const images = count(content, /<!--IMAGE:/g);
+  // A box (content format 1.3) adds its margins, padding and label line; its `:::` lines are not text.
+  const boxes = count(content, /^:::(?:definition|theorem|proof|example|mistake|remark)\b/gm);
   const blocks = content.split(/\n\s*\n/).filter((block) => block.trim()).length;
-  const text = content.replace(/<!--[\s\S]*?-->/g, '').replace(/\$\$[\s\S]*?\$\$/g, '').length;
-  const height = text * (176 / width + 0.127) + display * 81 + formulas * 76 + images * 0.63 * width + blocks * 27;
+  const text = content.replace(/<!--[\s\S]*?-->/g, '').replace(/\$\$[\s\S]*?\$\$/g, '').replace(/^:::.*$/gm, '').length;
+  const height = text * (176 / width + 0.127) + display * 81 + formulas * 76 + images * 0.63 * width + blocks * 27 + boxes * 70;
   return Math.round(height);
 }
