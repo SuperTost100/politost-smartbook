@@ -17,7 +17,7 @@ import { formulaHtml } from '../lib/formulaHtmlCache';
 import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
-import { pinIntoView, pinnedElement } from '../lib/scrollPin';
+import { pinIntoView, pinnedElement, READER_INPUT, scrollsThePage } from '../lib/scrollPin';
 import { anchorAt, anchorElement, readScrollAnchor, saveScrollAnchor } from '../lib/scrollAnchor';
 import { chapterProgress } from '../lib/chapterProgress';
 import { estimateTextHeight, HEADING_HEIGHT } from '../lib/heightEstimate';
@@ -142,11 +142,18 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   }, [restore]);
 
   // The block at the top of the screen, under the header, is saved for this history entry whenever the
-  // reader stops scrolling, and once more when the entry is left.
+  // reader stops scrolling, and once more when the entry is left. An entry being restored keeps its
+  // saved place until the reader scrolls: passing through it with quick Back and Forward presses
+  // would otherwise save wherever the restore had got to.
   useLayoutEffect(() => {
     const article = articleRef.current;
     if (!article) return;
+    let readerMoved = !restore;
+    const onInput = (event: Event) => {
+      if (scrollsThePage(event)) readerMoved = true;
+    };
     const save = () => {
+      if (!readerMoved) return;
       const box = article.getBoundingClientRect();
       const anchor = anchorAt(article, chapterKey, box.left + box.width / 2, ptsbLayout.headerHeight + 8);
       if (anchor) saveScrollAnchor(entry, anchor);
@@ -158,13 +165,15 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', save);
+    for (const type of READER_INPUT) window.addEventListener(type, onInput, { capture: true, passive: true });
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pagehide', save);
+      for (const type of READER_INPUT) window.removeEventListener(type, onInput, true);
       save();
     };
-  }, [entry, chapterKey]);
+  }, [entry, chapterKey, restore]);
 
   useEffect(() => {
     setParagraphs(

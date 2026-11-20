@@ -310,6 +310,38 @@ test.describe('Returns to a chapter', () => {
     await expect.poll(() => headingTop(page, 'p3')).toBe(94);
   });
 
+  test('quick Back, Back, Forward through chapters keeps the place of the chapter passed through', async ({ page }) => {
+    const nav = page.getByRole('navigation', { name: 'Sezioni del libro' });
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 30);
+    await page.locator('.sb-toc a[href$="/capitolo/altro"]').click();
+    await expect(page).toHaveURL(/\/capitolo\/altro$/);
+    await readDown(page, 50);
+    const probe = page.getByText('Riga 30 del paragrafo 8.', { exact: true });
+    await probe.evaluate((el) => window.scrollBy({ top: el.getBoundingClientRect().top - 300, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    const before = await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    await nav.getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    for (let round = 1; round <= 3; round++) {
+      // Back to the second chapter and on to the first, then Forward to the second, without waiting.
+      await page.evaluate(async () => {
+        const step = (delta: number) => new Promise((resolve) => {
+          window.addEventListener('popstate', resolve, { once: true });
+          history.go(delta);
+        });
+        await step(-1);
+        await step(-1);
+        await step(1);
+      });
+      await page.waitForTimeout(3000);
+      await expect(page).toHaveURL(/\/capitolo\/altro$/);
+      expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top)), `round ${round}`).toBe(before);
+      await page.evaluate(() => history.go(1));
+      await expect(page.locator('.esercizi-view')).toBeVisible();
+    }
+  });
+
   test('back to a chapter that the reader had scrolled back to the top opens at the top', async ({ page }) => {
     await page.goto('/libro/alto/capitolo/alto');
     await readDown(page, 30);
