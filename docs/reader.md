@@ -220,6 +220,8 @@ esercizi.md / esami.md
 
 Il **formulario** non ha file dedicato: aggrega `chapter.formulas` da tutti i capitoli.
 
+Definizioni, teoremi, dimostrazioni, esempi, errori tipici e osservazioni (formato 1.3) arrivano da `parseContentBlocks` come blocchi `box`, e `ContentFlow` li disegna come riquadri (`BoxView`; parole, id e stile in `src/lib/boxes.ts`). Nel testo dei capitoli (`boxStyle="tinted"`, in `SmartbookView` e `PrintChapter`) definizioni e teoremi hanno lo sfondo colorato e gli altri tipi una linea a sinistra; altrove, cioè in esercizi, suggerimenti e soluzioni, ogni riquadro ha solo la linea. Ogni riquadro è un `role="group"` che prende il nome dalla sua etichetta, e la dimostrazione sotto un teorema è un `<details>` aperto. Gli id degli elementi portano il tipo davanti al numero (`definizione-1.1`, `teorema-1.2`), perché i numeri si ripetono fra tipi diversi e fra riquadri e formule.
+
 Una formula che scorre di lato (nel testo, numerata o nel formulario) riceve `data-wide`, `tabindex="0"`, `role="group"` e un nome («Formula 2.1: Velocità media») finché scorre, così la tastiera può farla scorrere anche dove il browser non rende focalizzabile un riquadro che scorre (Safari). Le formule che stanno nella colonna restano fuori dal Tab. Il codice è `markScrolling` in `src/lib/scrollableMath.ts`, usato dal reader (`useScrollableMath`) e dall'anteprima di stampa (`fitWideFormulas`).
 
 ### Spaziatura inline
