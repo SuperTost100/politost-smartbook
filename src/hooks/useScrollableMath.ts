@@ -9,6 +9,7 @@ const waiting = new Set<HTMLElement>();
 const toCheck = new Set<HTMLElement>();
 const toMeasure = new Set<HTMLElement>();
 let flushQueued = false;
+let fontsPending = false;
 
 /** Whether the browser lays out the root now. Older browsers without the check measure every root. */
 function isRendered(root: HTMLElement): boolean {
@@ -33,6 +34,14 @@ function flush() {
   for (const root of now) {
     waiting.delete(root);
     nearScreen?.unobserve(root);
+  }
+  // The layout just asked for the fonts the formulas use, KaTeX's among them: they change the widths once they arrive.
+  if (document.fonts?.status === 'loading' && !fontsPending) {
+    fontsPending = true;
+    void document.fonts.ready.then(() => {
+      fontsPending = false;
+      for (const root of mounted) queue(root, false);
+    });
   }
 }
 
@@ -79,12 +88,6 @@ function register(root: HTMLElement) {
     }
   });
   resizes.observe(root);
-  // Web fonts change the widths once they arrive.
-  if (document.fonts && document.fonts.status !== 'loaded') {
-    void document.fonts.ready.then(() => {
-      if (mounted.has(root)) queue(root, false);
-    });
-  }
 }
 
 function unregister(root: HTMLElement) {
@@ -108,7 +111,7 @@ function unregister(root: HTMLElement) {
  * The roots mounted together are measured together before the next paint. A root the browser is not
  * laying out yet (a paragraph far from the screen, see content-visibility in ds.css) is measured when
  * it comes near the screen, so opening a chapter does not lay out all of it. A root is measured again
- * when its width changes and when the web fonts arrive.
+ * when its width changes and when the web fonts its formulas use arrive.
  *
  * `content` names what the root shows, for a root that keeps its size when its content changes
  * (the formula sheet changing chapter).
