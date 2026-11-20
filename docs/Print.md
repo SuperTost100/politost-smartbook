@@ -78,7 +78,7 @@ Chromium shrinks the whole printed document when anything in it is wider than th
 - Each scale is measured again after it is applied and corrected, because glyph widths snap to whole pixels and a formula does not shrink exactly in proportion. The formulas that may need a scale are measured as copies at a fixed spot, on whole-pixel columns and on steps of 0.005, so a formula gets the same print scale at every preview width.
 - A formula that scrolls on screen is a tab stop with a name ("Formula 4.1: label" for a numbered one, "Formula" otherwise), because Safari does not make a scroll container focusable. Both go when it fits again.
 
-The fitting runs when every part is mounted and the fonts have loaded, before **Stampa o salva PDF** enables, and again when a font requested by the measurement arrives or the sheet changes width. Measuring lays out the parts kept off screen, so it goes one part per task: for the whole Analisi Matematica 2 with every extra it adds a few seconds to **Preparazione…**.
+The fitting runs when every part is mounted and the fonts have loaded, before **Stampa o salva PDF** enables, and again when a font requested by the measurement arrives or the sheet changes width. Measuring lays out what is kept off screen, so it works through one paragraph, exercise, solution or formula-sheet chapter at a time and yields to the browser every 10 ms. It remembers the width each of these was fitted at, and a MutationObserver forgets the ones whose content changes, so an option that adds or changes a part fits only that part.
 
 ### Running heads in the whole book
 
