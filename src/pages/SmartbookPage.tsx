@@ -43,11 +43,12 @@ function SectionLoading({ children }: { children?: ReactNode }) {
 
 function useScrollToHash() {
   const { pathname, hash, key } = useLocation();
+  const { bookId, chapterId } = useParams<{ bookId: string; chapterId?: string }>();
   const navigationType = useNavigationType();
   useEffect(() => {
     if (!hash) return;
     // Back or forward to a place the reader left: the chapter returns to it (scrollAnchor), not to the hash.
-    if (navigationType === 'POP' && readScrollAnchor(key)) return;
+    if (navigationType === 'POP' && chapterId && readScrollAnchor(key, `${bookId}/${chapterId}`)) return;
     let id: string;
     try {
       id = decodeURIComponent(hash.slice(1));
@@ -69,7 +70,7 @@ function useScrollToHash() {
       clearTimeout(timer);
       release?.();
     };
-  }, [pathname, hash, key, navigationType]);
+  }, [pathname, hash, key, navigationType, bookId, chapterId]);
 }
 
 function useBookData(): SmartbookData | null {

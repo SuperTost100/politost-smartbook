@@ -210,16 +210,19 @@ const TALL = {
   ...CONFIG,
   id: 'alto',
   title: 'Libro alto',
-  chapters: [{ id: 'alto', number: 1, title: 'Capitolo alto', file: '01-alto.md', printable: true }],
+  chapters: [
+    { id: 'alto', number: 1, title: 'Capitolo alto', file: '01-alto.md', printable: true },
+    { id: 'altro', number: 2, title: 'Un altro capitolo alto', file: '02-altro.md', printable: true },
+  ],
 };
-const tallChapter = () => {
-  const parts = ['---\nchapter: 1\ntitle: Capitolo alto\n---\n'];
+const tallChapter = (n = 1) => {
+  const parts = [`---\nchapter: ${n}\ntitle: Capitolo ${n}\n---\n`];
   for (let i = 1; i <= 12; i++) {
     parts.push(`## p${i} | Paragrafo ${i}\n`);
     for (let l = 1; l <= 60; l++) {
       parts.push(`Riga ${l} del paragrafo ${i}.\n`);
       // Numbered formulas cut the paragraph into pieces that appear one at a time.
-      if (l % 15 === 0) parts.push(`:::formula{id="1.${i * 10 + l / 15}" label="Formula ${l / 15}"}\n$$y = ${l}x$$\n:::\n`);
+      if (l % 15 === 0) parts.push(`:::formula{id="${n}.${i * 10 + l / 15}" label="Formula ${l / 15}"}\n$$y = ${l}x$$\n:::\n`);
     }
   }
   return parts.join('\n');
@@ -227,6 +230,7 @@ const tallChapter = () => {
 const TALL_PACKAGE = zipSync({
   'smartbook.json': strToU8(JSON.stringify(TALL)),
   'chapters/01-alto.md': strToU8(tallChapter()),
+  'chapters/02-altro.md': strToU8(tallChapter(2)),
   'esercizi.md': strToU8(EXERCISES),
 });
 
@@ -237,7 +241,7 @@ async function serveTallBook(page: Page) {
       generatedAt: '2026-10-12T00:00:00Z',
       books: [{
         id: 'alto', title: 'Libro alto', subject: 'Fisica', authors: ['Ada Lovelace'], version: '1.0.0', specVersion: '1.2',
-        chapters: 1, package: 'books/alto@1.0.0.ptsb', bytes: TALL_PACKAGE.byteLength,
+        chapters: 2, package: 'books/alto@1.0.0.ptsb', bytes: TALL_PACKAGE.byteLength,
         sha256: createHash('sha256').update(TALL_PACKAGE).digest('hex'),
       }],
     },
@@ -273,6 +277,42 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 
     expect(await probe.evaluate((el) => Math.round(el.getBoundingClientRect().top))).toBe(before);
   });
 }
+
+test.describe('Returns to a chapter', () => {
+  test.beforeEach(async ({ page }) => {
+    await serveTallBook(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  const readDown = async (page: Page, wheels: number) => {
+    await expect(page.locator('.paragraph-section')).toHaveCount(12);
+    await page.mouse.move(720, 450);
+    for (let i = 0; i < wheels; i++) await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(600);
+  };
+  const headingTop = (page: Page, id: string) => page.locator(`#${id}`).evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+  test("a direct load of another chapter in the same tab lands on its own hash, not on the first chapter's place", async ({ page }) => {
+    // Both loads are the first entry of their document, whose history key is the same.
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 40);
+    await page.goto('/libro/alto/capitolo/altro#p3');
+    await expect.poll(() => headingTop(page, 'p3')).toBe(94);
+  });
+
+  test('back to a chapter that the reader had scrolled back to the top opens at the top', async ({ page }) => {
+    await page.goto('/libro/alto/capitolo/alto');
+    await readDown(page, 30);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForTimeout(600);
+    await page.getByRole('navigation', { name: 'Sezioni del libro' }).getByRole('link', { name: 'Esercizi' }).click();
+    await expect(page.locator('.esercizi-view')).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/capitolo\/alto$/);
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+});
 
 test('a landing in one chapter does not name a paragraph of the next chapter', async ({ page }) => {
   // Paragraph ids repeat in every chapter (p1, p2, …), so a landing kept past its chapter would point into the new one.

@@ -79,13 +79,14 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   );
   const paragraphIds = useMemo(() => chapter.paragraphs.map((p) => p.id), [chapter]);
   // Back, forward or a reload returns to the text the reader left (scrollAnchor), not to a pixel offset.
+  const chapterKey = `${bookId}/${chapter.meta.id}`;
   const restore = useMemo(() => {
-    const anchor = navigationType === 'POP' ? readScrollAnchor(entry) : undefined;
+    const anchor = navigationType === 'POP' ? readScrollAnchor(entry, chapterKey) : undefined;
     const paragraph = anchor ? paragraphIds.indexOf(anchor.paragraph) : -1;
     return anchor && paragraph >= 0 && anchor.piece < pieces[paragraph].length
       ? { anchor, piece: [paragraph, Math.max(0, anchor.piece)] as const }
       : undefined;
-  }, [navigationType, entry, paragraphIds, pieces]);
+  }, [navigationType, entry, chapterKey, paragraphIds, pieces]);
   const [landing] = useState(() => restore?.piece ?? pieceForHash(pieces, paragraphIds, hash));
   const order = useMemo(() => mountOrder(pieces, landing), [pieces, landing]);
   const firstCount = useMemo(() => {
@@ -144,7 +145,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     if (!article) return;
     const save = () => {
       const box = article.getBoundingClientRect();
-      const anchor = anchorAt(article, box.left + box.width / 2, ptsbLayout.headerHeight + 8);
+      const anchor = anchorAt(article, chapterKey, box.left + box.width / 2, ptsbLayout.headerHeight + 8);
       if (anchor) saveScrollAnchor(entry, anchor);
     };
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -160,7 +161,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
       window.removeEventListener('pagehide', save);
       save();
     };
-  }, [entry]);
+  }, [entry, chapterKey]);
 
   useEffect(() => {
     setParagraphs(

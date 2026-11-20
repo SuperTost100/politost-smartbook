@@ -5,6 +5,8 @@
  * same offset shows other text. The anchor names the block at the top of the screen instead.
  */
 export interface ScrollAnchor {
+  /** The chapter it belongs to, `book/chapter`: the first entry of every tab has the same history key. */
+  chapter: string;
   /** The paragraph's id (`p3`). */
   paragraph: string;
   /** The piece of the paragraph (splitContentPieces), and the block in it; -1 for the paragraph's top. */
@@ -32,7 +34,7 @@ function readStore(storage: Storage): Store {
 function isAnchor(value: unknown): value is ScrollAnchor {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return typeof v.paragraph === 'string' && Number.isInteger(v.piece) && Number.isInteger(v.block) && typeof v.top === 'number';
+  return typeof v.chapter === 'string' && typeof v.paragraph === 'string' && Number.isInteger(v.piece) && Number.isInteger(v.block) && typeof v.top === 'number';
 }
 
 /** sessionStorage, looked up inside the callers' try: the getter itself throws where storage is blocked. */
@@ -52,10 +54,11 @@ export function saveScrollAnchor(entry: string, anchor: ScrollAnchor, getStorage
   }
 }
 
-export function readScrollAnchor(entry: string, getStorage: () => Storage = sessionStore): ScrollAnchor | undefined {
+/** The anchor saved for this history entry, if it belongs to `chapter`. */
+export function readScrollAnchor(entry: string, chapter: string, getStorage: () => Storage = sessionStore): ScrollAnchor | undefined {
   try {
     const anchor = readStore(getStorage())[entry];
-    return isAnchor(anchor) ? anchor : undefined;
+    return isAnchor(anchor) && anchor.chapter === chapter ? anchor : undefined;
   } catch {
     return undefined;
   }
@@ -63,9 +66,14 @@ export function readScrollAnchor(entry: string, getStorage: () => Storage = sess
 
 /**
  * The anchor for what is at `y` pixels from the top of the viewport: the block of chapter text there,
- * or the paragraph when the point falls between blocks. Null outside the chapter's paragraphs.
+ * or the paragraph when the point falls between blocks. Above the first paragraph (the chapter's
+ * header) it is the first paragraph where it is now, so a return to the top is a return to the top.
+ * Null elsewhere outside the chapter's paragraphs.
  */
-export function anchorAt(article: Element, x: number, y: number): ScrollAnchor | null {
+export function anchorAt(article: Element, chapter: string, x: number, y: number): ScrollAnchor | null {
+  const first = article.querySelector<HTMLElement>('.paragraph-section');
+  const firstTop = first?.getBoundingClientRect().top;
+  if (first && firstTop !== undefined && y < firstTop) return { chapter, paragraph: first.id, piece: -1, block: -1, top: Math.round(firstTop) };
   const hit = document.elementFromPoint(x, y);
   const section = hit?.closest<HTMLElement>('.paragraph-section');
   if (!hit || !section || !article.contains(section)) return null;
@@ -83,7 +91,7 @@ export function anchorAt(article: Element, x: number, y: number): ScrollAnchor |
       element = child;
     }
   }
-  return { paragraph: section.id, piece, block, top: Math.round(element.getBoundingClientRect().top) };
+  return { chapter, paragraph: section.id, piece, block, top: Math.round(element.getBoundingClientRect().top) };
 }
 
 /** The element an anchor names, once its piece is on the page. */
