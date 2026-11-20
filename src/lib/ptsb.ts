@@ -1,13 +1,10 @@
 import {
   PTSB_ZIP_LIMITS,
-  isValidAssetPath,
   parsePtsbEntries,
   ptsbKind,
   safeUnzip,
-  type GraficoConfig,
-  type IdeSnippet,
+  type BundleValidateOptions,
   type PtsbBundle,
-  type SmartbookConfig,
 } from '@politost/content-core';
 import type { PtsbEncryptedHeader, StoredBookBundle } from '../types/ptsb';
 import { b64decode, decryptPayload, parseEncryptedHeader } from './ptsbCrypto';
@@ -15,8 +12,8 @@ import { fetchContentKey } from './api';
 import { getReaderConfig } from '../config/readerConfig';
 
 /** Plain-package parsing lives in content-core. The reader adds decryption and the import date. */
-function toStored(entries: Record<string, Uint8Array>): StoredBookBundle {
-  const bundle: Partial<PtsbBundle> = parsePtsbEntries(entries);
+function toStored(entries: Record<string, Uint8Array>, options?: BundleValidateOptions): StoredBookBundle {
+  const bundle: Partial<PtsbBundle> = parsePtsbEntries(entries, options);
   delete bundle.manifest;
   return { ...(bundle as Omit<PtsbBundle, 'manifest'>), importedAt: new Date().toISOString() };
 }
@@ -40,7 +37,13 @@ async function decryptLicensedFile(
   return decryptPayload(cek, payloadIv, ciphertext, headerBytes);
 }
 
-export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
+/**
+ * Reads a `.ptsb`. `options` goes to the validator: a package from the books site whose SHA-256
+ * matches the catalog passes `{ latex: false }`, because the books repository already checked its
+ * formulas with KaTeX before it listed the hash, and that check is most of opening a book for the
+ * first time. A file the student imports gets every check.
+ */
+export async function parsePtsbFile(file: File, options?: BundleValidateOptions): Promise<StoredBookBundle> {
   const max = PTSB_ZIP_LIMITS.maxCompressedBytes;
   if (file.size > max) {
     throw new Error(`File troppo grande (max ${max / (1024 * 1024)} MB)`);
@@ -50,7 +53,7 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
   const kind = ptsbKind(buf);
 
   if (kind === 'zip') {
-    return toStored(safeUnzip(buf));
+    return toStored(safeUnzip(buf), options);
   }
 
   if (kind === 'encrypted') {
@@ -63,7 +66,7 @@ export async function parsePtsbFile(file: File): Promise<StoredBookBundle> {
     if (access !== 'licensed' && access !== 'public') {
       throw new Error('Libro protetto: accedi e verifica la licenza per aprire questo file.');
     }
-    return toStored(safeUnzip(zipBytes));
+    return toStored(safeUnzip(zipBytes), options);
   }
 
   throw new Error('Formato file non riconosciuto. Usa un file .ptsb valido.');
@@ -73,40 +76,3 @@ export function isEncryptedPtsb(buffer: ArrayBuffer): boolean {
   return ptsbKind(new Uint8Array(buffer)) === 'encrypted';
 }
 
-const ID_RE = /^[a-z0-9-]+$/;
-
-/**
- * Unpacks a package from the books site whose bytes match the SHA-256 of the catalog, without
- * validating it again. The books repository validates every book with the same validateBundle
- * before it packs it and lists its hash, and that check renders every formula of the book with
- * KaTeX: about a third of opening a book for the first time. The limits of the archive still
- * apply, the text is sanitized when it renders, and a file the student imports gets the full
- * check (parsePtsbFile).
- */
-export function readVerifiedPtsb(bytes: Uint8Array): StoredBookBundle {
-  const entries = safeUnzip(bytes);
-  const text = (name: string) => (entries[name] ? new TextDecoder().decode(entries[name]) : '');
-  const config = JSON.parse(text('smartbook.json') || 'null') as SmartbookConfig | null;
-  if (!config || typeof config !== 'object' || typeof config.id !== 'string' || !ID_RE.test(config.id) || !Array.isArray(config.chapters)) {
-    throw new Error('smartbook.json mancante o non valido nel pacchetto');
-  }
-  const chapterFiles: Record<string, string> = {};
-  const assets: Record<string, Uint8Array> = {};
-  for (const [path, data] of Object.entries(entries)) {
-    if (path.startsWith('chapters/') && path.endsWith('.md')) chapterFiles[path.slice('chapters/'.length)] = new TextDecoder().decode(data);
-    else if (path.startsWith('assets/') && !path.endsWith('/') && isValidAssetPath(path)) assets[path] = data;
-  }
-  const ide = text('ide.json');
-  const grafici = text('grafici.json');
-  return {
-    warnings: [],
-    config: { ...config, access: config.access ?? 'public' },
-    chapterFiles,
-    eserciziRaw: text('esercizi.md'),
-    esamiRaw: text('esami.md'),
-    ide: ide ? (JSON.parse(ide) as IdeSnippet[]) : [],
-    grafici: grafici ? (JSON.parse(grafici) as GraficoConfig[]) : [],
-    assets,
-    importedAt: new Date().toISOString(),
-  };
-}

@@ -156,12 +156,12 @@ export async function fetchRemoteBook(entry: RemoteCatalogEntry): Promise<Stored
   if (bytes.byteLength !== entry.bytes || (await sha256Hex(bytes)) !== entry.sha256) {
     throw new BookDownloadError('Il file scaricato non corrisponde al catalogo. Riprova più tardi.');
   }
-  const [{ readVerifiedPtsb }, { ptsbKind }] = await Promise.all([import('./ptsb'), import('@politost/content-core')]);
+  const [{ parsePtsbFile }, { ptsbKind }] = await Promise.all([import('./ptsb'), import('@politost/content-core')]);
   // Remote books are public only. Never send an encrypted package to the platform for a key.
   if (ptsbKind(bytes) !== 'zip') throw new BookDownloadError('Il catalogo contiene un libro protetto: non lo apro.');
 
-  // The hash matched the catalog, so the package is the one the books repository validated.
-  const bundle = readVerifiedPtsb(bytes);
+  // The hash matched the catalog, so the books repository already checked these formulas with KaTeX.
+  const bundle = await parsePtsbFile(new File([bytes], `${key}.ptsb`), { latex: false });
   if (bundle.config.id !== entry.id || bundle.config.version !== entry.version) {
     throw new BookDownloadError('Il libro scaricato non corrisponde al catalogo.');
   }

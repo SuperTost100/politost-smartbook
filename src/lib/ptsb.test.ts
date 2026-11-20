@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { strToU8, zipSync } from 'fflate';
-import { parsePtsbFile, readVerifiedPtsb } from './ptsb.ts';
+import { parsePtsbFile } from './ptsb.ts';
 
 test('uploaded future-format books retain their compatibility warning', async () => {
   const bytes = zipSync({
@@ -37,25 +37,21 @@ const book = (chapter: string) => zipSync({
   'assets/fig.svg': strToU8('<svg xmlns="http://www.w3.org/2000/svg"/>'),
 });
 
-test('a package verified against the catalog unpacks to what the full parser gives', async () => {
-  const bytes = book('## p1 | Intro\n\nLa legge $F = ma$.\n');
-  const verified = readVerifiedPtsb(bytes);
-  const full = await parsePtsbFile(new File([new Uint8Array(bytes).buffer], 'book.ptsb'));
-  const strip = ({ importedAt: _i, warnings: _w, ...rest }: typeof full) => rest;
-  assert.deepEqual(strip(verified), strip(full));
-});
+const open = (bytes: Uint8Array, options?: { latex?: boolean }) =>
+  parsePtsbFile(new File([new Uint8Array(bytes).buffer], 'book.ptsb'), options);
 
-test('only a file the student imports goes through the validator', async () => {
+test('a package verified against the catalog opens with a formula KaTeX refuses', async () => {
   const bytes = book('## p1 | Intro\n\nUna formula rotta $\\frac{1}{$.\n');
-  await assert.rejects(parsePtsbFile(new File([new Uint8Array(bytes).buffer], 'book.ptsb')), /LaTeX/);
-  assert.equal(readVerifiedPtsb(bytes).config.id, 'verificato');
+  assert.equal((await open(bytes, { latex: false })).config.id, 'verificato');
 });
 
-test('a verified package still needs a valid smartbook.json and stays inside the archive limits', () => {
-  assert.throws(() => readVerifiedPtsb(zipSync({ 'chapters/01.md': strToU8('## p1 | A') })), /smartbook\.json/);
-  assert.throws(
-    () => readVerifiedPtsb(zipSync({ 'smartbook.json': strToU8(JSON.stringify({ id: 'Non Valido', chapters: [] })) })),
-    /smartbook\.json/,
-  );
-  assert.throws(() => readVerifiedPtsb(zipSync({ '../fuori.md': strToU8('x') })), /non consentito/);
+test('an imported file with a formula KaTeX refuses is rejected', async () => {
+  const bytes = book('## p1 | Intro\n\nUna formula rotta $\\frac{1}{$.\n');
+  await assert.rejects(open(bytes), /LaTeX/);
+});
+
+test('a verified package with a broken structure is still rejected', async () => {
+  await assert.rejects(open(zipSync({ 'chapters/01.md': strToU8('## p1 | A') }), { latex: false }), /smartbook\.json/);
+  await assert.rejects(open(book('Testo senza paragrafi.\n'), { latex: false }), /paragrafo/i);
+  await assert.rejects(open(zipSync({ '../fuori.md': strToU8('x') }), { latex: false }), /non consentito/);
 });
