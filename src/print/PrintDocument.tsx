@@ -1,6 +1,6 @@
 import { Fragment, type MouseEvent, type ReactNode } from 'react';
 import { inDocumentTarget } from '../lib/printLinks';
-import { pinIntoView } from '../lib/scrollPin';
+import { pinIntoView, READER_INPUT, scrollsThePage } from '../lib/scrollPin';
 import markMono from '../../design-system/logo/ptsb-mark-mono.svg';
 import './styles/document.css';
 
@@ -89,12 +89,24 @@ export function PrintBrand() {
 const TARGET_WAIT_MS = 15_000;
 let waitingFor: ReturnType<typeof setInterval> | undefined;
 
+/** Stops a link waiting for its target: a new click, or the reader scrolling elsewhere meanwhile. */
+function stopWaiting() {
+  clearInterval(waitingFor);
+  waitingFor = undefined;
+  for (const type of READER_INPUT) window.removeEventListener(type, onReaderInput, true);
+}
+
+function onReaderInput(event: Event) {
+  if (scrollsThePage(event)) stopWaiting();
+}
+
 /**
  * On screen a link inside the document scrolls the preview to its target and holds it there while
  * the parts around it take their real height (content-visibility), until the reader scrolls
  * (pinIntoView). Left to the browser, it would add a history entry for the hash and scroll smoothly
  * through the whole book. A target whose part is not on the page yet is waited for, and the link
- * gives up quietly if it never comes; either way the address does not change.
+ * gives up quietly if it never comes or the reader scrolls meanwhile; either way the address does
+ * not change.
  */
 function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -103,7 +115,7 @@ function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   if (!link || !href || href.length < 2) return;
   e.preventDefault();
   const root = e.currentTarget;
-  clearInterval(waitingFor);
+  stopWaiting();
   const target = inDocumentTarget(root, href);
   if (target) {
     pinIntoView(target);
@@ -113,8 +125,9 @@ function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   waitingFor = setInterval(() => {
     const found = root.isConnected ? inDocumentTarget(root, href) : null;
     if (found) pinIntoView(found);
-    if (found || !root.isConnected || performance.now() - started > TARGET_WAIT_MS) clearInterval(waitingFor);
+    if (found || !root.isConnected || performance.now() - started > TARGET_WAIT_MS) stopWaiting();
   }, 100);
+  for (const type of READER_INPUT) window.addEventListener(type, onReaderInput, { capture: true, passive: true });
 }
 
 /** One A4-width sheet: on screen it is the preview, in print it is the document. */

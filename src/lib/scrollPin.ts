@@ -16,11 +16,11 @@ interface Pin {
 
 let current: Pin | null = null;
 
-const READER_INPUT = ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown'] as const;
+export const READER_INPUT = ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown'] as const;
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
 /** Input that moves the page: the wheel, a swipe, a scrolling key, the scrollbar or the middle button. */
-function scrollsThePage(event: Event): boolean {
+export function scrollsThePage(event: Event): boolean {
   if (event.type === 'wheel' || event.type === 'touchmove') return true;
   if (event.type === 'keydown') return SCROLL_KEYS.has((event as KeyboardEvent).key);
   if (event.type === 'pointerdown') {

@@ -134,6 +134,24 @@ test.describe('Print preview', () => {
     await expect(page).toHaveURL(/\/libro\/esempio\/capitolo\/nel-libro$/);
   });
 
+  test('an index entry still waiting for its chapter lets go when the reader scrolls elsewhere', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 });
+    await page.goto('/libro/esempio/stampa/libro', { waitUntil: 'commit' });
+    const entry = page.locator('.print-index a[href="#cap-3"]');
+    await entry.waitFor();
+    expect(await page.evaluate(() => Boolean(document.getElementById('cap-3')))).toBe(false);
+    await entry.click();
+    await page.mouse.wheel(0, 200);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled({ timeout: 30_000 });
+    await page.waitForTimeout(1000);
+    // The chapter appeared seconds after the reader scrolled: the page stays where the reader is.
+    const top = await page.locator('#cap-3').evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    expect(top).toBeGreaterThan(900);
+  });
+
   test('with no chapter chosen the sheet says what to do and printing waits', async ({ page }) => {
     await page.goto('/libro/esempio/stampa/libro', PRINT_GOTO_OPTIONS);
     await page.getByRole('button', { name: 'Deseleziona tutti' }).click();
