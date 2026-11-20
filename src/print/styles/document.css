@@ -258,6 +258,135 @@
   color: var(--print-ink-faint);
 }
 
+/* ── Boxes ────────────────────────────────────────────────────── */
+
+/* Variant A of the reader on paper. Definitions and theorems keep a light tint, but on a black and
+   white printer the tints turn into almost the same grey, so the word of the label and the rule on the
+   left carry the kind: a 2pt rule frames a statement to learn, a 1pt rule an example or a remark, a
+   1.5pt one a mistake. The sheet prints its colours exactly (print-color-adjust above). Every proof
+   is open. A box of a few blocks stays on one page; a longer one may break, and its label row stays
+   with the first lines. */
+.print-sheet .sb-box {
+  /* The reader's boxes reach into the page margin (ds.css); on paper they stay in the column. */
+  --box-bleed: 0px;
+  --box-ink: var(--print-ink-muted);
+  --box-rule: var(--print-border-strong);
+  --box-soft: transparent;
+  margin: 1rem 0;
+}
+
+.print-sheet .sb-box[data-tone="definition"] {
+  --box-ink: var(--primary-text);
+  --box-rule: var(--primary-text);
+  --box-soft: color-mix(in srgb, var(--primary-soft) 40%, #fff);
+}
+
+.print-sheet .sb-box[data-tone="theorem"] {
+  --box-ink: var(--info);
+  --box-rule: var(--info);
+  --box-soft: color-mix(in srgb, var(--info-soft) 55%, #fff);
+}
+
+.print-sheet .sb-box[data-tone="mistake"] {
+  --box-ink: var(--danger);
+  --box-rule: var(--danger);
+}
+
+.print-sheet .sb-box > .sb-box-main,
+.print-sheet .sb-box > .sb-box-proof {
+  padding-left: 0.8rem;
+  border-left: 1pt solid var(--box-rule);
+}
+
+.print-sheet .sb-box[data-tone="mistake"] > .sb-box-main {
+  border-left-width: 1.5pt;
+}
+
+.print-sheet .sb-box--tinted > .sb-box-main {
+  padding: 0.55rem 0.8rem 0.65rem;
+  border: 1px solid var(--print-border);
+  border-left: 2pt solid var(--box-rule);
+  border-radius: 0 var(--print-radius) var(--print-radius) 0;
+  background: var(--box-soft);
+}
+
+/* A proof under its theorem continues the frame, without the tint. */
+.print-sheet .sb-box--tinted.has-proof > .sb-box-main {
+  border-bottom-right-radius: 0;
+}
+
+.print-sheet .sb-box--tinted > .sb-box-proof {
+  padding: 0.45rem 0.8rem 0.6rem;
+  border: 1px solid var(--print-border);
+  border-top: 0;
+  border-left: 2pt solid var(--print-border-strong);
+  border-radius: 0 0 var(--print-radius) 0;
+}
+
+.print-sheet .sb-box--line > .sb-box-proof {
+  margin-top: 0.6rem;
+  border-left-style: dashed;
+}
+
+.print-sheet .sb-box-head {
+  margin: 0 0 0.25rem;
+  font-family: var(--print-font-serif);
+  font-size: 10pt;
+  line-height: 1.4;
+  color: var(--print-ink);
+  break-after: avoid;
+}
+
+.print-sheet .sb-box-label {
+  font-family: var(--print-font-sans);
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--box-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.print-sheet .sb-box-proof .sb-box-label {
+  color: var(--print-ink-muted);
+}
+
+.print-sheet .sb-box-icon {
+  display: inline-block;
+  width: 9pt;
+  height: 9pt;
+  margin-right: 0.35em;
+  vertical-align: -1pt;
+}
+
+.print-sheet .sb-box-sep {
+  margin: 0 0.15em;
+  color: var(--print-ink-faint);
+}
+
+.print-sheet .sb-box-name {
+  font-style: italic;
+}
+
+.print-sheet .sb-box-proof-body {
+  padding: 0;
+}
+
+.print-sheet .sb-box-body > :last-child,
+.print-sheet .sb-box-proof-body > :last-child {
+  margin-bottom: 0;
+}
+
+.print-sheet .sb-box-main.is-short,
+.print-sheet .sb-box-proof.is-short {
+  break-inside: avoid;
+}
+
+/* The formula plate stays white inside a tinted box, as the reader cuts it to the paper colour. */
+.print-sheet .sb-box .numbered-formula {
+  margin: 0.6rem 0;
+  background: var(--print-surface);
+}
+
 /* ── Figures ──────────────────────────────────────────────────── */
 
 .print-sheet .smartbook-figure {

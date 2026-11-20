@@ -67,6 +67,8 @@ The preview is the printed document. There is no pagination engine: the page ren
 
 In print, internal links print their target (`§3.4`), and formula hovers print as `(1.2)`. Lab and graphs are **not** printable.
 
+Definitions, theorems and the other boxes print as in the reader, with lighter tints and no control on proofs, which are always open. The kind is in the label word and the rule on the left (2pt for definitions and theorems, 1.5pt for mistakes, 1pt for the rest), so a black and white printout still tells them apart. A box of a few blocks keeps `break-inside: avoid` (`boxIsShort` in `src/lib/boxes.ts`); a longer one, such as a long proof, breaks across pages, and its label row stays with its first lines (`break-after: avoid`). A formula inside a box is fitted to the box's narrower column like any other, because the box's padding has a fixed width.
+
 ### Wide formulas
 
 Chromium shrinks the whole printed document when anything in it is wider than the page: one long formula in Analisi Matematica 2 printed the whole book at 79%. `src/print/fitFormulas.ts` scales each display formula wider than its column down to fit it instead, and leaves the others at full size:

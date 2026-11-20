@@ -150,6 +150,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
                 formulaIndex={formulaIndex}
                 resolveAsset={resolveAsset}
                 onRefClick={handleRefClick}
+                boxStyle="tinted"
               />
             </div>
           </section>

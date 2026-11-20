@@ -98,6 +98,33 @@ Reference in text: `{{formula:2.1}}` (keep spaces around markers).
 :::
 ```
 
+### Definitions, theorems and other boxes (format 1.3)
+
+```markdown
+:::theorem{id="1.2" title="di Weierstrass"}
+Sia $K$ compatto e $f$ continua su $K$. Allora …
+:::
+
+:::proof
+…
+:::
+```
+
+The six blocks are `definition`, `theorem` (with `kind="proposition"`, `"corollary"` or `"lemma"`), `proof`, `example`, `mistake` and `remark`. `id` and `title` are optional, and the reader writes the label from them: "Teorema 1.2 · di Weierstrass". A `:::proof` right after a theorem belongs to it. A box may hold paragraphs, lists, display math, `:::formula` and `:::image`, but no other box, and boxes are allowed only in chapters. A book that uses them declares `"specVersion": "1.3"`. The full rules are in the content repository's `spec/content-format.md`.
+
+How the reader draws them:
+
+| Block | Look | Element id |
+|-------|------|------------|
+| `definition` | Terracotta tinted box | `definizione-<id>` |
+| `theorem`, any `kind` | Slate tinted box | `teorema-<id>` |
+| `proof` | Under its theorem, open, with a control that closes it; on its own with a line on the left | none |
+| `example` | Line on the left | `esempio-<id>` |
+| `mistake` | Red line on the left | `errore-<id>` |
+| `remark` | Line on the left | `osservazione-<id>` |
+
+A formula inside a box whose label repeats the box title shows no label there. In print, proofs are always open and the tints are light, with a rule on the left and the label word telling the kinds apart in black and white. Text inside an exercise, hint or solution draws any box with the line only.
+
 ## Exercises (`esercizi.md` / `esami.md`)
 
 ```markdown

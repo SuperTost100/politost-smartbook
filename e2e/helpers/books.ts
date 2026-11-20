@@ -11,6 +11,8 @@ export interface TestBook {
   chapters: { id: string; number: number; title: string; markdown: string }[];
   esercizi?: string;
   esami?: string;
+  /** The content format the book declares; 1.2 when left out. */
+  specVersion?: string;
 }
 
 /**
@@ -24,7 +26,7 @@ export async function openTestBook(page: Page, book: TestBook): Promise<void> {
     subject: 'Prova',
     authors: ['PoliTost'],
     version: '1.0.0',
-    specVersion: '1.2',
+    specVersion: book.specVersion ?? '1.2',
     sections: Object.fromEntries(
       ['smartbook', 'formulario', 'esercizi', 'esami', 'ide', 'grafici', 'risposte'].map((key) => [
         key,
@@ -52,7 +54,7 @@ export async function openTestBook(page: Page, book: TestBook): Promise<void> {
       subject: 'Prova',
       authors: ['PoliTost'],
       version: '1.0.0',
-      specVersion: '1.2',
+      specVersion: book.specVersion ?? '1.2',
       chapters: book.chapters.length,
       package: `books/${book.id}@1.0.0.ptsb`,
       bytes: pkg.byteLength,
@@ -121,4 +123,38 @@ export const WIDE_BOOK: TestBook = {
     ':::exercise{id="X1" type="esame" difficulty="medio"}', '## Domanda', 'Calcola la somma:', '', `$$S = ${WIDE}$$`, '',
     ':::solution', `$$S = ${WIDE}$$`, ':::', ':::', '',
   ].join('\n'),
+};
+
+/**
+ * Every kind of box (content format 1.3): a definition, a theorem with its proof and a formula whose
+ * label is the theorem's name, a lemma, an example, a mistake, a remark and a theorem with a formula
+ * wider than the page. Exercises get none: a package with a box in its exercises does not open
+ * (validateExercises), so the flat style for cards is tested in src/lib/boxFlow.test.ts.
+ */
+export const BOXES_BOOK: TestBook = {
+  id: 'riquadri',
+  title: 'Riquadri',
+  specVersion: '1.3',
+  chapters: [
+    {
+      id: 'riquadri',
+      number: 1,
+      title: 'Riquadri',
+      markdown: [
+        '---', 'chapter: 1', 'title: Riquadri', '---', '',
+        '## p1 | Definizioni e teoremi', '',
+        'Un paragrafo prima dei riquadri.', '',
+        ':::definition{id="1.1" title="palla"}', 'La palla di centro $x_0$ e raggio $r$ è $B_r(x_0)$.', ':::', '',
+        ':::theorem{id="1.2" title="di Weierstrass"}', 'Una funzione continua su un compatto ha massimo e minimo:', '',
+        ':::formula{id="1.1" label="di Weierstrass"}', '$$\\min_K f \\le f(x) \\le \\max_K f$$', ':::', '',
+        'come dice la {{formula:1.1}}.', ':::', '',
+        ':::proof', 'Si usa la compattezza di $K$.', ':::', '',
+        ':::theorem{kind="lemma" id="1.3"}', 'Un lemma senza nome.', ':::', '',
+        ':::example{id="1.1"}', 'Un esempio.', ':::', '',
+        ':::mistake{id="1.1"}', 'Un errore tipico.', ':::', '',
+        ':::remark', 'Un\'osservazione senza numero.', ':::', '',
+        ':::theorem{id="1.4" title="una somma lunga"}', `$$S = ${WIDE}$$`, ':::', '',
+      ].join('\n'),
+    },
+  ],
 };
