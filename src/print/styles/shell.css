@@ -133,6 +133,11 @@
 .print-options-link:hover { text-decoration-thickness: 2px; }
 
 .print-chapter-list { max-height: 300px; overflow-y: auto; margin: 0; padding: 8px; list-style: none; border-radius: var(--radius-md); background: var(--surface-raised); box-shadow: var(--pressed); scrollbar-width: thin; scrollbar-color: var(--border-control) transparent; }
+/* The fade over the rows below the edge. The list's last box, sticky at its bottom edge, so it paints
+   above the rows; hidden once the list is scrolled to its end (data-more, set by the panel). */
+.print-chapter-list::after { content: ""; position: sticky; bottom: -8px; display: block; height: 36px; margin: -36px -8px 0; border-radius: 0 0 var(--radius-md) var(--radius-md); background: linear-gradient(to bottom, transparent, var(--surface-raised) 85%); opacity: 0; pointer-events: none; transition: opacity .15s ease-out; }
+.print-chapter-list[data-more]::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .print-chapter-list::after { transition: none; } }
 .print-chapter-list label { display: flex; align-items: flex-start; gap: 10px; padding: 7px 8px; border-radius: 10px; color: var(--ink-muted); font: 500 14px/19px var(--font-sans); cursor: pointer; }
 .print-chapter-list label:hover, .print-chapter-list input:checked ~ span { color: var(--ink); }
 .print-chapter-n { flex: none; min-width: 1.4em; color: var(--ink-subtle); font-variant-numeric: tabular-nums; }
