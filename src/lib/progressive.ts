@@ -19,3 +19,36 @@ export function prepareBatch(
   return next;
 }
 
+/**
+ * Runs `tasks` while the browser is idle, as many per idle period as fit and at least one, and
+ * returns a function that stops the rest. While `isBusy()` says so (the reader is scrolling), the
+ * tasks wait, because one long task between two frames would make the page stutter. Browsers
+ * without requestIdleCallback (Safari) run one task every 50 ms instead.
+ */
+export function runWhenIdle(tasks: (() => void)[], isBusy: () => boolean = () => false): () => void {
+  let next = 0;
+  let idleHandle: number | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const idle = typeof requestIdleCallback === 'function';
+  const step = (deadline?: IdleDeadline) => {
+    idleHandle = undefined;
+    timer = undefined;
+    if (isBusy()) {
+      timer = setTimeout(schedule, 300);
+      return;
+    }
+    do tasks[next++]();
+    while (next < tasks.length && deadline && deadline.timeRemaining() > 1 && !isBusy());
+    if (next < tasks.length) schedule();
+  };
+  const schedule = () => {
+    if (idle) idleHandle = requestIdleCallback(step);
+    else timer = setTimeout(step, 50);
+  };
+  if (tasks.length > 0) schedule();
+  return () => {
+    if (idleHandle !== undefined) cancelIdleCallback(idleHandle);
+    clearTimeout(timer);
+    next = tasks.length;
+  };
+}

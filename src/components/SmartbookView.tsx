@@ -13,6 +13,8 @@ import { useSkippedAnchor } from '../hooks/useSkippedAnchor';
 import { useProgressiveCount } from '../hooks/useProgressiveCount';
 import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { mountOrder, pieceForHash, splitContentPieces } from '../lib/contentPieces';
+import { formulaHtml } from '../lib/formulaHtmlCache';
+import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 import { pinnedElement } from '../lib/scrollPin';
@@ -87,6 +89,31 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     cachedContentBlocks(pieces[i][j]);
   }, [order, pieces]);
   const shownCount = useProgressiveCount(order.length, firstCount, prepare, order);
+  // Once the chapter is all on the page, the chapters before and after it are parsed while the reader
+  // reads, within the caches' limits, so moving to one only has to put it on the page. The work waits
+  // while the reader scrolls.
+  const settled = shownCount >= order.length;
+  useEffect(() => {
+    if (!settled) return;
+    const at = allChapters.findIndex((c) => c.meta.id === chapter.meta.id);
+    const neighbours = [allChapters[at + 1], allChapters[at - 1]].filter((c): c is Chapter => Boolean(c));
+    let scrolledAt = 0;
+    const onScroll = () => {
+      scrolledAt = performance.now();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const stop = runWhenIdle(
+      neighbours.flatMap((c) => [
+        ...c.paragraphs.flatMap((p) => splitContentPieces(preprocessContent(p.content), PIECE_CHARS)).map((piece) => () => void cachedContentBlocks(piece)),
+        ...c.formulas.map((f) => () => void formulaHtml(f.latex)),
+      ]),
+      () => performance.now() - scrolledAt < 1000,
+    );
+    return () => {
+      stop();
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [settled, allChapters, chapter]);
   const shown = useMemo(() => {
     const set = new Set(order.slice(0, shownCount).map(([i, j]) => `${i}.${j}`));
     const linked = pieceForHash(pieces, paragraphIds, hash);
