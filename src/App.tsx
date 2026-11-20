@@ -79,10 +79,10 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         {authEnabled && (
           <>
-            <Route path="/auth" element={<Suspense fallback={PAGE_LOADING}><AuthPage /></Suspense>} />
-            <Route path="/auth/callback" element={<Suspense fallback={PAGE_LOADING}><AuthCallbackPage /></Suspense>} />
-            <Route path="/auth/accept-terms" element={<Suspense fallback={PAGE_LOADING}><AcceptTermsPage /></Suspense>} />
-            <Route path="/redeem" element={<Suspense fallback={PAGE_LOADING}><RedeemPage /></Suspense>} />
+            <Route path="/auth" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AuthPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/auth/callback" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AuthCallbackPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/auth/accept-terms" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><AcceptTermsPage /></Suspense></RouteErrorBoundary>} />
+            <Route path="/redeem" element={<RouteErrorBoundary><Suspense fallback={PAGE_LOADING}><RedeemPage /></Suspense></RouteErrorBoundary>} />
           </>
         )}
         <Route

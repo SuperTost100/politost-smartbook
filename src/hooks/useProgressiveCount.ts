@@ -15,7 +15,8 @@ const BUDGET_MS = 24;
  */
 export function useProgressiveCount(total: number, initial: number, prepare: (index: number) => void, resetKey: unknown): number {
   const [state, setState] = useState({ key: resetKey, count: initial });
-  const count = Math.min(total, state.key === resetKey ? state.count : initial);
+  // `initial` can grow for the same list, when a link asks for an item further down.
+  const count = Math.min(total, state.key === resetKey ? Math.max(initial, state.count) : initial);
   const prepareRef = useRef(prepare);
   useEffect(() => {
     prepareRef.current = prepare;

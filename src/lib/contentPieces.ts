@@ -61,7 +61,13 @@ const BOX_PREFIX: Record<string, string> = {
  * (`#formula-3.11`) or the piece with a box (`#teorema-3.2`). Null for any other hash.
  */
 export function pieceForHash(pieces: string[][], paragraphIds: string[], hash: string): PieceRef | null {
-  const id = decodeURIComponent(hash.replace(/^#/, ''));
+  let id: string;
+  try {
+    id = decodeURIComponent(hash.replace(/^#/, ''));
+  } catch {
+    // A hash such as `#%` is not valid percent encoding.
+    return null;
+  }
   if (!id) return null;
   const paragraph = paragraphIds.indexOf(id);
   if (paragraph >= 0) return [paragraph, 0];

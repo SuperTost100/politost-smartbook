@@ -147,3 +147,7 @@ test('the pieces appear from the landing to the end, then upwards from the landi
   assert.equal(key(mountOrder(pieces, null)), '0.0 1.0 1.1 2.0');
   assert.equal(key(mountOrder(pieces, [1, 1])), '1.1 2.0 1.0 0.0');
 });
+
+test('a hash that is not valid percent encoding lands nowhere', () => {
+  assert.equal(pieceForHash([['a']], ['p1'], '#%'), null);
+});
