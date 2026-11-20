@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { Chapter } from '../types/smartbook';
 import { buildFormulaIndex, preprocessContent } from '../lib/parser';
@@ -9,10 +9,12 @@ import { ChapterPager } from './ds/ChapterPager';
 import { PracticeLinks, type PracticeLink } from './ds/PracticeLinks';
 import { useReaderProgress } from '../context/ReaderProgressContext';
 import { useRefClick } from '../hooks/useRefClick';
+import { useSkippedAnchor } from '../hooks/useSkippedAnchor';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
 import { pinnedElement } from '../lib/scrollPin';
 import { chapterProgress } from '../lib/chapterProgress';
+import { estimateTextHeight, HEADING_HEIGHT } from '../lib/heightEstimate';
 import { ptsbLayout } from '../../design-system/theme/ptsb-tokens';
 
 interface SmartbookViewProps {
@@ -39,6 +41,26 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   // The chapter re-renders on every change of the active paragraph, so the text work runs once per chapter.
   const minutes = useMemo(() => readingMinutes(chapter), [chapter]);
   const contents = useMemo(() => chapter.paragraphs.map((p) => preprocessContent(p.content)), [chapter]);
+
+  // The browser skips the layout of paragraphs far from the screen (content-visibility in ds.css) and
+  // gives them this height until it lays them out. It depends on the width of the text.
+  const articleRef = useRef<HTMLElement>(null);
+  const [columnWidth, setColumnWidth] = useState(0);
+  useLayoutEffect(() => {
+    const article = articleRef.current;
+    if (!article) return;
+    const measure = () => setColumnWidth((article.querySelector('.content-flow') ?? article).clientWidth);
+    measure();
+    // The observer also reports every change of height while the chapter fills in: the same width does not re-render.
+    const observer = new ResizeObserver(measure);
+    observer.observe(article);
+    return () => observer.disconnect();
+  }, []);
+  useSkippedAnchor(articleRef, '.paragraph-section', chapter);
+  const heights = useMemo(
+    () => (columnWidth > 0 ? contents.map((content) => HEADING_HEIGHT + estimateTextHeight(content, columnWidth)) : null),
+    [contents, columnWidth],
+  );
 
   useEffect(() => {
     setParagraphs(
@@ -132,7 +154,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
         minutes={minutes}
       />
 
-      <article className="chapter-content">
+      <article ref={articleRef} className="chapter-content">
         {chapter.paragraphs.map((para, i) => (
           <section
             key={para.id}
@@ -140,6 +162,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
             data-para-id={para.id}
             ref={(el) => { paraRefs.current[para.id] = el; }}
             className="paragraph-section"
+            style={heights ? { containIntrinsicSize: `auto ${heights[i]}px` } : undefined}
           >
             <ParagraphHeading number={`${chapter.meta.number}.${i + 1}`} id={para.id}>
               {para.title}
