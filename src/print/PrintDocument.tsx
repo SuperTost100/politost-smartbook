@@ -1,5 +1,6 @@
 import { Fragment, type MouseEvent, type ReactNode } from 'react';
 import { inDocumentTarget } from '../lib/printLinks';
+import { pinIntoView } from '../lib/scrollPin';
 import markMono from '../../design-system/logo/ptsb-mark-mono.svg';
 import './styles/document.css';
 
@@ -85,8 +86,10 @@ export function PrintBrand() {
 }
 
 /**
- * On screen a link inside the document scrolls the preview to its target. Left to the browser, it
- * would add a history entry for the hash and scroll smoothly through the whole book.
+ * On screen a link inside the document scrolls the preview to its target and holds it there while
+ * the parts around it take their real height (content-visibility), until the reader scrolls
+ * (pinIntoView). Left to the browser, it would add a history entry for the hash and scroll smoothly
+ * through the whole book.
  */
 function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -94,7 +97,7 @@ function followInDocumentLink(e: MouseEvent<HTMLElement>) {
   const target = link && inDocumentTarget(e.currentTarget, link.getAttribute('href'));
   if (!target) return;
   e.preventDefault();
-  target.scrollIntoView({ block: 'start', behavior: 'instant' });
+  pinIntoView(target);
 }
 
 /** One A4-width sheet: on screen it is the preview, in print it is the document. */
