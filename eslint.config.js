@@ -24,7 +24,7 @@ export default defineConfig([
       // Context modules export their hook next to the provider.
       'react-refresh/only-export-components': [
         'error',
-        { allowExportNames: ['useAuth', 'useTheme', 'useReaderConfig', 'useReaderFeatures'] },
+        { allowExportNames: ['useAuth', 'useTheme', 'useReaderConfig', 'useReaderFeatures', 'useMathTrusted'] },
       ],
     },
   },

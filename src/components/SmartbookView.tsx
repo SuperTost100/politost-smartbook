@@ -14,6 +14,7 @@ import { useProgressiveCount } from '../hooks/useProgressiveCount';
 import { cachedContentBlocks } from '../lib/contentBlocksCache';
 import { mountOrder, pieceForHash, splitContentPieces } from '../lib/contentPieces';
 import { formulaHtml } from '../lib/formulaHtmlCache';
+import { useMathTrusted } from '../context/MathTrustContext';
 import { runWhenIdle } from '../lib/progressive';
 import { closestIntersectingParagraph } from '../lib/activeParagraph';
 import { saveReadingPosition } from '../lib/readingPosition';
@@ -97,10 +98,12 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     while (n < order.length && (n === 0 || chars < FIRST_CHARS)) chars += pieces[order[n][0]][order[n++][1]].length;
     return n;
   }, [order, pieces]);
+  // The same trust as ContentFlow, so the entries prepared here are the ones it reads.
+  const mathTrusted = useMathTrusted();
   const prepare = useCallback((index: number) => {
     const [i, j] = order[index];
-    cachedContentBlocks(pieces[i][j]);
-  }, [order, pieces]);
+    cachedContentBlocks(pieces[i][j], mathTrusted);
+  }, [order, pieces, mathTrusted]);
   const shownCount = useProgressiveCount(order.length, firstCount, prepare, order);
   // Once the chapter is all on the page, the chapters before and after it are parsed while the reader
   // reads, within the caches' limits, so moving to one only has to put it on the page. The work waits
@@ -117,8 +120,8 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
     window.addEventListener('scroll', onScroll, { passive: true });
     const stop = runWhenIdle(
       neighbours.flatMap((c) => [
-        ...c.paragraphs.flatMap((p) => splitContentPieces(preprocessContent(p.content), PIECE_CHARS)).map((piece) => () => void cachedContentBlocks(piece)),
-        ...c.formulas.map((f) => () => void formulaHtml(f.latex)),
+        ...c.paragraphs.flatMap((p) => splitContentPieces(preprocessContent(p.content), PIECE_CHARS)).map((piece) => () => void cachedContentBlocks(piece, mathTrusted)),
+        ...c.formulas.map((f) => () => void formulaHtml(f.latex, mathTrusted)),
       ]),
       () => performance.now() - scrolledAt < 1000,
     );
@@ -126,7 +129,7 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
       stop();
       window.removeEventListener('scroll', onScroll);
     };
-  }, [settled, allChapters, chapter]);
+  }, [settled, allChapters, chapter, mathTrusted]);
   const shown = useMemo(() => {
     const set = new Set(order.slice(0, shownCount).map(([i, j]) => `${i}.${j}`));
     const linked = restore?.piece ?? pieceForHash(pieces, paragraphIds, hash);

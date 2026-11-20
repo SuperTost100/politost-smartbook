@@ -15,11 +15,8 @@ export interface TestBook {
   specVersion?: string;
 }
 
-/**
- * Serves `book` as the only book of the books site and downloads it from its card on Home, so a test
- * can open any page of a book it writes itself.
- */
-export async function openTestBook(page: Page, book: TestBook): Promise<void> {
+/** `book` as a .ptsb package. */
+export function packTestBook(book: TestBook): Uint8Array {
   const config = {
     id: book.id,
     title: book.title,
@@ -44,7 +41,15 @@ export async function openTestBook(page: Page, book: TestBook): Promise<void> {
   for (const chapter of book.chapters) files[`chapters/${chapter.id}.md`] = strToU8(chapter.markdown);
   if (book.esercizi) files['esercizi.md'] = strToU8(book.esercizi);
   if (book.esami) files['esami.md'] = strToU8(book.esami);
-  const pkg = zipSync(files);
+  return zipSync(files);
+}
+
+/**
+ * Serves `book` as the only book of the books site and downloads it from its card on Home, so a test
+ * can open any page of a book it writes itself.
+ */
+export async function openTestBook(page: Page, book: TestBook): Promise<void> {
+  const pkg = packTestBook(book);
   const catalog = {
     catalogVersion: 1,
     generatedAt: '2026-11-01T00:00:00Z',

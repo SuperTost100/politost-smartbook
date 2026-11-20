@@ -9,6 +9,7 @@ import { useIndexDrawer } from './shell/indexDrawer';
 import { useChapterView, useFocusOnScopeChange } from '../hooks/useChapterView';
 import { useProgressiveCount } from '../hooks/useProgressiveCount';
 import { formulaHtml } from '../lib/formulaHtmlCache';
+import { useMathTrusted } from '../context/MathTrustContext';
 import { lastReadChapter } from '../lib/readingPosition';
 import { sectionPath } from '../lib/sectionRoutes';
 import {
@@ -69,9 +70,10 @@ export function FormularioView({ bookId, chapters, config }: FormularioViewProps
     () => (index ? config.chapters.filter((c) => byChapter.has(c.number)) : config.chapters),
     [index, config.chapters, byChapter],
   );
+  const mathTrusted = useMathTrusted();
   const prepareCard = useCallback(
-    (i: number) => byChapter.get(cardChapters[i].number)?.forEach((f) => formulaHtml(f.latex)),
-    [byChapter, cardChapters],
+    (i: number) => byChapter.get(cardChapters[i].number)?.forEach((f) => formulaHtml(f.latex, mathTrusted)),
+    [byChapter, cardChapters, mathTrusted],
   );
   // Back or forward shows every card at once, so the browser restores the place the reader left.
   const returning = useNavigationType() === 'POP';

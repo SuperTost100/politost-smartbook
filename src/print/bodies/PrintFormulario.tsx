@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { Chapter, FormulaRef } from '../../types/smartbook';
-import { renderFormulaLatex } from '../../lib/formulaRender';
-import { sanitizeHtml } from '../../lib/sanitizeHtml';
+import { renderFormulaHtml } from '../../lib/formulaRender';
+import { useMathTrusted } from '../../context/MathTrustContext';
 import { printIds } from '../../lib/printLinks';
 import { withoutMathml } from '../printMath';
 
@@ -11,12 +11,16 @@ interface PrintFormularioProps {
   headings?: boolean;
 }
 
-/** Each formula's HTML, kept while the book is loaded, so the formula sheet renders again without KaTeX. */
-const cardHtml = new WeakMap<FormulaRef, string>();
+/**
+ * Each formula's HTML, kept while the book is loaded, so the formula sheet renders again without
+ * KaTeX. One map per `mathTrusted`, so trusted HTML is never served where it was not asked for.
+ */
+const cardHtml = { trusted: new WeakMap<FormulaRef, string>(), sanitized: new WeakMap<FormulaRef, string>() };
 
-function formulaHtml(f: FormulaRef): string {
-  let html = cardHtml.get(f);
-  if (html === undefined) cardHtml.set(f, (html = withoutMathml(sanitizeHtml(renderFormulaLatex(f.latex)))));
+function formulaHtml(f: FormulaRef, mathTrusted: boolean): string {
+  const cache = mathTrusted ? cardHtml.trusted : cardHtml.sanitized;
+  let html = cache.get(f);
+  if (html === undefined) cache.set(f, (html = withoutMathml(renderFormulaHtml(f.latex, { mathTrusted }))));
   return html;
 }
 
@@ -25,6 +29,7 @@ function formulaHtml(f: FormulaRef): string {
  * answer input between two chapters.
  */
 const FormularioChapter = memo(function FormularioChapter({ chapter, heading }: { chapter: Chapter; heading: boolean }) {
+  const mathTrusted = useMathTrusted();
   return (
     <section className="formulario-chapter" data-print-chapter={chapter.meta.id}>
       {heading && (
@@ -42,7 +47,7 @@ const FormularioChapter = memo(function FormularioChapter({ chapter, heading }: 
                 <span className="formula-num">({f.id})</span>
                 <span className="formula-label">{f.label}</span>
               </div>
-              <div className="formulario-card-body" dangerouslySetInnerHTML={{ __html: formulaHtml(f) }} />
+              <div className="formulario-card-body" dangerouslySetInnerHTML={{ __html: formulaHtml(f, mathTrusted) }} />
             </div>
           ))}
         </div>

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Popover } from 'antd';
 import type { FormulaRef as FormulaRefData } from '../../types/smartbook';
 import { formulaHtml } from '../../lib/formulaHtmlCache';
+import { useMathTrusted } from '../../context/MathTrustContext';
 import { formulaSheetPath } from '../../lib/sectionRoutes';
 
 interface FormulaRefProps {
@@ -92,6 +93,7 @@ interface FormulaPreviewProps {
 }
 
 function FormulaPreview({ formula, bookId, actionRef, onActionKeyDown, onActionBlur, onOpen }: FormulaPreviewProps) {
+  const mathTrusted = useMathTrusted();
   return (
     <div className="sb-fref-pop">
       <div className="sb-fref-pop-head">
@@ -100,7 +102,7 @@ function FormulaPreview({ formula, bookId, actionRef, onActionKeyDown, onActionB
       </div>
       <div
         className="sb-fref-pop-math"
-        dangerouslySetInnerHTML={{ __html: formulaHtml(formula.latex) }}
+        dangerouslySetInnerHTML={{ __html: formulaHtml(formula.latex, mathTrusted) }}
       />
       {bookId && (
         <div className="sb-fref-pop-foot">

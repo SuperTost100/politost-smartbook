@@ -55,6 +55,8 @@ With `VITE_BOOKS_URL`, the home page fetches `catalog.json` from that site and l
 
 The same `id` can come from several places. The reader opens the imported copy first, then the books site, then the builtin one, so an author can test a local `.ptsb` over the published book.
 
+The reader trusts the books site you configure. For a book whose package matched the catalog's sha256, and for the builtin books, KaTeX's output for formulas goes on the page without DOMPurify (content-core's `mathTrusted`, described under "Trusted math" in its README), which makes chapters and the print page open faster. Text, titles and formulas that fail to render are still sanitized. An imported `.ptsb` and a cloud book are sanitized in full, also when they have the same `id` as a catalog book: the trust belongs to the copy that is open (`BookBundle.mathTrusted` in `src/lib/loader.ts`), and the parse caches keep the two apart. Point `VITE_BOOKS_URL` only at a site whose `catalog.json` you control.
+
 ## Headers
 
 `scripts/generate-headers.mjs` writes `public/_headers` at build time, including the Content Security Policy. Hosts that read `_headers` (Netlify, Cloudflare Pages) apply it as is. On other hosts, send the same headers yourself.
