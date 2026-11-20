@@ -135,7 +135,8 @@ export function SmartbookView({ bookId, chapter, allChapters, resolveAsset, prac
   useLayoutEffect(() => {
     const article = articleRef.current;
     const target = article && restore && anchorElement(article, restore.anchor);
-    if (target) pinIntoView(target, 'instant', restore.anchor.top);
+    // The pin ends with the entry: Forward can leave without any input that would release it.
+    return target ? pinIntoView(target, 'instant', restore.anchor.top) : undefined;
   }, [restore]);
 
   // The block at the top of the screen, under the header, is saved for this history entry whenever the

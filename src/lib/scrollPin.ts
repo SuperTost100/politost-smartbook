@@ -59,7 +59,9 @@ export function pinIntoView(element: Element, behavior: 'instant' | 'smooth' = '
     if (aligning) align();
   };
   const resizes = new ResizeObserver(() => {
-    if (settled && aligning) align();
+    // A target that left the page (the chapter unmounted) has nothing to hold.
+    if (!element.isConnected) pin.release();
+    else if (settled && aligning) align();
   });
   // shortcut: browsers without `scrollend` settle on this timer, which can end a very long smooth scroll early.
   const timer = settled ? undefined : setTimeout(settle, 2000);
