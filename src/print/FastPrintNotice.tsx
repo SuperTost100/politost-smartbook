@@ -63,7 +63,7 @@ export function FastPrintNotice({ mode, onChoose, mathml }: FastPrintNoticeProps
       <p className="fast-print-notice-title">
         Stampa veloce attiva<small>, scelta per questo dispositivo</small>
       </p>
-      <p className="fast-print-notice-text">Il documento è pronto in meno di un quarto del tempo. Le formule usano un altro carattere rispetto al libro.</p>
+      <p className="fast-print-notice-text">Il documento è pronto in circa un terzo del tempo. Le formule usano un altro carattere rispetto al libro.</p>
       <div className="fast-print-notice-actions">
         <button type="button" className="sb-btn sb-btn-sm" onClick={() => onChoose('best')}>
           Usa le formule migliori
