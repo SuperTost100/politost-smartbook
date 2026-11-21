@@ -441,13 +441,15 @@ interface SheetFlat {
 const sheets = new WeakMap<HTMLElement, SheetFlat>();
 
 /** A unit whose content changed holds KaTeX's tree again: flatten it again. */
-function forgetChanged(state: SheetFlat, records: MutationRecord[]): void {
+function forgetChanged(state: SheetFlat, records: MutationRecord[], sheet: HTMLElement): void {
   for (const record of records) {
     const node = record.type === 'characterData' ? record.target.parentElement : (record.target as Element);
     const unit = node?.closest(UNIT_OR_PART);
     if (!unit) continue;
     state.flat.delete(unit);
     if (state.job?.unit === unit) state.job = null;
+    // The sheet holds KaTeX again somewhere: printing flattens it first (finishFlattening).
+    if (sheet.dataset.math === 'flat') delete sheet.dataset.math;
   }
 }
 
@@ -457,7 +459,7 @@ function sheetState(sheet: HTMLElement): SheetFlat {
     const created: SheetFlat = {
       flat: new WeakSet(),
       job: null,
-      observer: new MutationObserver((records) => forgetChanged(created, records)),
+      observer: new MutationObserver((records) => forgetChanged(created, records, sheet)),
       run: 0,
       current: Promise.resolve(),
       running: false,
@@ -528,7 +530,7 @@ async function flattenRun(sheet: HTMLElement, state: SheetFlat, run: number, can
           if (stopped()) return;
         }
         // React may have changed the sheet while this waited.
-        forgetChanged(state, state.observer.takeRecords());
+        forgetChanged(state, state.observer.takeRecords(), sheet);
         if (!unit.isConnected || state.flat.has(unit)) break;
         // Nothing a job changes changes a width: the fit has no reason to measure the unit again.
         const result = withoutRefit(sheet, () => workOn((state.job ??= startJob(unit)), slice + budget));

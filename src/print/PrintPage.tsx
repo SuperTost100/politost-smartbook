@@ -428,6 +428,12 @@ export function PrintPage({ kind }: PrintPageProps) {
 
   const mathMode = printMathMode(searchParams);
 
+  // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
+  // print the parts mounted so far.
+  const printQueued = useRef(false);
+  // Whether the sheet holds the whole document for the options chosen now.
+  const completeRef = useRef(false);
+
   const handlePrint = useCallback(async () => {
     setPrinting(true);
     try {
@@ -442,6 +448,11 @@ export function PrintPage({ kind }: PrintPageProps) {
         setFinishing(true);
         await finishFlattening(sheet);
         setFinishing(false);
+        // The options changed while this waited: the print follows the new document once it is ready.
+        if (!completeRef.current) {
+          printQueued.current = true;
+          return;
+        }
       }
       window.print();
     } finally {
@@ -457,9 +468,10 @@ export function PrintPage({ kind }: PrintPageProps) {
   const complete = Boolean(doc) && pending === undefined && !stale;
   const signature = `${kind}|${parts.map((p) => p.key).join(',')}|${JSON.stringify(docOptions)}`;
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
-  // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
-  // print the parts mounted so far.
-  const printQueued = useRef(false);
+  // Before the effect below, which may start a queued print.
+  useEffect(() => {
+    completeRef.current = complete;
+  }, [complete]);
   useEffect(() => {
     if (!complete) return;
     let cancelled = false;
