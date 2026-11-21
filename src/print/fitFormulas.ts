@@ -39,6 +39,8 @@ interface Formula {
   /** The column it has on screen and on the page. */
   screen: number;
   print: number;
+  /** Flattened (flatFormulas.ts): its print scale stays the one measured on KaTeX's tree. */
+  flat: boolean;
 }
 
 /**
@@ -114,7 +116,7 @@ function widestSegment(katex: HTMLElement): number {
  * The width inside padding and border, to the fraction of a pixel: `clientWidth` rounds, and a column
  * off by half a pixel would give a formula a different print scale at another preview width.
  */
-function contentBoxWidth(el: Element): number {
+export function contentBoxWidth(el: Element): number {
   return el.getBoundingClientRect().width - horizontalChrome(el);
 }
 
@@ -193,25 +195,39 @@ const round = (fit: number) => (Math.floor(fit * 1000) / 1000).toString();
  * a part outside any block (a heading, the cover) are fitted with the part itself.
  */
 const UNIT = '.paragraph-section, .exercise-card, .print-solution, .formulario-chapter';
-const UNIT_OR_PART = `${UNIT}, .print-part`;
+export const UNIT_OR_PART = `${UNIT}, .print-part`;
+
+/** Every part of the sheet, each followed by its units, in document order. */
+export function sheetUnits(sheet: Element): Element[] {
+  return [...sheet.querySelectorAll('.print-part')].flatMap((part) => [part, ...part.querySelectorAll(UNIT)]);
+}
 
 /** The elements under `root` that belong to it rather than to a smaller unit inside it. */
-function own<T extends Element>(root: Element, selector: string): T[] {
+export function own<T extends Element>(root: Element, selector: string): T[] {
   return [...root.querySelectorAll<T>(selector)].filter((el) => el.closest(UNIT_OR_PART) === root);
 }
+
+/**
+ * Whether flatFormulas.ts has flattened the formulas in `el`. A flat formula shrinks exactly in
+ * proportion, so measuring it would give another print scale than KaTeX's tree did: its print
+ * scale, its card's span and its inline print fit stay as the fit set them before it was flattened,
+ * and only its screen fit is measured again.
+ */
+const isFlat = (el: Element) => el.querySelector('.katex-flat') !== null;
 
 /** Fits the formulas of `root`, whose sheet is `toPrint` px narrower than the page (negative: wider). */
 function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   const displays = own<HTMLElement>(root, '.katex-display');
   const inlines = own<HTMLElement>(root, '.katex').filter((k) => !k.parentElement?.closest('.katex-display'));
   const ownCards = own<HTMLElement>(root, '.formula-grid > .formulario-card');
+  const flat = new Set([...displays, ...inlines].filter(isFlat));
   // Measure every formula at full size: clear the previous fit first, then read, then write.
   for (const el of displays) {
     el.style.removeProperty(SCREEN_FIT);
-    el.style.removeProperty(PRINT_FIT);
+    if (!flat.has(el)) el.style.removeProperty(PRINT_FIT);
   }
-  for (const el of inlines) el.style.removeProperty(INLINE_PRINT_FIT);
-  for (const card of ownCards) card.classList.remove(WIDE_CARD);
+  for (const el of inlines) if (!flat.has(el)) el.style.removeProperty(INLINE_PRINT_FIT);
+  for (const card of ownCards) if (!isFlat(card)) card.classList.remove(WIDE_CARD);
 
   // A first width in place picks the formulas that may not fit; only those are copied and measured.
   const cards = cardRows(ownCards, toPrint);
@@ -244,7 +260,7 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   for (const i of inline) naturals.set(i.el, i.copy ? widestSegment(i.copy) : i.inPlace);
   const printColumn = new Map<HTMLElement, number>();
   for (const d of display) {
-    if (!d.card || !d.cardRow) continue;
+    if (!d.card || !d.cardRow || flat.has(d.el)) continue;
     const wide = naturals.get(d.el)! + d.cardRow.chrome > d.cardRow.half;
     d.card.classList.toggle(WIDE_CARD, wide);
     printColumn.set(d.el, (wide ? d.cardRow.row : d.cardRow.half) - d.cardRow.chrome);
@@ -260,6 +276,7 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
       measure: () => contentWidth(copyHtml),
       screen,
       print: printColumn.get(d.el) ?? screen + toPrint,
+      flat: flat.has(d.el),
     };
   });
   const inlineFormulas: Formula[] = inline.map((i) => ({
@@ -270,14 +287,24 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
     measure: () => (i.copy ? widestSegment(i.copy) : 0),
     screen: i.screen,
     print: i.screen + toPrint,
+    flat: flat.has(i.el),
   }));
 
   // Whole pixels, rounded down: the same column measured at another preview width can differ by a
   // fraction of a pixel, and the print scale must not.
-  const print = fits(formulas, (f) => Math.floor(f.print));
+  const print = fits(formulas.filter((f) => !f.flat), (f) => Math.floor(f.print));
   // On a sheet as wide as the page (any screen from 860px) the two columns are the same.
-  const screen = Math.abs(toPrint) < 1 ? print : fits(formulas, (f) => f.screen);
-  const inlinePrint = fits(inlineFormulas, (f) => Math.floor(f.print));
+  // A flat formula keeps the scale it had when it was flattened, which was its print scale.
+  let screen: Map<Formula, number>;
+  if (Math.abs(toPrint) >= 1) screen = fits(formulas, (f) => f.screen);
+  else {
+    screen = new Map(print);
+    for (const f of formulas) {
+      const kept = f.flat ? f.el.style.getPropertyValue(PRINT_FIT) : '';
+      if (kept) screen.set(f, Number(kept));
+    }
+  }
+  const inlinePrint = fits(inlineFormulas.filter((f) => !f.flat), (f) => Math.floor(f.print));
   box.remove();
 
   for (const [f, fit] of print) f.el.style.setProperty(PRINT_FIT, round(fit));
@@ -291,7 +318,7 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   for (const f of inlineFormulas) {
     const fit = inlinePrint.get(f);
     if (fit !== undefined) f.el.style.setProperty(INLINE_PRINT_FIT, round(fit));
-    f.el.toggleAttribute('data-print-fit', fit !== undefined);
+    if (!f.flat) f.el.toggleAttribute('data-print-fit', fit !== undefined);
     // As in the reader (useScrollableMath), one wider than the line scrolls inside it on screen.
     markScrolling(f.el, f.natural > f.screen + 0.5, printFormulaName);
   }
@@ -328,11 +355,23 @@ function sheetFits(sheet: HTMLElement): SheetFits {
   return fits;
 }
 
+/**
+ * Runs `write`, whose changes to the sheet keep every width (flattening formulas), without making
+ * the fit measure their units again. Changes made before it still count.
+ */
+export function withoutRefit<T>(sheet: HTMLElement, write: () => T): T {
+  const fits = sheets.get(sheet);
+  if (fits) forgetChanged(fits, fits.observer.takeRecords());
+  const result = write();
+  fits?.observer.takeRecords();
+  return result;
+}
+
 /** Units of work while fitting: start another unit in the same task only within this many ms. */
-const SLICE_MS = 10;
+export const SLICE_MS = 10;
 
 /** Let the browser paint and answer input. */
-function yieldToBrowser(): Promise<void> {
+export function yieldToBrowser(): Promise<void> {
   const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
   return scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0));
 }
@@ -362,7 +401,7 @@ export async function fitWideFormulas(sheet: HTMLElement, cancelled: () => boole
   // Negative where the screen sheet is wider than the page: on screens from about 700px to 860px the
   // sheet takes the whole width.
   const toPrint = PRINT_COLUMN - column;
-  let units = [...sheet.querySelectorAll('.print-part')].flatMap((part) => [part, ...part.querySelectorAll(UNIT)]);
+  let units = sheetUnits(sheet);
   for (let pass = 0; pass < 3; pass++) {
     let fontsRequested = false;
     const onLoading = () => {

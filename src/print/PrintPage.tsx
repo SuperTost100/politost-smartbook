@@ -38,6 +38,8 @@ import { buildPrintUrl, getReturnUrl, type PrintSection } from './routes';
 import { PrintDocument, type PrintPart } from './PrintDocument';
 import { useProgressiveParts } from './useProgressiveParts';
 import { fitWideFormulas } from './fitFormulas';
+import { finishFlattening, flattenFormulas } from './flatFormulas';
+import { printMathMode } from './printMath';
 import { linkPrintRefs } from '../lib/printLinks';
 import {
   bookParts,
@@ -222,6 +224,8 @@ export function PrintPage({ kind }: PrintPageProps) {
   const { user } = useAuth();
   const { watermark: watermarkEnabled } = useReaderFeatures();
   const [printing, setPrinting] = useState(false);
+  // Printing waits for the formulas still to flatten, behind "Preparazione…".
+  const [finishing, setFinishing] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const wide = useMediaQuery(PANEL_QUERY);
 
@@ -430,8 +434,16 @@ export function PrintPage({ kind }: PrintPageProps) {
       if (!sheet) return;
       await waitForImages(sheet);
       await document.fonts?.ready;
+      // The browser prints a flat formula in about a third of the time it takes to flatten it and
+      // print it as KaTeX drew it, so the formulas left are flattened first (docs/Print.md).
+      if (sheet.getAttribute('data-math') === 'flattening') {
+        setFinishing(true);
+        await finishFlattening(sheet as HTMLElement);
+        setFinishing(false);
+      }
       window.print();
     } finally {
+      setFinishing(false);
       setPrinting(false);
     }
   }, []);
@@ -446,6 +458,7 @@ export function PrintPage({ kind }: PrintPageProps) {
   // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
   // print the parts mounted so far.
   const printQueued = useRef(false);
+  const mathMode = printMathMode(searchParams);
   useEffect(() => {
     if (!complete) return;
     let cancelled = false;
@@ -453,6 +466,7 @@ export function PrintPage({ kind }: PrintPageProps) {
     void (async () => {
       const sheet = document.querySelector<HTMLElement>('.print-sheet');
       const isCancelled = () => cancelled;
+      let flatten = () => {};
       // Every part is mounted, so each reference knows whether its target is printed.
       if (sheet) linkPrintRefs(sheet);
       if (sheet) await waitForImages(sheet);
@@ -461,15 +475,20 @@ export function PrintPage({ kind }: PrintPageProps) {
       if (sheet) {
         await fitWideFormulas(sheet, isCancelled);
         if (cancelled) return;
+        flatten = () => {
+          if (mathMode === 'flat' && !cancelled) void flattenFormulas(sheet, isCancelled);
+        };
         let width = sheet.clientWidth;
         resizes = new ResizeObserver(() => {
           if (sheet.clientWidth === width) return;
           width = sheet.clientWidth;
-          void fitWideFormulas(sheet, isCancelled);
+          void fitWideFormulas(sheet, isCancelled).then(flatten);
         });
         resizes.observe(sheet);
       }
       setLoadedFor(signature);
+      // Once the button shows ready: flattening only makes printing faster.
+      afterPaint(flatten);
       if (printQueued.current) {
         printQueued.current = false;
         void handlePrint();
@@ -479,7 +498,7 @@ export function PrintPage({ kind }: PrintPageProps) {
       cancelled = true;
       resizes?.disconnect();
     };
-  }, [complete, signature, handlePrint]);
+  }, [complete, signature, handlePrint, mathMode]);
   const ready = complete && loadedFor === signature;
   const pendingPart = parts.find((p) => p.key === pending);
   const progress = ready
@@ -657,7 +676,7 @@ export function PrintPage({ kind }: PrintPageProps) {
       documentTitle: view.documentTitle,
       sectionLabel: view.sectionLabel,
       onPrint: () => void handlePrint(),
-      ready,
+      ready: ready && !finishing,
       blocked: !canPrint,
     },
     panel,
