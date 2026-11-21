@@ -28,7 +28,7 @@ export interface FormulaModeInputs {
  * Above this measurement, printing Fisica 1 as a whole book in `best` mode takes more than about a
  * minute (calibration table in docs/Print.md).
  */
-export const SLOW_LAYOUT_MS = 30;
+export const SLOW_LAYOUT_MS = 40;
 
 /**
  * Two cores or 2 GB of memory: the device is slow at laying out a whole book whatever one short

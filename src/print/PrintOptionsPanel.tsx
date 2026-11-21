@@ -302,7 +302,7 @@ export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendi
 function FormulasOption({ mode, source, slowDevice, onChange }: PrintFormulasOption) {
   const note =
     mode === 'fast'
-      ? 'Il documento è pronto molto prima. Le formule usano un altro carattere rispetto al libro.'
+      ? 'Il documento è pronto in meno di un quarto del tempo. Le formule usano un altro carattere e il documento ha qualche pagina in più.'
       : `Le formule si stampano come le vedi nel libro.${slowDevice ? ' Su questo dispositivo un libro intero richiede più di un minuto.' : ''}`;
   const memory =
     source === 'chosen'
