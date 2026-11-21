@@ -163,6 +163,25 @@ test.describe('Fast print', () => {
     await expect(notice.getByRole('button', { name: 'Nascondi il confronto' })).toHaveAttribute('aria-expanded', 'true');
   });
 
+  test('the keyboard keeps its place when an action of the line changes the mode', async ({ page }) => {
+    await storePrefs(page, SLOW);
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    await expectFast(page);
+    await page.getByRole('button', { name: 'Usa le formule migliori' }).focus();
+    await page.keyboard.press('Enter');
+    await expectBest(page);
+    // The line now offers fast print again: focus goes to it, and the next Tab to its action.
+    const quiet = page.getByRole('region', { name: 'Formule' });
+    await expect(quiet).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(quiet.getByRole('button', { name: 'Passa alla stampa veloce' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expectFast(page);
+    // Fast print chosen by hand leaves no line: focus goes to the sheet below where it was.
+    await expect(page.locator('.fast-print-notice')).toHaveCount(0);
+    await expect(page.locator('.print-sheet')).toBeFocused();
+  });
+
   test('a slow device never lays out the KaTeX that fast print replaces', async ({ page }) => {
     await storePrefs(page, SLOW);
     // Counts the KaTeX formulas that ever reach the sheet, however briefly.

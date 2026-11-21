@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState, type Ref } from 'react';
 import katex from 'katex';
 import { Clock, Zap } from 'lucide-react';
 import type { FormulaMode } from '../lib/printFormulaMode';
@@ -7,6 +7,8 @@ import type { FormulaMode } from '../lib/printFormulaMode';
 const SAMPLE_TEX = String.raw`F_c = m a_c = \frac{m v^2}{R}`;
 
 interface FastPrintNoticeProps {
+  /** The line, which takes focus when one of its actions replaces it (PrintPage). */
+  ref?: Ref<HTMLElement>;
   mode: FormulaMode;
   onChoose: (mode: FormulaMode) => void;
   /** Draws a formula as fast print does; null until fast print has loaded. */
@@ -36,12 +38,12 @@ function Samples({ mathml }: { mathml: (tex: string) => string | null }) {
  * it says so and offers the book's formulas; after the student went back to them by hand, it offers
  * fast print again.
  */
-export function FastPrintNotice({ mode, onChoose, mathml }: FastPrintNoticeProps) {
+export function FastPrintNotice({ ref, mode, onChoose, mathml }: FastPrintNoticeProps) {
   const [open, setOpen] = useState(false);
   const samplesId = useId();
   if (mode === 'best') {
     return (
-      <section className="fast-print-notice fast-print-notice--quiet no-print" aria-label="Formule">
+      <section ref={ref} tabIndex={-1} className="fast-print-notice fast-print-notice--quiet no-print" aria-label="Formule">
         <span className="fast-print-notice-icon" aria-hidden>
           <Clock size={18} strokeWidth={1.75} />
         </span>
@@ -56,7 +58,7 @@ export function FastPrintNotice({ mode, onChoose, mathml }: FastPrintNoticeProps
     );
   }
   return (
-    <section className="fast-print-notice no-print" aria-label="Stampa veloce">
+    <section ref={ref} tabIndex={-1} className="fast-print-notice no-print" aria-label="Stampa veloce">
       <span className="fast-print-notice-icon" aria-hidden>
         <Zap size={18} strokeWidth={1.75} />
       </span>
