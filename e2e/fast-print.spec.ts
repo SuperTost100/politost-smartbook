@@ -94,6 +94,31 @@ const MIX_BOOK: TestBook = {
   ],
 };
 
+/**
+ * Inline formulas followed by a full stop: one longer than the line, from the solution of E11.1 in
+ * Fisica 1, and one that fills most of it.
+ */
+const PUNCTUATION_BOOK: TestBook = {
+  id: 'formula-e-punto',
+  title: 'Formula e punto',
+  chapters: [
+    {
+      id: 'punto',
+      number: 1,
+      title: 'Punto',
+      markdown: [
+        '---', 'chapter: 1', 'title: Punto', '---', '',
+        '## p1 | Bernoulli', '',
+        'Per il moto stazionario lungo la stessa linea di corrente, l’equazione di Bernoulli dà ' +
+          '$p_2 = 200000\\,\\mathrm{Pa} + \\frac{1}{2}(1000\\,\\mathrm{kg/m^3})[(2{,}0\\,\\mathrm{m/s})^2 - (8{,}0\\,\\mathrm{m/s})^2] = 200000\\,\\mathrm{Pa} - 30000\\,\\mathrm{Pa} = 170000\\,\\mathrm{Pa} = 170\\,\\mathrm{kPa}$.',
+        '',
+        `Una somma lunga: $${sumOf(16)}$.`,
+        '',
+      ].join('\n'),
+    },
+  ],
+};
+
 /** Replaces window.print with a log of what the sheet held when it was called. */
 async function logPrints(page: Page) {
   await page.addInitScript(() => {
@@ -138,6 +163,25 @@ test.describe('Fast print', () => {
     await expect(notice.getByRole('button', { name: 'Nascondi il confronto' })).toHaveAttribute('aria-expanded', 'true');
   });
 
+  test('the keyboard keeps its place when an action of the line changes the mode', async ({ page }) => {
+    await storePrefs(page, SLOW);
+    await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
+    await expectFast(page);
+    await page.getByRole('button', { name: 'Usa le formule migliori' }).focus();
+    await page.keyboard.press('Enter');
+    await expectBest(page);
+    // The line now offers fast print again: focus goes to it, and the next Tab to its action.
+    const quiet = page.getByRole('region', { name: 'Formule' });
+    await expect(quiet).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(quiet.getByRole('button', { name: 'Passa alla stampa veloce' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expectFast(page);
+    // Fast print chosen by hand leaves no line: focus goes to the sheet below where it was.
+    await expect(page.locator('.fast-print-notice')).toHaveCount(0);
+    await expect(page.locator('.print-sheet')).toBeFocused();
+  });
+
   test('a slow device never lays out the KaTeX that fast print replaces', async ({ page }) => {
     await storePrefs(page, SLOW);
     // Counts the KaTeX formulas that ever reach the sheet, however briefly.
@@ -171,6 +215,7 @@ test.describe('Fast print', () => {
     await expect(formulas(page).getByRole('button', { name: 'Migliore' })).toHaveAttribute('aria-pressed', 'true');
     // On a slow device the book's formulas leave a quiet line that offers fast print again.
     await expect(page.locator('.fast-print-notice--quiet')).toContainText('Passa alla stampa veloce');
+    await expect(page.locator('.fast-print-notice--quiet')).toContainText('le formule migliori rallentano la stampa');
 
     await formulas(page).getByRole('button', { name: 'Veloce' }).click();
     await expectFast(page);
@@ -299,6 +344,28 @@ test.describe('Fast print', () => {
         return { document: document.documentElement.scrollWidth, formulas: formulas.length > 0, wide: wide.length };
       });
       expect(overflow).toEqual({ document: PRINT_COLUMN, formulas: true, wide: 0 });
+    });
+  }
+
+  for (const mode of ['Migliore', 'Veloce'] as const) {
+    test(`a formula and the full stop after it stay inside the printed column: ${mode}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await storePrefs(page, { chosen: mode === 'Veloce' ? 'fast' : 'best' });
+      await openTestBook(page, PUNCTUATION_BOOK);
+      await page.goto(`/libro/${PUNCTUATION_BOOK.id}/stampa/capitolo/punto`, PRINT_GOTO_OPTIONS);
+      if (mode === 'Veloce') await expectFast(page);
+      else await expectBest(page);
+      await page.evaluate(() => document.fonts.ready);
+      await page.emulateMedia({ media: 'print' });
+      await page.setViewportSize({ width: PRINT_COLUMN, height: 900 });
+      const past = await page.locator('.print-sheet').evaluate((sheet) => {
+        const right = sheet.getBoundingClientRect().right;
+        return [...sheet.querySelectorAll('.math-glue, .math-glue *, .mml, .mml *')]
+          .filter((el) => el.getBoundingClientRect().right > right + 0.5)
+          .map((el) => `${el.tagName} ${el.textContent!.slice(-20)}`);
+      });
+      expect(past).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(PRINT_COLUMN);
     });
   }
 

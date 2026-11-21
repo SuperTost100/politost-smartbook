@@ -42,6 +42,7 @@ import { finishFlattening, flattenFormulas } from './flatFormulas';
 import { printMathMode } from './printMath';
 import { PrintMathmlContext, type PrintMathml } from './formulaMode';
 import { usePartMathml, useFormulaMode } from './useFormulaMode';
+import type { FormulaMode } from '../lib/printFormulaMode';
 import { FastPrintNotice } from './FastPrintNotice';
 import { linkPrintRefs } from '../lib/printLinks';
 import {
@@ -422,6 +423,26 @@ export function PrintPage({ kind }: PrintPageProps) {
   // The formula mode (docs/Print.md, "Formule"). `applied` is the mode the sheet prints with: it
   // stays on the last known one while fast print loads, and the sheet waits for the first.
   const formulaMode = useFormulaMode();
+  // An action of the line above the sheet changes the mode, which replaces the line or removes it:
+  // focus goes to the new line, or to the sheet below it, instead of falling to the page.
+  const noticeRef = useRef<HTMLElement>(null);
+  const focusAfterChoice = useRef(false);
+  const { choose } = formulaMode;
+  const chooseFromNotice = useCallback(
+    (mode: FormulaMode) => {
+      focusAfterChoice.current = true;
+      choose(mode);
+    },
+    [choose],
+  );
+  const chosenMode = formulaMode.decision?.mode;
+  useEffect(() => {
+    if (!focusAfterChoice.current) return;
+    focusAfterChoice.current = false;
+    const sheet = document.querySelector<HTMLElement>('.print-sheet');
+    if (!noticeRef.current && sheet) sheet.tabIndex = -1;
+    (noticeRef.current ?? sheet)?.focus();
+  }, [chosenMode]);
   // Functions in state go through updaters: React would call them as initializers.
   const [applied, setApplied] = useState<PrintMathml | null | undefined>(() => formulaMode.mathml);
   if (formulaMode.mathml !== undefined && formulaMode.mathml !== applied) setApplied(() => formulaMode.mathml);
@@ -716,7 +737,7 @@ export function PrintPage({ kind }: PrintPageProps) {
   const decision = formulaMode.decision;
   const notice =
     decision && ((decision.mode === 'fast' && decision.source === 'device') || (decision.mode === 'best' && decision.source === 'chosen' && formulaMode.slowDevice)) ? (
-      <FastPrintNotice mode={decision.mode} onChoose={formulaMode.choose} mathml={formulaMode.fast?.formulaMathml ?? null} />
+      <FastPrintNotice ref={noticeRef} mode={decision.mode} onChoose={chooseFromNotice} mathml={formulaMode.fast?.formulaMathml ?? null} />
     ) : null;
 
   return shell(
