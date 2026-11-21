@@ -3,8 +3,11 @@ import katex from 'katex';
 import { Clock, Zap } from 'lucide-react';
 import type { FormulaMode } from '../lib/printFormulaMode';
 
-/** The formula of "Vedi la differenza": short, with a fraction, scripts and letters in both styles. */
-const SAMPLE_TEX = String.raw`F_c = m a_c = \frac{m v^2}{R}`;
+/**
+ * The formula of "Vedi la differenza": a root, a fraction, an integral with limits and vector arrows,
+ * where the two modes differ most, and narrow enough for two samples side by side on a 375px screen.
+ */
+const SAMPLE_TEX = String.raw`v = \sqrt{\frac{2}{m}\int_{a}^{b} \vec{F} \cdot d\vec{s}}`;
 
 interface FastPrintNoticeProps {
   /** The line, which takes focus when one of its actions replaces it (PrintPage). */
