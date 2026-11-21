@@ -18,6 +18,12 @@ test('decideFormulaMode picks fast print above the threshold and the book formul
   assert.deepEqual(decideFormulaMode({ chosen: null, layoutMs: 1, cores: 8, memoryGb: 8 }), best);
 });
 
+test('decideFormulaMode follows the calibration in docs/Print.md', () => {
+  // 2x slowdown: 46.7 ms, Fisica 1 in Migliore in 45 s. 4x: 91.9 ms, 92 s.
+  assert.deepEqual(decideFormulaMode({ chosen: null, layoutMs: 46.7, cores: 8, memoryGb: 8 }), best);
+  assert.deepEqual(decideFormulaMode({ chosen: null, layoutMs: 91.9, cores: 8, memoryGb: 8 }), fast);
+});
+
 test('decideFormulaMode asks for a measurement when nothing else decides', () => {
   assert.equal(decideFormulaMode({ chosen: null, layoutMs: null }), null);
   assert.equal(decideFormulaMode({ chosen: null, layoutMs: null, cores: 8, memoryGb: 8 }), null);

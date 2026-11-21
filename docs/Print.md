@@ -119,11 +119,12 @@ KaTeX ends every sub- or superscript with an empty cell 2 px wide and pulls what
 
 The options panel ends with **Formule**: **Migliore** prints the book's KaTeX, and **Veloce** (fast print) prints each formula as MathML from [Temml](https://temml.org), which the browser lays out and prints many times faster. The mode applies to every print: chapters, the whole book, exercises, exam questions and the formula sheet, which has no panel but follows the same mode. The reader keeps KaTeX.
 
-| Fisica 1, whole book, from opening the preview to the saved PDF | Migliore | Veloce |
+| Fisica 1, whole book | Migliore | Veloce |
 |---|---|---|
-| Development machine | 35 to 39 s | 8 s |
-| Same, with the CPU 6 times slower | 222 to 234 s | 44 to 49 s |
-| Pages | 371 | 377 |
+| From opening the preview to the saved PDF | 21 s | 7 s |
+| From **Stampa o salva PDF** to the saved PDF | 17 s | 3.4 s |
+| Both, with the CPU 6 times slower | 142 s and 118 s | 43 to 44 s and 21 to 23 s |
+| Pages | 374 | 377 |
 
 ### Which mode a device gets
 
@@ -135,16 +136,17 @@ The options panel ends with **Formule**: **Migliore** prints the book's KaTeX, a
 
 The measurement (`src/print/deviceSpeed.ts`) times the browser parsing and laying out a fixed paragraph of KaTeX, about 2,000 elements, in a contained box off screen, and keeps the best of three runs. It runs once per device, when the print page is first idle, and the sheet waits for it (tens of ms) so a slow device never lays out the KaTeX it would replace. `MEASUREMENT_VERSION` measures every device again when the benchmark changes.
 
-The threshold is the measurement above which printing Fisica 1 as a whole book in Migliore takes more than about a minute. It was calibrated with CPU throttling in Chromium (`Emulation.setCPUThrottlingRate`), opening the whole book and saving it with `page.pdf()`:
+The threshold is the measurement above which printing Fisica 1 as a whole book in Migliore takes more than about a minute, from opening the preview to the saved PDF. It was calibrated with CPU throttling in Chromium (`Emulation.setCPUThrottlingRate`): the script opens the whole book, clicks **Stampa o salva PDF** the moment it is ready, which in Migliore finishes the flattening first, and saves the PDF with `page.pdf()` once the page calls `window.print()`. Times are in seconds, and each cell holds the two runs:
 
-| CPU slowdown | Measurement | Migliore | Veloce |
-|---|---|---|---|
-| 1× | 21.0 and 21.5 ms | 34.7 and 39.1 s | 7.8 and 8.0 s |
-| 2× | 46.8 and 50.8 ms | 68.0 and 71.5 s | 14.8 and 15.3 s |
-| 4× | 98.7 and 85.5 ms | 152.0 and 154.8 s | 30.5 and 31.3 s |
-| 6× | 146.5 and 170.9 ms | 234.1 and 221.7 s | 48.8 and 44.2 s |
+| CPU slowdown | Measurement | Migliore, from opening | Migliore, from the click | Veloce, from opening | Veloce, from the click |
+|---|---|---|---|---|---|
+| 1× | 21.3 and 21.6 ms | 21.3 and 21.1 | 17.2 and 17.1 | 7.1 and 7.1 | 3.4 and 3.4 |
+| 2× | 46.7 and 46.6 ms | 45.1 and 44.6 | 37.1 and 36.7 | 14.2 and 14.2 | 7.2 and 7.2 |
+| 4× | 98.5 and 91.9 ms | 93.3 and 92.3 | 77.3 and 76.9 | 28.1 and 27.8 | 14.4 and 14.2 |
+| 6× | 145.3 and 148.3 ms | 142.5 and 142.3 | 118.3 and 118.6 | 44.4 and 42.6 | 23.0 and 21.4 |
+| 8× | 196.2 and 188.4 ms | 199.1 and 198.4 | 165.0 and 165.9 | 58.6 and 59.4 | 29.7 and 30.2 |
 
-Each point ran twice, on 2026-11-21, with other browser benchmarks running on the same machine: the measurement varied by up to 15% between runs and the print times by up to 13%. Migliore takes about 1.6 s per ms of measurement, so a minute is about 38 to 41 ms, and `SLOW_LAYOUT_MS` is 40. The hardware rule is not calibrated, because CPU throttling does not change the number of cores or the memory a page sees.
+Of the time from the click in Migliore, finishing the flattening took 1.4 s at 1× and 14 s at 8×, and the rest is the browser printing. The two runs of each point ran on 2026-11-21, with no build, test run or other benchmark on the machine (the script waited for them to end before each run): the measurement varied by up to 7% between runs, the Migliore times by up to 1% and the Veloce times by up to 7%. With flat formulas Migliore takes about 1.0 s per ms of measurement (1.6 s before them), so a minute is about 60 to 62 ms, and `SLOW_LAYOUT_MS` is 60. The hardware rule is not calibrated, because CPU throttling does not change the number of cores or the memory a page sees.
 
 A device given Veloce by the measurement shows a line above the sheet, "Stampa veloce attiva, scelta per questo dispositivo", with **Usa le formule migliori** and **Vedi la differenza**, which shows the same formula in both modes. After the student goes back to Migliore on such a device, a quieter line offers fast print again. A fast device shows no line.
 
