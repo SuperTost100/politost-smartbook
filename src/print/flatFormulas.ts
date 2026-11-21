@@ -203,38 +203,13 @@ function visibleBox(svg: Element, base: Element): Rect {
 
 let range: Range | undefined;
 
-/**
- * An empty inline-block at the end of a segment: its bottom edge sits on the segment's baseline, to
- * the 1/64 px. KaTeX's strut gives the baseline only through a vertical-align that layout rounds.
- */
-function baselineProbe(): HTMLElement {
-  const probe = document.createElement('span');
-  probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
-  return probe;
-}
-
-/** The probe after each text run, on the run's baseline. */
-const textProbes = new WeakMap<Text, HTMLElement>();
-
-/** Probes on the baseline of a segment (returned first) and of each of its text runs. */
-function probeSegment(base: HTMLElement): HTMLElement[] {
-  const probes = [baselineProbe()];
-  base.append(probes[0]);
-  const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
-  for (let t = walker.nextNode() as Text | null; t; t = walker.nextNode() as Text | null) {
-    if (!t.data || t.parentElement?.closest('svg')) continue;
-    const probe = baselineProbe();
-    t.after(probe);
-    textProbes.set(t, probe);
-    probes.push(probe);
+/** Whether the text in `el` sits straight on the segment's baseline: no box between moves it. */
+function onBaseline(el: Element, base: HTMLElement): boolean {
+  for (let at = el; at !== base; at = at.parentElement!) {
+    const style = getComputedStyle(at);
+    if (style.position !== 'static' || style.verticalAlign !== 'baseline') return false;
   }
-  return probes;
-}
-
-/** The top of the segment, in px on the page, when the text in `el` sits straight in it; else null. */
-function layerTop(el: Element, base: HTMLElement): number | null {
-  for (let at = el; at !== base; at = at.parentElement!) if (getComputedStyle(at).position !== 'static') return null;
-  return base.getBoundingClientRect().top;
+  return true;
 }
 
 /**
@@ -263,21 +238,23 @@ interface Read {
   parts: () => Part[] | null;
 }
 
-/**
- * KaTeX's layout of one segment, or null when it holds something a flat segment cannot carry.
- * `baseline` is where the segment's baseline is, read from a probe (baselineProbe).
- */
-function readSegment(base: HTMLElement, baseline: number): Read | null {
+/** KaTeX's layout of one segment, or null when it holds something a flat segment cannot carry. */
+function readSegment(base: HTMLElement): Read | null {
   if (base.querySelector(KEEP_AS_IS)) return null;
   const baseStyle = getComputedStyle(base);
   const size = fontSizeOf(base, baseStyle.fontSize);
   const r = base.getBoundingClientRect();
   const box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
-  if (!size) return null;
+  // KaTeX's strut hangs its depth below the baseline (vertical-align: -depth em), which layout
+  // rounds down to 1/64 px.
+  const strut = base.querySelector<HTMLElement>(':scope > .katex-strut');
+  if (!size || !strut) return null;
+  const depth = -parseFloat(strut.style.verticalAlign || '0') * size;
+  const baseline = strut.getBoundingClientRect().bottom - Math.floor(depth * 64) / 64;
   const color = baseStyle.color;
 
   // Text runs wait for the ink measurement; rules and SVGs are complete.
-  const pending: (Part | { text: Text; rect: Rect; line: number; top: number | null; font: string; css: string; fontSize: number })[] = [];
+  const pending: (Part | { text: Text; rect: Rect; line: number | null; top: number | null; font: string; css: string; fontSize: number })[] = [];
   // One range for every read: the document updates each live range on every change to it.
   range ??= document.createRange();
   const walker = document.createTreeWalker(base, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
@@ -296,14 +273,13 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
       const fontSize = ratio * size;
       const style = cs.fontStyle === 'normal' ? '' : `${cs.fontStyle} `;
       const weight = cs.fontWeight === '400' ? '' : `${cs.fontWeight} `;
-      const probe = textProbes.get(node);
-      if (!probe) continue;
-      const line = probe.getBoundingClientRect().bottom;
       // Print rounds a baseline to whole px from the top of the positioned box the glyphs sit in, and
-      // places a glyph from the font's ascent. A run straight in the segment (whose box the flat
-      // segment keeps) starts at the segment's top with no line height and its glyphs on its bottom
-      // edge (document.css). A run in a row of a KaTeX stack keeps KaTeX's line height, its own height.
-      const top = layerTop(node.parentElement!, base);
+      // places a glyph from the font's ascent. A run straight on the segment's baseline (the segment
+      // keeps its box) starts at the segment's top with no line height and its glyphs on its bottom
+      // edge (document.css). Any other run, such as one in a row of a KaTeX stack, keeps KaTeX's line
+      // height, its own height.
+      const top = onBaseline(node.parentElement!, base) ? box.top : null;
+      const line = top === null ? null : baseline;
       const lineHeight = top === null ? Number(((t.height + 1 / 256) / fontSize).toFixed(6)) : 0;
       const css = `font:${style}${weight}${ratio}em/${lineHeight} ${quote(cs.fontFamily)}${cs.color === color ? '' : `;color:${cs.color}`}`;
       const rect = { left: t.left, top: t.top, right: t.right, bottom: t.bottom };
@@ -359,7 +335,8 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
         }
         const ink = inkOf(p.font, p.text.data);
         if (!ink) return null;
-        const { rect, css, fontSize, line, top } = p;
+        const { rect, css, fontSize, top } = p;
+        const line = p.line ?? rect.top + ink.ascent;
         const text = escapeText(p.text.data);
         parts.push({
           box: rect,
@@ -395,61 +372,56 @@ function printsAsShown(katex: HTMLElement): boolean {
  */
 interface Job {
   unit: Element;
+  /** Every segment is read, then its flat HTML built, then written. */
+  phase: 'read' | 'build' | 'write';
   segments: HTMLElement[];
-  /** Of each segment, its baseline probe and those of its text runs. */
-  probes: HTMLElement[][];
-  /** The next segment to read, then to write. */
+  /** The next segment of the phase. */
   next: number;
   /** Of each segment read, KaTeX's layout, or null when it stays as it is. */
   reads: (Read | null)[];
-  writes: [HTMLElement, string][] | null;
+  writes: [HTMLElement, string][];
 }
 
 function startJob(unit: Element): Job {
   const segments = own<HTMLElement>(unit, '.katex')
     .filter((katex) => !katex.parentElement?.closest('.katex') && printsAsShown(katex))
     .flatMap((katex) => [...katex.querySelectorAll<HTMLElement>(':scope > .katex-html > .katex-base:not(.katex-flat)')]);
-  // Every probe goes in at once, so the unit is laid out once for all of them.
-  return { unit, segments, probes: segments.map(probeSegment), next: 0, reads: [], writes: null };
-}
-
-function dropJob(job: Job): void {
-  for (const probe of job.probes.flat()) probe.remove();
+  return { unit, phase: 'read', segments, next: 0, reads: [], writes: [] };
 }
 
 /**
- * Works on `job` until `deadline`. Returns 'fonts' when a font started loading while it read,
- * because positions read before a font arrives are those of its fallback: the job is then dropped,
- * having written nothing.
+ * Works on `job` until `deadline`, a phase after the other: no write comes between two reads, so the
+ * browser does not lay the unit out again. Returns 'fonts' when a font started loading while it read,
+ * because positions read before a font arrives are those of its fallback: the job has then written
+ * nothing.
  */
 function workOn(job: Job, deadline: number): 'more' | 'done' | 'fonts' {
-  if (!job.writes) {
-    while (job.next < job.segments.length) {
-      const base = job.segments[job.next];
-      job.reads.push(readSegment(base, job.probes[job.next][0].getBoundingClientRect().bottom));
-      job.next++;
-      if (performance.now() > deadline) break;
-    }
-    if (document.fonts?.status === 'loading') {
-      dropJob(job);
-      return 'fonts';
-    }
-    if (job.next < job.segments.length) return 'more';
-    dropJob(job);
-    job.writes = [];
-    job.reads.forEach((read, k) => {
-      const parts = read?.parts();
-      if (read && parts) job.writes!.push([job.segments[k], segmentHtml(read.segment, parts)]);
-    });
+  const { segments } = job;
+  const next = (phase: Job['phase']) => {
+    job.phase = phase;
     job.next = 0;
-    if (performance.now() > deadline) return 'more';
+  };
+  while (performance.now() <= deadline) {
+    if (job.phase === 'read') {
+      if (job.next < segments.length) {
+        job.reads.push(readSegment(segments[job.next]));
+        job.next++;
+        if (document.fonts?.status === 'loading') return 'fonts';
+      } else next('build');
+    } else if (job.phase === 'build') {
+      if (job.next < segments.length) {
+        const read = job.reads[job.next];
+        const parts = read?.parts();
+        if (read && parts) job.writes.push([segments[job.next], segmentHtml(read.segment, parts)]);
+        job.next++;
+      } else next('write');
+    } else {
+      if (job.next >= job.writes.length) return 'done';
+      const [base, html] = job.writes[job.next++];
+      if (base.isConnected) base.outerHTML = html;
+    }
   }
-  while (job.next < job.writes.length) {
-    const [base, html] = job.writes[job.next++];
-    if (base.isConnected) base.outerHTML = html;
-    if (performance.now() > deadline) break;
-  }
-  return job.next < job.writes.length ? 'more' : 'done';
+  return 'more';
 }
 
 interface SheetFlat {
@@ -475,10 +447,7 @@ function forgetChanged(state: SheetFlat, records: MutationRecord[]): void {
     const unit = node?.closest(UNIT_OR_PART);
     if (!unit) continue;
     state.flat.delete(unit);
-    if (state.job?.unit === unit) {
-      dropJob(state.job);
-      state.job = null;
-    }
+    if (state.job?.unit === unit) state.job = null;
   }
 }
 
@@ -542,9 +511,7 @@ export async function finishFlattening(sheet: HTMLElement): Promise<void> {
 
 async function flattenRun(sheet: HTMLElement, state: SheetFlat, run: number, cancelled: () => boolean): Promise<void> {
   // What an earlier run read was laid out at another width or before another fit.
-  if (state.job) withoutRefit(sheet, () => dropJob(state.job!));
   state.job = null;
-  state.observer.takeRecords();
   const column = contentBoxWidth(sheet);
   const stopped = () => cancelled() || state.run !== run || contentBoxWidth(sheet) !== column;
   sheet.dataset.math = 'flattening';
