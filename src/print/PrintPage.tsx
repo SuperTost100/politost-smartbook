@@ -455,8 +455,9 @@ export function PrintPage({ kind }: PrintPageProps) {
       await waitForImages(sheet);
       await document.fonts?.ready;
       // Flattening the formulas left takes far less time than it saves the browser when it prints,
-      // so they are flattened first (docs/Print.md).
-      if (mathMode === 'flat' && sheet instanceof HTMLElement && sheet.dataset.math !== 'flat') {
+      // so they are flattened first (docs/Print.md). A fast-print sheet has KaTeX only where Temml
+      // failed, usually nowhere.
+      if (mathMode === 'flat' && sheet instanceof HTMLElement && sheet.dataset.math !== 'flat' && sheet.querySelector('.katex')) {
         setFinishing(true);
         await finishFlattening(sheet);
         setFinishing(false);

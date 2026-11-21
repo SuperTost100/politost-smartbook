@@ -69,6 +69,55 @@ const LINK_BOOK: TestBook = {
   ].join('\n'),
 };
 
+const sumOf = (terms: number) => Array.from({ length: terms }, (_, i) => `a_{${i + 1}}b_{${i + 1}}`).join(' + ');
+
+/**
+ * Enough formulas that flattening them takes several slices, a display formula fitted to the page,
+ * and one formula Temml cannot render, which fast print leaves as KaTeX.
+ */
+const MIX_BOOK: TestBook = {
+  id: 'formule-miste',
+  title: 'Formule miste',
+  chapters: [
+    {
+      id: 'misto',
+      number: 1,
+      title: 'Misto',
+      markdown: [
+        '---', 'chapter: 1', 'title: Misto', '---', '',
+        '## p1 | Tante formule', '',
+        `$$S = ${sumOf(14)}$$`, '',
+        'Una formula che Temml non sa disegnare: $x + \\html@mathml{a}{b}$.', '',
+        ...Array.from({ length: 150 }, (_, i) => `Riga ${i + 1}: $v_{${i}} = \\frac{\\Delta x_{${i}}}{\\Delta t}$ e $\\sqrt{a^2 + b_{${i}}^2}$.\n`),
+      ].join('\n'),
+    },
+  ],
+};
+
+/** Replaces window.print with a log of what the sheet held when it was called. */
+async function logPrints(page: Page) {
+  await page.addInitScript(() => {
+    const log = ((window as unknown as { printed: string[] }).printed = []);
+    window.print = () => {
+      const sheet = document.querySelector<HTMLElement>('.print-sheet')!;
+      log.push(`${sheet.dataset.math ?? 'none'}:${sheet.querySelectorAll('.katex-base:not(.katex-flat)').length}`);
+    };
+  });
+}
+const printed = (page: Page) => page.evaluate(() => (window as unknown as { printed: string[] }).printed);
+
+/** What the flattening and the fit left on the sheet. */
+const sheetState = (page: Page) =>
+  page.locator('.print-sheet').evaluate((sheet: HTMLElement) => ({
+    math: sheet.dataset.math,
+    flat: sheet.querySelectorAll('.katex-flat').length,
+    kept: sheet.querySelectorAll('.katex-base:not(.katex-flat)').length,
+    mathml: sheet.querySelectorAll('math').length,
+    fits: [...sheet.querySelectorAll<HTMLElement>('.katex-display, .mml-display')].map(
+      (el) => `${el.style.getPropertyValue('--display-fit')}|${el.style.getPropertyValue('--display-fit-print')}`,
+    ),
+  }));
+
 test.describe('Fast print', () => {
   test.beforeEach(async ({ page }) => {
     await preparePlatformShell(page);
@@ -238,6 +287,19 @@ test.describe('Fast print', () => {
     });
   }
 
+  test('a formula Temml cannot render stays KaTeX and keeps its formulas flat', async ({ page }) => {
+    await storePrefs(page, { chosen: 'fast' });
+    await openTestBook(page, MIX_BOOK);
+    await page.goto(`/libro/${MIX_BOOK.id}/stampa/capitolo/misto`, PRINT_GOTO_OPTIONS);
+    await expect(printButton(page)).toBeEnabled({ timeout: 30_000 });
+    const sheet = page.locator('.print-sheet');
+    await expect(sheet).toHaveAttribute('data-math', 'flat');
+    await expect(sheet.locator('.katex')).toHaveCount(1);
+    await expect(sheet.locator('.katex .katex-flat').first()).toBeVisible();
+    await expect(sheet.locator('.katex-base:not(.katex-flat)')).toHaveCount(0);
+    expect(await sheet.locator('math').count()).toBeGreaterThan(300);
+  });
+
   test('an unmeasured device is measured once and keeps the result', async ({ page }) => {
     await storePrefs(page, null);
     await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
@@ -247,4 +309,135 @@ test.describe('Fast print', () => {
     expect(stored.layoutMs).toBeGreaterThan(0);
     expect(stored.chosen).toBeUndefined();
   });
+});
+
+test.describe('Fast print with flat formulas', () => {
+  const MIX = `/libro/${MIX_BOOK.id}/stampa/capitolo/misto`;
+  const choose = (page: Page, mode: 'Migliore' | 'Veloce') => formulas(page).getByRole('button', { name: mode }).click();
+  /** Waits for the sheet to be ready and its formulas flattened, and returns what it holds. */
+  async function settled(page: Page) {
+    await expect(printButton(page)).toBeEnabled({ timeout: 30_000 });
+    await expect(page.locator('.print-sheet')).toHaveAttribute('data-math', 'flat');
+    return sheetState(page);
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await preparePlatformShell(page);
+  });
+
+  test('Veloce prints at once: the sheet has no KaTeX to flatten first', async ({ page }) => {
+    await storePrefs(page, { chosen: 'fast' });
+    await logPrints(page);
+    // Click the moment the button is ready, before the flattening that starts after the next paint.
+    await page.addInitScript(() => {
+      new MutationObserver((_, observer) => {
+        const button = document.querySelector<HTMLButtonElement>('button[aria-label="Stampa o salva PDF"]');
+        if (button && !button.disabled) {
+          observer.disconnect();
+          button.click();
+        }
+      }).observe(document, { subtree: true, childList: true, attributes: true });
+    });
+    await page.goto('/libro/esempio/stampa/libro?esercizi=tutti&formulario=1&esami=1', PRINT_GOTO_OPTIONS);
+    await expect.poll(() => printed(page)).toEqual(['none:0']);
+    await expectFast(page);
+    await expect(page.locator('.print-sheet')).toHaveAttribute('data-math', 'flat');
+  });
+
+  test('Migliore, Veloce and Migliore again: the KaTeX is fitted and flattened again, and prints flat', async ({ page }) => {
+    await logPrints(page);
+    await openTestBook(page, MIX_BOOK);
+    await page.goto(MIX, PRINT_GOTO_OPTIONS);
+    const best = await settled(page);
+    expect(best.flat).toBeGreaterThan(300);
+    expect(best.mathml).toBe(0);
+    expect(best.fits.some((fit) => fit !== '|')).toBe(true);
+
+    await choose(page, 'Veloce');
+    await expect.poll(() => sheetState(page)).toMatchObject({ math: 'flat', kept: 0 });
+    const fast = await settled(page);
+    expect(fast.mathml).toBeGreaterThan(300);
+    // Only the formula Temml cannot render is KaTeX, and flat.
+    expect(fast.flat).toBeGreaterThan(0);
+    expect(fast.flat).toBeLessThan(5);
+
+    await choose(page, 'Migliore');
+    await expect(printButton(page)).toBeEnabled();
+    await expect.poll(() => sheetState(page), { timeout: 15_000 }).toEqual(best);
+    await printButton(page).click();
+    await expect.poll(() => printed(page)).toEqual([`flat:${best.kept}`]);
+  });
+
+  test('a switch while the formulas flatten stops that pass, and the switch back flattens them all', async ({ page }) => {
+    await openTestBook(page, MIX_BOOK);
+    await page.goto(MIX, PRINT_GOTO_OPTIONS);
+    const best = await settled(page);
+    // On the next load, switch to Veloce as soon as a pass is part way through the sheet.
+    await page.addInitScript(() => {
+      new MutationObserver((_, observer) => {
+        const sheet = document.querySelector<HTMLElement>('.print-sheet');
+        if (sheet?.dataset.math !== 'flattening' || !sheet.querySelector('.katex-flat')) return;
+        observer.disconnect();
+        (window as unknown as { flatAtSwitch: number }).flatAtSwitch = sheet.querySelectorAll('.katex-flat').length;
+        [...document.querySelectorAll<HTMLButtonElement>('.print-panel button')].find((b) => b.textContent === 'Veloce')!.click();
+      }).observe(document, { subtree: true, childList: true, attributes: true });
+    });
+    await page.reload(PRINT_GOTO_OPTIONS);
+    await expect(formulas(page).getByRole('button', { name: 'Veloce' })).toHaveAttribute('aria-pressed', 'true');
+    const flatAtSwitch = await page.evaluate(() => (window as unknown as { flatAtSwitch: number }).flatAtSwitch);
+    expect(flatAtSwitch).toBeGreaterThan(0);
+    expect(flatAtSwitch).toBeLessThan(best.flat);
+    const fast = await settled(page);
+    expect(fast).toMatchObject({ kept: 0 });
+    expect(fast.mathml).toBeGreaterThan(300);
+
+    await choose(page, 'Migliore');
+    await expect.poll(() => sheetState(page), { timeout: 15_000 }).toEqual(best);
+  });
+
+  for (const mode of ['Migliore', 'Veloce'] as const) {
+    test(`a new width fits the formulas again and keeps them flat: ${mode}`, async ({ page }) => {
+      await storePrefs(page, { chosen: mode === 'Veloce' ? 'fast' : 'best' });
+      await logPrints(page);
+      await openTestBook(page, MIX_BOOK);
+      await page.goto(MIX, PRINT_GOTO_OPTIONS);
+      const wide = await settled(page);
+      expect(wide.kept).toBe(0);
+      expect(wide.fits[0]).toMatch(/^0\.\d+\|0\.\d+$/);
+      // A new width while the first pass may still be running, then a print.
+      await page.goto(MIX, PRINT_GOTO_OPTIONS);
+      await expect(printButton(page)).toBeEnabled({ timeout: 30_000 });
+      await page.setViewportSize({ width: 600, height: 900 });
+      await expect.poll(async () => (await sheetState(page)).fits).not.toEqual(wide.fits);
+      const narrow = await settled(page);
+      // A flat formula keeps its print scale; only its screen scale changes.
+      expect(narrow).toMatchObject({ kept: 0, flat: wide.flat, mathml: wide.mathml });
+      expect(narrow.fits[0].split('|')[1]).toBe(wide.fits[0].split('|')[1]);
+      await printButton(page).click();
+      await expect.poll(() => printed(page)).toEqual(['flat:0']);
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await expect.poll(() => sheetState(page), { timeout: 15_000 }).toEqual(wide);
+    });
+
+    test(`?math=katex keeps every formula as it was drawn: ${mode}`, async ({ page }) => {
+      await storePrefs(page, { chosen: mode === 'Veloce' ? 'fast' : 'best' });
+      await logPrints(page);
+      await openTestBook(page, MIX_BOOK);
+      await page.goto(`${MIX}?math=katex`, PRINT_GOTO_OPTIONS);
+      await expect(printButton(page)).toBeEnabled({ timeout: 30_000 });
+      await printButton(page).click();
+      await expect.poll(() => printed(page)).toHaveLength(1);
+      const state = await sheetState(page);
+      expect(state).toMatchObject({ math: undefined, flat: 0 });
+      if (mode === 'Veloce') expect(state.mathml).toBeGreaterThan(300);
+      else expect(state.kept).toBeGreaterThan(300);
+      // The other mode keeps the address, and KaTeX's formulas.
+      await choose(page, mode === 'Veloce' ? 'Migliore' : 'Veloce');
+      await expect(page).toHaveURL(/math=katex/);
+      await expect(printButton(page)).toBeEnabled();
+      await page.waitForTimeout(300);
+      expect(await sheetState(page)).toMatchObject({ math: undefined, flat: 0 });
+    });
+  }
 });
