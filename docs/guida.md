@@ -45,6 +45,8 @@ Gli esercizi e le prove si stampano con le domande prima e le soluzioni in fondo
 
 Per un libro intero il browser impiega qualche secondo a preparare l'anteprima: il pulsante **Stampa o salva PDF** si attiva quando il documento è pronto.
 
+In fondo alle opzioni, **Formule** sceglie come si stampano le formule. **Migliore** le stampa come le vedi nel libro. **Veloce** le fa disegnare al browser con un altro carattere, e un libro intero è pronto e si stampa in circa un terzo del tempo. Su un computer o un telefono lento la stampa veloce è già attiva alla prima visita, e una riga sopra l'anteprima lo dice: da lì torni alle formule migliori o vedi la stessa formula nei due modi. La scelta vale per tutti i libri e resta su questo dispositivo.
+
 <!-- platform -->
 I libri che si leggono un capitolo alla volta, dopo l'accesso, si stampano solo per capitolo. Se hai fatto l'accesso, la pagina e la stampa possono riportare una filigrana con la tua email. Non coprirla. I dettagli sono nei [termini](/termini).
 <!-- /platform -->

@@ -3,6 +3,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 import { BOOKS_URL } from './e2e/helpers/books';
+import { MEASUREMENT_VERSION } from './src/lib/printFormulaMode';
 
 const host = '127.0.0.1';
 const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
@@ -36,6 +37,13 @@ export default defineConfig({
   timeout: 60_000,
   use: {
     baseURL,
+    // The print page picks fast print on a device it measures as slow (docs/Print.md, "Formule"). A
+    // stored choice of the book's formulas keeps every spec on KaTeX whatever machine runs it;
+    // e2e/fast-print.spec.ts sets its own.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: baseURL, localStorage: [{ name: 'politost-print-formulas', value: JSON.stringify({ chosen: 'best', layoutMs: 0, version: MEASUREMENT_VERSION }) }] }],
+    },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     ...(chromiumExecutable

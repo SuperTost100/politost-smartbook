@@ -105,11 +105,20 @@ function lineWidth(el: HTMLElement): number {
   return contentBoxWidth(block);
 }
 
-/** An inline formula breaks only between its segments, so its widest segment is what must fit. */
+/**
+ * An inline formula breaks only between its segments, so its widest segment is what must fit. In
+ * MathML from fast print (`.mml`) the segments are the children of `<math>`, between which Temml
+ * lets the line break.
+ */
 function widestSegment(katex: HTMLElement): number {
   let widest = 0;
-  for (const base of katex.querySelectorAll<HTMLElement>('.katex-base')) widest = Math.max(widest, base.getBoundingClientRect().width);
+  for (const base of katex.querySelectorAll<HTMLElement>('.katex-base, math > *')) widest = Math.max(widest, base.getBoundingClientRect().width);
   return widest;
+}
+
+/** The boxes of a display formula: KaTeX's `.katex-html`, or the `<math>` element itself in fast print. */
+function formulaBoxes(katex: HTMLElement | null): HTMLElement | null {
+  return katex?.matches('math') ? katex : (katex?.querySelector<HTMLElement>('.katex-html') ?? null);
 }
 
 /**
@@ -217,8 +226,9 @@ const isFlat = (el: Element) => el.querySelector('.katex-flat') !== null;
 
 /** Fits the formulas of `root`, whose sheet is `toPrint` px narrower than the page (negative: wider). */
 function fitUnit(root: Element, sheet: Element, toPrint: number): void {
-  const displays = own<HTMLElement>(root, '.katex-display');
-  const inlines = own<HTMLElement>(root, '.katex').filter((k) => !k.parentElement?.closest('.katex-display'));
+  // `.mml-display` and `.mml` hold the MathML of fast print (formulaMode.ts) and take its fit the same way.
+  const displays = own<HTMLElement>(root, '.katex-display, .mml-display');
+  const inlines = own<HTMLElement>(root, '.katex, .mml').filter((k) => !k.parentElement?.closest('.katex-display, .mml-display'));
   const ownCards = own<HTMLElement>(root, '.formula-grid > .formulario-card');
   const flat = new Set([...displays, ...inlines].filter(isFlat));
   // Measure every formula at full size: clear the previous fit first, then read, then write.
@@ -233,8 +243,8 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   const cards = cardRows(ownCards, toPrint);
   const box = measuringBox(sheet);
   const display = displays.flatMap((el) => {
-    const html = el.querySelector<HTMLElement>('.katex-html');
-    const katex = el.querySelector<HTMLElement>('.katex');
+    const katex = el.querySelector<HTMLElement>('.katex, math');
+    const html = formulaBoxes(katex);
     if (!html || !katex) return [];
     const card = el.closest<HTMLElement>('.formulario-card');
     const cardRow = card ? cards.get(card) : undefined;
@@ -256,7 +266,7 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
 
   // The copies' widths, then the cards that span the row, then each formula's columns.
   const naturals = new Map<HTMLElement, number>();
-  for (const d of display) naturals.set(d.el, d.copy ? contentWidth(d.copy.querySelector('.katex-html')) : d.inPlace);
+  for (const d of display) naturals.set(d.el, d.copy ? contentWidth(formulaBoxes(d.copy)) : d.inPlace);
   for (const i of inline) naturals.set(i.el, i.copy ? widestSegment(i.copy) : i.inPlace);
   const printColumn = new Map<HTMLElement, number>();
   for (const d of display) {
@@ -267,7 +277,7 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   }
   const formulas: Formula[] = display.map((d) => {
     const screen = contentBoxWidth(d.el);
-    const copyHtml = d.copy?.querySelector<HTMLElement>('.katex-html') ?? null;
+    const copyHtml = formulaBoxes(d.copy);
     return {
       el: d.el,
       size: d.size,

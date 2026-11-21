@@ -40,6 +40,9 @@ import { useProgressiveParts } from './useProgressiveParts';
 import { fitWideFormulas } from './fitFormulas';
 import { finishFlattening, flattenFormulas } from './flatFormulas';
 import { printMathMode } from './printMath';
+import { PrintMathmlContext, type PrintMathml } from './formulaMode';
+import { usePartMathml, useFormulaMode } from './useFormulaMode';
+import { FastPrintNotice } from './FastPrintNotice';
 import { linkPrintRefs } from '../lib/printLinks';
 import {
   bookParts,
@@ -416,6 +419,15 @@ export function PrintPage({ kind }: PrintPageProps) {
   const view = useMemo(() => describe(options), [describe, options]);
   const doc = useMemo(() => describe(docOptions), [describe, docOptions]);
 
+  // The formula mode (docs/Print.md, "Formule"). `applied` is the mode the sheet prints with: it
+  // stays on the last known one while fast print loads, and the sheet waits for the first.
+  const formulaMode = useFormulaMode();
+  // Functions in state go through updaters: React would call them as initializers.
+  const [applied, setApplied] = useState<PrintMathml | null | undefined>(() => formulaMode.mathml);
+  if (formulaMode.mathml !== undefined && formulaMode.mathml !== applied) setApplied(() => formulaMode.mathml);
+  const modeKnown = applied !== undefined;
+  const loadingMode = modeKnown && formulaMode.mathml === undefined;
+
   // The browser names the saved PDF after document.title.
   useEffect(() => {
     if (!data || !view) return;
@@ -443,8 +455,9 @@ export function PrintPage({ kind }: PrintPageProps) {
       await waitForImages(sheet);
       await document.fonts?.ready;
       // Flattening the formulas left takes far less time than it saves the browser when it prints,
-      // so they are flattened first (docs/Print.md).
-      if (mathMode === 'flat' && sheet instanceof HTMLElement && sheet.dataset.math !== 'flat') {
+      // so they are flattened first (docs/Print.md). A fast-print sheet has KaTeX only where Temml
+      // failed, usually nowhere.
+      if (mathMode === 'flat' && sheet instanceof HTMLElement && sheet.dataset.math !== 'flat' && sheet.querySelector('.katex')) {
         setFinishing(true);
         await finishFlattening(sheet);
         setFinishing(false);
@@ -462,11 +475,19 @@ export function PrintPage({ kind }: PrintPageProps) {
   }, [mathMode]);
 
   // The document is ready to print once every part is mounted and its images and fonts have loaded.
-  const parts = doc?.parts ?? [];
-  const { mounted, pending } = useProgressiveParts(parts.map((p) => p.key));
+  const parts = useMemo(() => doc?.parts ?? [], [doc]);
+  const partKeys = parts.map((p) => p.key);
+  const { mounted, pending } = useProgressiveParts(modeKnown ? partKeys : []);
+  // A new mode reaches the parts one at a time, as they mount.
+  const { mathmlOf, pending: switching } = usePartMathml(partKeys, applied);
+  const sheetParts = useMemo(
+    () => parts.map((p) => ({ ...p, node: <PrintMathmlContext.Provider value={mathmlOf(p.key)}>{p.node}</PrintMathmlContext.Provider> })),
+    [parts, mathmlOf],
+  );
   const stale = docOptions !== options;
-  const complete = Boolean(doc) && pending === undefined && !stale;
-  const signature = `${kind}|${parts.map((p) => p.key).join(',')}|${JSON.stringify(docOptions)}`;
+  const rebuilding = loadingMode || switching !== undefined;
+  const complete = Boolean(doc) && modeKnown && pending === undefined && !stale && !rebuilding;
+  const signature = `${kind}|${parts.map((p) => p.key).join(',')}|${JSON.stringify(docOptions)}|${applied ? 'mathml' : 'katex'}`;
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
   // Before the effect below, which may start a queued print.
   useEffect(() => {
@@ -514,13 +535,19 @@ export function PrintPage({ kind }: PrintPageProps) {
   }, [complete, signature, handlePrint, mathMode]);
   const ready = complete && loadedFor === signature;
   const pendingPart = parts.find((p) => p.key === pending);
+  const rebuildText =
+    formulaMode.decision?.mode === 'fast' ? 'Aggiorno l’anteprima con la stampa veloce…' : 'Aggiorno l’anteprima con le formule migliori…';
   const progress = ready
     ? null
-    : stale
-      ? 'Aggiorno l’anteprima…'
-      : pendingPart
-        ? `Preparo ${pendingPart.label}…`
-        : 'Carico immagini e caratteri…';
+    : !modeKnown
+      ? 'Preparo l’anteprima…'
+      : stale
+        ? 'Aggiorno l’anteprima…'
+        : pendingPart
+          ? `Preparo ${pendingPart.label}…`
+          : rebuilding
+            ? rebuildText
+            : 'Carico immagini e caratteri…';
 
   const setOptions = useCallback(
     (next: PrintOptions) => {
@@ -588,6 +615,11 @@ export function PrintPage({ kind }: PrintPageProps) {
   const bookTitle = data.config.title;
   const fallbackLabel = data.config.sections.smartbook.label;
 
+  const summary =
+    view && formulaMode.decision?.mode === 'fast' && !view.summary.empty
+      ? { ...view.summary, note: 'Stampa veloce: formule in un altro carattere' }
+      : view?.summary;
+
   const shell = (content: React.ReactNode, toolbar?: Partial<PrintToolbarProps>, panel?: PrintOptionsFormProps) => (
     <div className="print-page-shell">
       <PrintToolbar
@@ -605,7 +637,7 @@ export function PrintPage({ kind }: PrintPageProps) {
       {panel && view ? (
         <div className="print-layout">
           {wide && (
-            <PrintOptionsAside summary={view.summary}>
+            <PrintOptionsAside summary={summary ?? view.summary}>
               <PrintOptionsForm {...panel} />
             </PrintOptionsAside>
           )}
@@ -613,7 +645,7 @@ export function PrintPage({ kind }: PrintPageProps) {
             {content}
           </main>
           {!wide && (
-            <PrintOptionsSheet open={optionsOpen} onClose={() => setOptionsOpen(false)} summary={view.summary}>
+            <PrintOptionsSheet open={optionsOpen} onClose={() => setOptionsOpen(false)} summary={summary ?? view.summary}>
               <PrintOptionsForm {...panel} />
             </PrintOptionsSheet>
           )}
@@ -668,22 +700,51 @@ export function PrintPage({ kind }: PrintPageProps) {
         chapters: printableChapters,
         currentChapter: currentChapter && ('meta' in currentChapter ? currentChapter.meta : currentChapter),
         counts: view.counts,
+        formulas: formulaMode.decision
+          ? {
+              mode: formulaMode.decision.mode,
+              source: formulaMode.decision.source,
+              slowDevice: formulaMode.slowDevice,
+              onChange: formulaMode.choose,
+            }
+          : undefined,
       }
     : undefined;
+
+  // The line above the sheet: fast print chosen for this device, or the book's formulas chosen by
+  // hand on a device that prints them slowly. A fast device sees only the setting in the panel.
+  const decision = formulaMode.decision;
+  const notice =
+    decision && ((decision.mode === 'fast' && decision.source === 'device') || (decision.mode === 'best' && decision.source === 'chosen' && formulaMode.slowDevice)) ? (
+      <FastPrintNotice mode={decision.mode} onChoose={formulaMode.choose} mathml={formulaMode.fast?.formulaMathml ?? null} />
+    ) : null;
 
   return shell(
     view.message ? (
       <PrintMessage>{view.message}</PrintMessage>
     ) : (
-      <PrintDocument
-        bookTitle={bookTitle}
-        documentTitle={doc.documentTitle}
-        watermarkLabel={watermarkLabel}
-        opener={doc.opener}
-        parts={doc.parts}
-        mounted={mounted}
-        progress={progress}
-      />
+      <>
+        {notice}
+        <div className="fast-print-stage" data-switching={rebuilding || undefined}>
+          {rebuilding && (
+            <div className="fast-print-rebuild no-print" aria-hidden>
+              <span className="fast-print-rebuild-pill">
+                <span className="print-toolbar-spinner" />
+                {rebuildText}
+              </span>
+            </div>
+          )}
+          <PrintDocument
+            bookTitle={bookTitle}
+            documentTitle={doc.documentTitle}
+            watermarkLabel={watermarkLabel}
+            opener={doc.opener}
+            parts={sheetParts}
+            mounted={mounted}
+            progress={progress}
+          />
+        </div>
+      </>
     ),
     {
       documentTitle: view.documentTitle,

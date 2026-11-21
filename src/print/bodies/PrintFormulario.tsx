@@ -3,7 +3,7 @@ import type { Chapter, FormulaRef } from '../../types/smartbook';
 import { renderFormulaHtml } from '../../lib/formulaRender';
 import { useMathTrusted } from '../../context/MathTrustContext';
 import { printIds } from '../../lib/printLinks';
-import { withoutMathml } from '../printMath';
+import { printFormulaHtml, usePrintMathml, type PrintMathml } from '../formulaMode';
 
 interface PrintFormularioProps {
   chapters: Chapter[];
@@ -13,14 +13,19 @@ interface PrintFormularioProps {
 
 /**
  * Each formula's HTML, kept while the book is loaded, so the formula sheet renders again without
- * KaTeX. One map per `mathTrusted`, so trusted HTML is never served where it was not asked for.
+ * KaTeX. One map per `mathTrusted`, so trusted HTML is never served where it was not asked for, and
+ * one per mode (KaTeX or fast print's MathML).
  */
-const cardHtml = { trusted: new WeakMap<FormulaRef, string>(), sanitized: new WeakMap<FormulaRef, string>() };
+const cardHtml = {
+  katex: { trusted: new WeakMap<FormulaRef, string>(), sanitized: new WeakMap<FormulaRef, string>() },
+  mathml: { trusted: new WeakMap<FormulaRef, string>(), sanitized: new WeakMap<FormulaRef, string>() },
+};
 
-function formulaHtml(f: FormulaRef, mathTrusted: boolean): string {
-  const cache = mathTrusted ? cardHtml.trusted : cardHtml.sanitized;
+function formulaHtml(f: FormulaRef, mathTrusted: boolean, mathml: PrintMathml | null): string {
+  const byTrust = mathml ? cardHtml.mathml : cardHtml.katex;
+  const cache = mathTrusted ? byTrust.trusted : byTrust.sanitized;
   let html = cache.get(f);
-  if (html === undefined) cache.set(f, (html = withoutMathml(renderFormulaHtml(f.latex, { mathTrusted }))));
+  if (html === undefined) cache.set(f, (html = printFormulaHtml(renderFormulaHtml(f.latex, { mathTrusted }), mathml)));
   return html;
 }
 
@@ -30,6 +35,7 @@ function formulaHtml(f: FormulaRef, mathTrusted: boolean): string {
  */
 const FormularioChapter = memo(function FormularioChapter({ chapter, heading }: { chapter: Chapter; heading: boolean }) {
   const mathTrusted = useMathTrusted();
+  const mathml = usePrintMathml();
   return (
     <section className="formulario-chapter" data-print-chapter={chapter.meta.id}>
       {heading && (
@@ -47,7 +53,7 @@ const FormularioChapter = memo(function FormularioChapter({ chapter, heading }: 
                 <span className="formula-num">({f.id})</span>
                 <span className="formula-label">{f.label}</span>
               </div>
-              <div className="formulario-card-body" dangerouslySetInnerHTML={{ __html: formulaHtml(f, mathTrusted) }} />
+              <div className="formulario-card-body" dangerouslySetInnerHTML={{ __html: formulaHtml(f, mathTrusted, mathml) }} />
             </div>
           ))}
         </div>
