@@ -211,6 +211,19 @@
   font-size: calc(1.21em * var(--display-fit, 1));
 }
 
+/* KaTeX ends a script stack with an empty cell 2px wide, which Safari needs to align the stack, and
+   pulls what follows back over it with a -2px margin. The cell reaches 2px past the formula, so an
+   inline formula that ends a line made the page 2px wider than the paper, and Chromium printed the
+   whole book at 99.8%. A cell of no width keeps the same layout inside the formula. */
+.print-sheet .katex .vlist-s {
+  width: 0;
+  min-width: 0;
+}
+
+.print-sheet .katex .vlist-t2 {
+  margin-right: 0;
+}
+
 @media print {
   .print-sheet .katex-display > .katex {
     font-size: calc(1.21em * var(--display-fit-print, 1));

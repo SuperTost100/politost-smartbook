@@ -351,6 +351,28 @@ test.describe('Print preview of wide formulas', () => {
     });
   }
 
+  // KaTeX ends a script stack with an empty 2px cell and pulls the next box back over it with a -2px
+  // margin. An inline formula that ends a line then reaches 2px past the page, which the fit cannot see
+  // (no segment is wider than its line), and Chromium printed Fisica 1 at 99.8%.
+  test('no box of a formula reaches past the right edge of its segment in print', async ({ page }) => {
+    await page.goto(`/libro/${WIDE_BOOK.id}/stampa/libro?esercizi=tutti&formulario=1&esami=1`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    await page.emulateMedia({ media: 'print' });
+    const past = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const base of document.querySelectorAll('.print-sheet .katex-base')) {
+        const right = base.getBoundingClientRect().right;
+        for (const el of base.querySelectorAll('*')) {
+          const r = el.getBoundingClientRect();
+          if ((r.width || r.height) && r.right > right + 0.01) found.push(el.className.toString());
+        }
+      }
+      return { scripts: document.querySelectorAll('.print-sheet .vlist-t2').length, found: [...new Set(found)] };
+    });
+    expect(past.scripts).toBeGreaterThan(0);
+    expect(past.found).toEqual([]);
+  });
+
   // On a phone a formula shrinks only while it stays readable (12px, the sheet's 9pt small text, see
   // READABLE_FORMULA_PX); a wider one keeps its size and scrolls inside its own box.
   for (const width of [320, 375]) {
