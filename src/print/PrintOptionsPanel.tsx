@@ -1,7 +1,9 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Drawer } from 'antd';
+import { Monitor } from 'lucide-react';
 import { plural } from '../lib/exerciseNav';
 import { EXERCISE_LIMITS, type ExerciseLimit, type PrintOptions } from '../lib/printOptions';
+import type { FormulaMode, FormulaModeSource } from '../lib/printFormulaMode';
 
 export type PrintPanelKind = 'capitolo' | 'libro' | 'esercizi' | 'esami';
 
@@ -27,12 +29,24 @@ export interface PrintOptionsFormProps {
   /** The chapter the preview was opened from, for "Questo capitolo". */
   currentChapter?: { number: number; title: string };
   counts: PrintPanelCounts;
+  /** The formula mode (docs/Print.md, "Formule"); unset until it is known. */
+  formulas?: PrintFormulasOption;
+}
+
+export interface PrintFormulasOption {
+  mode: FormulaMode;
+  source: FormulaModeSource;
+  /** The device was measured slow, whatever the student chose. */
+  slowDevice: boolean;
+  onChange: (mode: FormulaMode) => void;
 }
 
 export interface PrintSummaryText {
   main: string;
   sub: string;
   empty?: boolean;
+  /** A line about how the document prints, such as fast print. */
+  note?: string;
 }
 
 const LIMIT_LABEL: Record<string, string> = { tutti: 'Tutti' };
@@ -124,7 +138,7 @@ function useMoreBelow(count: number) {
   return ref;
 }
 
-export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendingScope, chapters, currentChapter, counts }: PrintOptionsFormProps) {
+export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendingScope, chapters, currentChapter, counts, formulas }: PrintOptionsFormProps) {
   const set = (patch: Partial<PrintOptions>) => onChange({ ...options, ...patch });
   const isBook = kind === 'libro';
   const hasScope = (kind === 'capitolo' || isBook) && onScopeChange;
@@ -278,8 +292,46 @@ export function PrintOptionsForm({ kind, options, onChange, onScopeChange, pendi
           />
         </div>
       </fieldset>
+      {formulas && <FormulasOption {...formulas} />}
       </fieldset>
     </div>
+  );
+}
+
+/** Migliore (KaTeX, as in the book) or Veloce (MathML), for every print on this device. */
+function FormulasOption({ mode, source, slowDevice, onChange }: PrintFormulasOption) {
+  const note =
+    mode === 'fast'
+      ? 'Il documento è pronto molto prima. Le formule usano un altro carattere rispetto al libro.'
+      : `Le formule si stampano come le vedi nel libro.${slowDevice ? ' Su questo dispositivo un libro intero richiede più di un minuto.' : ''}`;
+  const memory =
+    source === 'chosen'
+      ? 'Scelta ricordata su questo dispositivo.'
+      : mode === 'fast'
+        ? 'Scelta per questo dispositivo, che prepara le formule lentamente. Puoi cambiarla quando vuoi.'
+        : null;
+  return (
+    <fieldset>
+      <legend>Formule</legend>
+      <Choice
+        label="Formule"
+        value={mode}
+        items={[
+          { value: 'best', label: 'Migliore' },
+          { value: 'fast', label: 'Veloce' },
+        ]}
+        onChange={(next) => {
+          if (next !== mode || source !== 'chosen') onChange(next);
+        }}
+      />
+      <p className="print-options-note">{note}</p>
+      {memory && (
+        <p className="print-options-memory">
+          <Monitor size={14} strokeWidth={1.75} aria-hidden />
+          <span>{memory}</span>
+        </p>
+      )}
+    </fieldset>
   );
 }
 
@@ -309,6 +361,7 @@ export function PrintSummary({ summary }: { summary: PrintSummaryText }) {
       <span className="print-summary-label">Il documento contiene</span>
       <span className="print-summary-main">{summary.main}</span>
       {summary.sub && <span className="print-summary-sub">{summary.sub}</span>}
+      {summary.note && <span className="print-summary-sub">{summary.note}</span>}
     </p>
   );
 }
