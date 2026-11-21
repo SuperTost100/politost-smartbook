@@ -56,9 +56,22 @@ function convert(katexSpan: string, render: TexToMathml): { math: string; displa
 }
 
 /**
- * The print HTML of `html` with every KaTeX formula as MathML from `render`. An inline formula
- * followed by punctuation goes in a `.math-glue` span with it, as glueMathPunctuation does for
- * KaTeX, so the punctuation never starts the next line.
+ * `math` with `punctuation` at the end of its last segment, as `<mtext class="math-punct">`. Temml's
+ * `<math>` is a wrapping flex box (temml.css), and once a formula wraps the box takes the whole
+ * line: punctuation glued after it, as glueMathPunctuation does for KaTeX, would reach past the
+ * text column. Inside the last segment it follows the formula's last line, stays on it, and counts
+ * in the width fitFormulas.ts fits. A formula of one segment that is not an `<mrow>` gets one.
+ */
+function withPunctuation(math: string, punctuation: string): string {
+  const punct = `<mtext class="math-punct">${punctuation}</mtext>`;
+  if (math.endsWith('</mrow></math>')) return `${math.slice(0, -'</mrow></math>'.length)}${punct}</mrow></math>`;
+  const open = math.indexOf('>') + 1;
+  return `${math.slice(0, open)}<mrow>${math.slice(open, -'</math>'.length)}${punct}</mrow></math>`;
+}
+
+/**
+ * The print HTML of `html` with every KaTeX formula as MathML from `render`. The punctuation after
+ * an inline formula goes inside it (withPunctuation), so it never starts the next line.
  */
 export function katexToMathml(html: string, render: TexToMathml): string {
   if (!html.includes('katex-mathml')) return withoutMathml(html);
@@ -81,9 +94,8 @@ export function katexToMathml(html: string, render: TexToMathml): string {
       out += `<span class="mml-display">${done.math}</span>`;
       pos = end;
     } else {
-      const formula = `<span class="mml">${done.math}</span>`;
       const punctuation = PUNCTUATION.exec(html.slice(end, end + 8))?.[0];
-      out += punctuation ? `<span class="math-glue">${formula}${punctuation}</span>` : formula;
+      out += `<span class="mml">${punctuation ? withPunctuation(done.math, punctuation) : done.math}</span>`;
       pos = end + (punctuation?.length ?? 0);
     }
   }

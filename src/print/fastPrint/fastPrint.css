@@ -44,6 +44,13 @@
   }
 }
 
+/* The punctuation after an inline formula, which printMathml.ts puts in its last segment so it stays
+   on the formula's last line: in the text's font and size. */
+.print-sheet .math-punct {
+  font-family: var(--print-font-serif);
+  font-size: calc(1em / 1.13);
+}
+
 /* Temml marks \mathcal and \mathscr letters with these classes, which katex.css maps to KaTeX's fonts. */
 .print-sheet math .mathcal,
 .print-sheet math .mathscr {
@@ -69,10 +76,6 @@
     padding-block: 0.3em;
     margin-block: -0.3em;
     scrollbar-width: thin;
-  }
-
-  .math-glue:has(> .mml[data-wide]) {
-    white-space: normal;
   }
 
   @supports (animation-timeline: scroll()) {

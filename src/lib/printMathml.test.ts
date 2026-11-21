@@ -42,11 +42,17 @@ test('katexToMathml mixes rendered formulas and fallbacks in order', () => {
   assert.doesNotMatch(out, /katex-mathml/);
 });
 
-test('katexToMathml glues the punctuation after an inline formula to it', () => {
+test('katexToMathml puts the punctuation after an inline formula at the end of its last segment', () => {
   const { render } = recorder();
+  const punct = (p: string) => `<mtext class="math-punct">${p}</mtext>`;
   assert.equal(
-    katexToMathml(`vale ${inline('x')}, quindi ${inline('y')}.`, render),
-    'vale <span class="math-glue"><span class="mml"><math>1</math></span>,</span> quindi <span class="math-glue"><span class="mml"><math>2</math></span>.</span>',
+    katexToMathml(`vale ${inline('x')}, quindi ${inline('y')}).`, render),
+    `vale <span class="mml"><math><mrow>1${punct(',')}</mrow></math></span> quindi <span class="mml"><math><mrow>2${punct(').')}</mrow></math></span>`,
+  );
+  const segments = '<math><mrow><mi>a</mi><mo>=</mo></mrow><mrow><mi>b</mi></mrow></math>';
+  assert.equal(
+    katexToMathml(`${inline('a=b')}; poi`, () => segments),
+    `<span class="mml"><math><mrow><mi>a</mi><mo>=</mo></mrow><mrow><mi>b</mi>${punct(';')}</mrow></math></span> poi`,
   );
   // The glue for KaTeX, run after it as ContentFlow does, leaves MathML alone.
   const html = katexToMathml(`${inline('x')}.`, render);
