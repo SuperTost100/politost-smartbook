@@ -98,6 +98,23 @@ A whole book with every extra is large: Chimica di base is about 325,000 element
 
 **Stampa o salva PDF** stays disabled, reading **Preparazione…**, until every part is mounted, its images and fonts have loaded and its wide formulas are fitted. Ctrl+P waits the same way.
 
+### Flat formulas
+
+KaTeX draws a formula with about ten elements per glyph, and the browser lays all of them out again when it prints: they were most of the 268,000 elements of Fisica 1 and most of the time `window.print()` took. Once the preview is ready, `src/print/flatFormulas.ts` replaces each segment of a formula (`.katex-base`, the part between two places where it may break) with a box of the same size that holds one absolutely positioned span per text run, plus the rules and SVGs KaTeX draws, at the positions KaTeX gave them in em of the formula's font size. The parts sit in a box with `contain: size layout` and `overflow: clip`, so the browser lays out and paints each segment on its own.
+
+- **When.** The pass starts after the print button shows ready, so the preview opens as fast as before. It works a paragraph, exercise, solution or formula-sheet chapter at a time, in slices of 10 ms like the fit, and the sheet's `data-math` reads `flattening`, then `flat`. An option or a chapter that changes the document flattens only the parts it adds or changes; a new sheet width runs the fit, then the pass again.
+- **Printing before it finishes.** **Stampa o salva PDF** and Ctrl+P flatten what is left first, behind **Preparazione…**, then print. Flattening Fisica 1 takes about 1.7 s and saves the browser about 16 s when it prints, so finishing first is always faster. The browser's own print menu cannot wait: it prints a mix of flat and KaTeX formulas, which look the same.
+- **What stays as KaTeX drew it.** A formula drawn on screen at another size than in print (scaled differently, or scrolling on a phone), and a segment with a link, an image or an id. Equation tags are not flattened.
+- **Same places.** Every size and offset lands on the 1/64 px layout works in, and the baselines are read from probes, so the text runs of the four catalog books sit where KaTeX put them on screen, and a printed book has the same pages. Print rounds each baseline to whole px from the top of the box the glyphs sit in, which a flat run cannot always copy: in the PDFs of the four books about 1% of the words in formulas sit up to 1 px higher or lower than KaTeX's. The box ends at the segment's right edge, because a box past it would make a line-ending formula wider than the page (see the next section); a run whose ink passes that edge, like the tail of an italic letter, stays outside the box. The box grows on the other sides to the ink of its runs, measured on a canvas, plus 1 px.
+- **The fit.** A flat formula keeps the print scale the fit measured on KaTeX's tree; only its screen scale is measured again when the width changes.
+- **Fonts.** A unit read while a font was loading is not written: it is read again once the fonts have arrived.
+
+`?math=katex` in the address turns flattening off, for support and to measure one against the other. The options keep it in the address. `printMathMode` in `src/print/printMath.ts` reads it.
+
+### Formulas at the end of a line
+
+KaTeX ends every sub- or superscript with an empty cell 2 px wide and pulls what follows back over it with a -2 px margin. The cell reached past the formula, so an inline formula that ended a line made the page wider than the paper, and Chromium printed the whole of Fisica 1 at 99.8%. In the print sheet the cell has no width and no negative margin, which changes nothing inside the formula.
+
 ## Browser support
 
 | Browser | Body, page breaks, colours | Running heads and page numbers |
@@ -111,6 +128,6 @@ A whole book with every extra is large: Chimica di base is about 325,000 element
 npm run test:print
 ```
 
-`e2e/print.spec.ts` covers the previews, print media, the options and the URL, the remembered options, the toolbar at 320px, the phone options sheet, a whole-book PDF export, and a book of wide formulas whose print documents must not be wider than the printed column. `src/lib/printOptions.test.ts` covers the URL parsing, the exercise picks and the remembered options. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
+`src/lib/flatFormulas.test.ts` covers the lengths of flat formulas, which parts stay outside the clipping box and which KaTeX classes draw. `e2e/print.spec.ts` covers the previews, flat formulas (after readiness, at KaTeX's positions, printing at once, `?math=katex`, an option), print media, the options and the URL, the remembered options, the toolbar at 320px, the phone options sheet, a whole-book PDF export, and a book of wide formulas whose print documents must not be wider than the printed column. `src/lib/printOptions.test.ts` covers the URL parsing, the exercise picks and the remembered options. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
 
 Print CSS lives in `src/print/styles/` (tokens, shell, document).
