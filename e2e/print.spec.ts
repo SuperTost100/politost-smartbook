@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { PRINT_ROUTES, assertPrintMediaHidesChrome, assertPrintPreview, assertUniqueIds } from './helpers/print';
 import { preparePlatformShell, PRINT_GOTO_OPTIONS } from './helpers/platform';
 import { openTestBook, WIDE_BOOK, type TestBook } from './helpers/books';
@@ -319,6 +319,114 @@ test.describe('Links in a long print preview', () => {
   });
 });
 
+test.describe('Flat formulas in the print preview', () => {
+  const URL = '/libro/esempio/stampa/libro?esercizi=tutti&formulario=1&esami=1';
+  const PRINT = { name: 'Stampa o salva PDF' };
+
+  test.beforeEach(async ({ page }) => {
+    await preparePlatformShell(page);
+  });
+
+  /** The box of every text run of the first formulas, relative to the sheet. */
+  const runBoxes = (page: Page) =>
+    page.evaluate(() => {
+      const sheet = document.querySelector('.print-sheet')!.getBoundingClientRect();
+      const range = document.createRange();
+      return [...document.querySelectorAll('.print-sheet .katex')].slice(0, 30).flatMap((katex) => {
+        const runs: [string, number, number, number, number][] = [];
+        const walker = document.createTreeWalker(katex, NodeFilter.SHOW_TEXT);
+        for (let t = walker.nextNode() as Text | null; t; t = walker.nextNode() as Text | null) {
+          if (!t.data.replace(/\u200b/g, '')) continue;
+          range.selectNodeContents(t);
+          const r = range.getBoundingClientRect();
+          runs.push([t.data, r.left - sheet.left, r.top - sheet.top, r.width, r.height]);
+        }
+        return runs;
+      });
+    });
+
+  test('the preview flattens its formulas after it is ready, and they stay where KaTeX put them', async ({ page }) => {
+    await page.addInitScript(() => {
+      const times = ((window as unknown as { flatTimes: Record<string, number> }).flatTimes = {});
+      new MutationObserver(() => {
+        const button = document.querySelector<HTMLButtonElement>('button[aria-label="Stampa o salva PDF"]');
+        if (button && !button.disabled) times.ready ??= performance.now();
+        if (document.querySelector('.katex-flat')) times.flat ??= performance.now();
+      }).observe(document, { subtree: true, childList: true, attributes: true });
+    });
+    await page.goto(`${URL}&math=katex`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', PRINT)).toBeEnabled();
+    const katex = await runBoxes(page);
+    expect(katex.length).toBeGreaterThan(30);
+    await page.waitForTimeout(500);
+    await expect(page.locator('.print-sheet .katex-flat')).toHaveCount(0);
+
+    await page.goto(URL, PRINT_GOTO_OPTIONS);
+    await expect(page.locator('.print-sheet')).toHaveAttribute('data-math', 'flat');
+    const times = await page.evaluate(() => (window as unknown as { flatTimes: Record<string, number> }).flatTimes);
+    expect(times.flat).toBeGreaterThan(times.ready);
+    await expect(page.locator('.print-sheet .katex-base:not(.katex-flat)')).toHaveCount(0);
+    const flat = await runBoxes(page);
+    expect(flat.map((r) => r[0])).toEqual(katex.map((r) => r[0]));
+    flat.forEach((run, i) => {
+      for (let k = 1; k < 5; k++) expect(Math.abs(Number(run[k]) - Number(katex[i][k])), `${run[0]} (${i})`).toBeLessThanOrEqual(0.5);
+    });
+  });
+
+  test('printing right away first flattens what is left, then prints once', async ({ page }) => {
+    await page.addInitScript(() => {
+      const log = ((window as unknown as { printed: string[] }).printed = []);
+      window.print = () => {
+        const sheet = document.querySelector<HTMLElement>('.print-sheet')!;
+        log.push(`${sheet.dataset.math}:${sheet.querySelectorAll('.katex-base:not(.katex-flat)').length}`);
+      };
+      // Click the moment the button is ready, before the flattening that starts after the next paint.
+      new MutationObserver((_, observer) => {
+        const button = document.querySelector<HTMLButtonElement>('button[aria-label="Stampa o salva PDF"]');
+        if (button && !button.disabled) {
+          observer.disconnect();
+          button.click();
+        }
+      }).observe(document, { subtree: true, childList: true, attributes: true });
+    });
+    await page.goto(URL, PRINT_GOTO_OPTIONS);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { printed: string[] }).printed)).toEqual(['flat:0']);
+    await expect(page.getByRole('button', PRINT)).toBeEnabled();
+  });
+
+  test('?math=katex keeps KaTeX\'s formulas and prints them', async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { prints: number }).prints = 0;
+      window.print = () => {
+        (window as unknown as { prints: number }).prints += 1;
+      };
+    });
+    await page.goto(`${URL}&math=katex`, PRINT_GOTO_OPTIONS);
+    await page.getByRole('button', PRINT).click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { prints: number }).prints)).toBe(1);
+    await expect(page.locator('.print-sheet .katex-flat')).toHaveCount(0);
+    // An option keeps the switch in the address.
+    await page.getByRole('switch', { name: /^Soluzioni/ }).click();
+    await expect(page).toHaveURL(/math=katex/);
+  });
+
+  test('an option that changes the document flattens the new parts and leaves the others alone', async ({ page }) => {
+    await page.goto('/libro/esempio/stampa/libro', PRINT_GOTO_OPTIONS);
+    await expect(page.locator('.print-sheet')).toHaveAttribute('data-math', 'flat');
+    await page.evaluate(() => {
+      for (const flat of document.querySelectorAll('.print-sheet .katex-flat')) flat.setAttribute('data-old', '');
+    });
+    const old = await page.locator('.print-sheet .katex-flat[data-old]').count();
+    expect(old).toBeGreaterThan(0);
+    await page.getByRole('switch', { name: /^Formulario in fondo/ }).click();
+    await expect(page.locator('.print-sheet .formulario-card').first()).toBeVisible();
+    await expect(page.locator('.print-sheet')).toHaveAttribute('data-math', 'flat');
+    await expect(page.locator('.print-sheet .katex-base:not(.katex-flat)')).toHaveCount(0);
+    await expect(page.locator('.print-sheet .formulario-card .katex-flat').first()).toBeVisible();
+    await expect(page.locator('.print-sheet .katex-flat[data-old]')).toHaveCount(old);
+  });
+});
+
 test.describe('Print preview of wide formulas', () => {
   test.beforeEach(async ({ page }) => {
     await preparePlatformShell(page);
@@ -350,6 +458,28 @@ test.describe('Print preview of wide formulas', () => {
       expect(overflow).toEqual({ document: PRINT_COLUMN, formulas: 0 });
     });
   }
+
+  // KaTeX ends a script stack with an empty 2px cell and pulls the next box back over it with a -2px
+  // margin. An inline formula that ends a line then reaches 2px past the page, which the fit cannot see
+  // (no segment is wider than its line), and Chromium printed Fisica 1 at 99.8%.
+  test('no box of a formula reaches past the right edge of its segment in print', async ({ page }) => {
+    await page.goto(`/libro/${WIDE_BOOK.id}/stampa/libro?esercizi=tutti&formulario=1&esami=1`, PRINT_GOTO_OPTIONS);
+    await expect(page.getByRole('button', { name: 'Stampa o salva PDF' })).toBeEnabled();
+    await page.emulateMedia({ media: 'print' });
+    const past = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const base of document.querySelectorAll('.print-sheet .katex-base')) {
+        const right = base.getBoundingClientRect().right;
+        for (const el of base.querySelectorAll('*')) {
+          const r = el.getBoundingClientRect();
+          if ((r.width || r.height) && r.right > right + 0.01) found.push(el.className.toString());
+        }
+      }
+      return { scripts: document.querySelectorAll('.print-sheet .vlist-t2').length, found: [...new Set(found)] };
+    });
+    expect(past.scripts).toBeGreaterThan(0);
+    expect(past.found).toEqual([]);
+  });
 
   // On a phone a formula shrinks only while it stays readable (12px, the sheet's 9pt small text, see
   // READABLE_FORMULA_PX); a wider one keeps its size and scrolls inside its own box.
