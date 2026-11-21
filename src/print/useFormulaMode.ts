@@ -70,11 +70,18 @@ export function useFormulaMode(): FormulaModeState {
     const cancel = whenIdle(() => {
       void import('./deviceSpeed')
         .then(({ measureLayoutSpeed }) => measureLayoutSpeed())
-        .then((layoutMs) => {
-          rememberLayoutSpeed(layoutMs);
-          // A choice made meanwhile, in another tab, still wins.
-          if (!cancelled) setPrefs({ chosen: readFormulaModePrefs().chosen, layoutMs });
-        });
+        .then(
+          (layoutMs) => {
+            rememberLayoutSpeed(layoutMs);
+            // A choice made meanwhile, in another tab, still wins.
+            if (!cancelled) setPrefs({ chosen: readFormulaModePrefs().chosen, layoutMs });
+          },
+          () => {
+            // The measurement could not load or run (offline, say): the sheet prints with the book's
+            // formulas, and the device is measured at the next visit.
+            if (!cancelled) setPrefs({ chosen: readFormulaModePrefs().chosen, layoutMs: 0 });
+          },
+        );
     });
     return () => {
       cancelled = true;
@@ -117,11 +124,22 @@ export function useFormulaMode(): FormulaModeState {
  * per task, in a transition, as useProgressiveParts mounts them, so a whole book never blocks the
  * page. `pending` is the next part to change.
  */
-export function usePartMathml(keys: string[], target: PrintMathml | null): { mathmlOf: (key: string) => PrintMathml | null; pending?: string } {
+export function usePartMathml(
+  keys: string[],
+  target: PrintMathml | null | undefined,
+): { mathmlOf: (key: string) => PrintMathml | null; pending?: string } {
   const [state, setState] = useState({ target, previous: target, done: new Set<string>() as ReadonlySet<string> });
-  // A new mode starts over: every part waits for its turn. Set during render, so no frame shows the
-  // parts switched before their turn.
-  if (state.target !== target) setState({ target, previous: state.target, done: new Set() });
+  // Set during render, so no frame shows the parts switched before their turn.
+  if (state.target !== target) {
+    // The first mode known is where the sheet starts, not a switch: no part mounts in another mode first.
+    if (state.target === undefined) setState({ target, previous: target, done: new Set() });
+    // Back to the mode a switch was leaving: the parts that had not switched yet already have it.
+    else if (state.previous !== state.target && target === state.previous) {
+      setState({ target, previous: state.target, done: new Set(keys.filter((key) => !state.done.has(key))) });
+    }
+    // A new mode starts over: every part waits for its turn.
+    else setState({ target, previous: state.target, done: new Set() });
+  }
   const switching = state.previous !== state.target;
   const pending = switching ? keys.find((key) => !state.done.has(key)) : undefined;
 
@@ -141,7 +159,7 @@ export function usePartMathml(keys: string[], target: PrintMathml | null): { mat
   }, [switching, pending, target]);
 
   const mathmlOf = useCallback(
-    (key: string) => (state.previous === state.target || state.done.has(key) ? state.target : state.previous),
+    (key: string) => (state.previous === state.target || state.done.has(key) ? state.target : state.previous) ?? null,
     [state],
   );
   return { mathmlOf, pending };

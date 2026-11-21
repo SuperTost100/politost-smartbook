@@ -479,7 +479,7 @@ export function PrintPage({ kind }: PrintPageProps) {
   const partKeys = parts.map((p) => p.key);
   const { mounted, pending } = useProgressiveParts(modeKnown ? partKeys : []);
   // A new mode reaches the parts one at a time, as they mount.
-  const { mathmlOf, pending: switching } = usePartMathml(partKeys, applied ?? null);
+  const { mathmlOf, pending: switching } = usePartMathml(partKeys, applied);
   const sheetParts = useMemo(
     () => parts.map((p) => ({ ...p, node: <PrintMathmlContext.Provider value={mathmlOf(p.key)}>{p.node}</PrintMathmlContext.Provider> })),
     [parts, mathmlOf],

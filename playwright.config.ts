@@ -38,11 +38,11 @@ export default defineConfig({
   use: {
     baseURL,
     // The print page picks fast print on a device it measures as slow (docs/Print.md, "Formule"). A
-    // stored measurement of a fast device keeps every spec on KaTeX whatever machine runs it;
+    // stored choice of the book's formulas keeps every spec on KaTeX whatever machine runs it;
     // e2e/fast-print.spec.ts sets its own.
     storageState: {
       cookies: [],
-      origins: [{ origin: baseURL, localStorage: [{ name: 'politost-print-formulas', value: JSON.stringify({ layoutMs: 0, version: MEASUREMENT_VERSION }) }] }],
+      origins: [{ origin: baseURL, localStorage: [{ name: 'politost-print-formulas', value: JSON.stringify({ chosen: 'best', layoutMs: 0, version: MEASUREMENT_VERSION }) }] }],
     },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',

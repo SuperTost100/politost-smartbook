@@ -138,6 +138,21 @@ test.describe('Fast print', () => {
     await expect(notice.getByRole('button', { name: 'Nascondi il confronto' })).toHaveAttribute('aria-expanded', 'true');
   });
 
+  test('a slow device never lays out the KaTeX that fast print replaces', async ({ page }) => {
+    await storePrefs(page, SLOW);
+    // Counts the KaTeX formulas that ever reach the sheet, however briefly.
+    await page.addInitScript(() => {
+      const seen = window as unknown as { katexInSheet: number };
+      seen.katexInSheet = 0;
+      new MutationObserver(() => {
+        seen.katexInSheet += document.querySelectorAll('.print-sheet .katex').length;
+      }).observe(document, { subtree: true, childList: true });
+    });
+    await page.goto('/libro/esempio/stampa/libro', PRINT_GOTO_OPTIONS);
+    await expectFast(page);
+    expect(await page.evaluate(() => (window as unknown as { katexInSheet: number }).katexInSheet)).toBe(0);
+  });
+
   test('a fast device sees no line, only the setting in the panel', async ({ page }) => {
     await page.goto('/libro/esempio/stampa/capitolo/nel-libro', PRINT_GOTO_OPTIONS);
     await expectBest(page);
