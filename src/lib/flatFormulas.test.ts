@@ -16,7 +16,7 @@ import {
 } from '../print/flatFormulas.ts';
 
 const rect = (left: number, top: number, right: number, bottom: number): Rect => ({ left, top, right, bottom });
-const part = (name: string, ink: Rect): Part => ({ box: ink, ink, html: (x, y) => `<${name}@${x},${y}>` });
+const part = (name: string, ink: Rect): Part => ({ box: ink, ink, html: (o) => `<${name}@${o.left},${o.top}>` });
 
 /** The px a length in em lays out to, in 1/64 px, when layout drops the rest or rounds it. */
 const laidOut = (length: string, size: number, round: (x: number) => number) => round(parseFloat(length) * size * 64) / 64;
@@ -57,7 +57,7 @@ test('parts whose ink passes the right edge stand alone, the others are grouped,
   ];
   const groups = groupParts(parts, right);
   assert.deepEqual(
-    groups.map((g) => [g.contained, g.parts.map((p) => p.html(0, 0))]),
+    groups.map((g) => [g.contained, g.parts.map((p) => p.html(rect(0, 0, 0, 0)))]),
     [
       [true, ['<a@0,0>', '<b@0,0>']],
       [false, ['<tail@0,0>']],

@@ -225,7 +225,9 @@
 }
 
 /* A flattened formula segment (flatFormulas.ts): a box of KaTeX's size whose parts sit where KaTeX
-   put them, in a box that the browser lays out and paints on its own. */
+   put them, in a box that the browser lays out on its own and clips to the ink of its parts. Not
+   contain: strict: paint (or layout with style) containment makes Chromium paint the box at a whole
+   px, which moves its glyphs by up to half a px; overflow: clip prints as fast without that. */
 .print-sheet .katex .katex-flat {
   position: relative;
   display: inline-block;
@@ -238,8 +240,19 @@
   white-space: pre;
 }
 
+/* A text run that sits straight in its segment has no line height and starts with an empty box as
+   high as the run, so its glyphs sit on its bottom edge whatever the font's ascent (flatFormulas.ts
+   says why). In a run with a line height the box has no height and changes nothing. */
+.print-sheet .katex .katex-flat > span:not(.katex-flat-box, .katex-flat-draw)::before,
+.print-sheet .katex .katex-flat-box > span:not(.katex-flat-draw)::before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+}
+
 .print-sheet .katex .katex-flat-box {
-  contain: strict;
+  contain: size layout;
+  overflow: clip;
 }
 
 @media print {

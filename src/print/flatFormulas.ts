@@ -8,10 +8,11 @@ import { contentBoxWidth, own, sheetUnits, SLICE_MS, UNIT_OR_PART, withoutRefit,
  * segments (`.katex-base`, the part between two places where it may break) is swapped for a box of
  * the same size holding one absolutely positioned span per text run, plus the rules and SVGs KaTeX
  * draws. Positions are in em of the segment's font size, so the box scales with the print fit and
- * draws the same picture. The runs sit in a box with `contain: strict` that covers their ink, so the
- * browser lays out and paints each segment on its own: a whole book prints in about half the time.
+ * draws the same picture. The runs sit in a box with size and layout containment that clips to
+ * their ink (document.css), so the browser lays out and paints each segment on its own: a whole book
+ * prints in about half the time.
  *
- * A contained box clips what it paints, and a box that reaches past a formula's right edge would make
+ * The box clips what it paints, and a box that reaches past a formula's right edge would make
  * the page wider than the paper when the formula ends a line (fitFormulas.ts says what Chromium does
  * then). So the box reaches past the segment on the left, top and bottom by the ink of its runs and
  * INK_MARGIN, and ends at the segment's right edge; a part whose ink reaches past that edge (the tail
@@ -69,8 +70,8 @@ export interface Part {
   box: Rect;
   /** Where it paints, in px on the page: the box of a rule or SVG, the glyph outlines of a run. */
   ink: Rect;
-  /** Its HTML, placed from (left, top) in px on the page. */
-  html: (left: number, top: number) => string;
+  /** Its HTML, placed in a box at `origin`, in px on the page. */
+  html: (origin: Rect) => string;
 }
 
 export interface Segment {
@@ -129,10 +130,10 @@ export function segmentHtml(segment: Segment, parts: Part[]): string {
       html +=
         `<span class="katex-flat-box" style="left:${exactEm(inner.left - box.left, size)};top:${exactEm(inner.top - box.top, size)};` +
         `width:${exactEm(inner.right - inner.left, size)};height:${exactEm(inner.bottom - inner.top, size)}">` +
-        group.parts.map((p) => p.html(inner.left, inner.top)).join('') +
+        group.parts.map((p) => p.html(inner)).join('') +
         '</span>';
     } else {
-      html += group.parts.map((p) => p.html(box.left, box.top)).join('');
+      html += group.parts.map((p) => p.html(box)).join('');
     }
   }
   // With nothing in its flow, the box's baseline is its bottom edge: it goes down by the segment's depth.
@@ -206,11 +207,34 @@ let range: Range | undefined;
  * An empty inline-block at the end of a segment: its bottom edge sits on the segment's baseline, to
  * the 1/64 px. KaTeX's strut gives the baseline only through a vertical-align that layout rounds.
  */
-function baselineProbe(base: HTMLElement): HTMLElement {
+function baselineProbe(): HTMLElement {
   const probe = document.createElement('span');
   probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
-  base.append(probe);
   return probe;
+}
+
+/** The probe after each text run, on the run's baseline. */
+const textProbes = new WeakMap<Text, HTMLElement>();
+
+/** Probes on the baseline of a segment (returned first) and of each of its text runs. */
+function probeSegment(base: HTMLElement): HTMLElement[] {
+  const probes = [baselineProbe()];
+  base.append(probes[0]);
+  const walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
+  for (let t = walker.nextNode() as Text | null; t; t = walker.nextNode() as Text | null) {
+    if (!t.data || t.parentElement?.closest('svg')) continue;
+    const probe = baselineProbe();
+    t.after(probe);
+    textProbes.set(t, probe);
+    probes.push(probe);
+  }
+  return probes;
+}
+
+/** The top of the segment, in px on the page, when the text in `el` sits straight in it; else null. */
+function layerTop(el: Element, base: HTMLElement): number | null {
+  for (let at = el; at !== base; at = at.parentElement!) if (getComputedStyle(at).position !== 'static') return null;
+  return base.getBoundingClientRect().top;
 }
 
 /**
@@ -253,7 +277,7 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
   const color = baseStyle.color;
 
   // Text runs wait for the ink measurement; rules and SVGs are complete.
-  const pending: (Part | { text: Text; rect: Rect; font: string; css: string; fontSize: number })[] = [];
+  const pending: (Part | { text: Text; rect: Rect; line: number; top: number | null; font: string; css: string; fontSize: number })[] = [];
   // One range for every read: the document updates each live range on every change to it.
   range ??= document.createRange();
   const walker = document.createTreeWalker(base, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
@@ -272,10 +296,18 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
       const fontSize = ratio * size;
       const style = cs.fontStyle === 'normal' ? '' : `${cs.fontStyle} `;
       const weight = cs.fontWeight === '400' ? '' : `${cs.fontWeight} `;
-      // The line height is the run's own height, so the glyphs sit where they sat. A hair short of it,
-      // the leading would be negative and round to a whole pixel up.
-      const css = `font:${style}${weight}${ratio}em/${Number(((t.height + 1 / 256) / fontSize).toFixed(6))} ${quote(cs.fontFamily)}${cs.color === color ? '' : `;color:${cs.color}`}`;
-      pending.push({ text: node, rect: { left: t.left, top: t.top, right: t.right, bottom: t.bottom }, font: `${style}${weight}${cs.fontSize} ${cs.fontFamily}`, css, fontSize });
+      const probe = textProbes.get(node);
+      if (!probe) continue;
+      const line = probe.getBoundingClientRect().bottom;
+      // Print rounds a baseline to whole px from the top of the positioned box the glyphs sit in, and
+      // places a glyph from the font's ascent. A run straight in the segment (whose box the flat
+      // segment keeps) starts at the segment's top with no line height and its glyphs on its bottom
+      // edge (document.css). A run in a row of a KaTeX stack keeps KaTeX's line height, its own height.
+      const top = layerTop(node.parentElement!, base);
+      const lineHeight = top === null ? Number(((t.height + 1 / 256) / fontSize).toFixed(6)) : 0;
+      const css = `font:${style}${weight}${ratio}em/${lineHeight} ${quote(cs.fontFamily)}${cs.color === color ? '' : `;color:${cs.color}`}`;
+      const rect = { left: t.left, top: t.top, right: t.right, bottom: t.bottom };
+      pending.push({ text: node, rect, line, top, font: `${style}${weight}${cs.fontSize} ${cs.fontFamily}`, css, fontSize });
     } else if (node instanceof SVGSVGElement) {
       const own = node.getBoundingClientRect();
       const c = visibleBox(node, base);
@@ -292,7 +324,7 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
       pending.push({
         box: c,
         ink: c,
-        html: (x, y) => `<span style="left:${exactEm(c.left - x, size)};top:${exactEm(c.top - y, size)};width:${exactEm(c.right - c.left, size)};height:${exactEm(c.bottom - c.top, size)};${extra}">${svgHtml}</span>`,
+        html: (o) => `<span class="katex-flat-draw" style="left:${exactEm(c.left - o.left, size)};top:${exactEm(c.top - o.top, size)};width:${exactEm(c.right - c.left, size)};height:${exactEm(c.bottom - c.top, size)};${extra}">${svgHtml}</span>`,
       });
     } else if (node instanceof HTMLElement && mayDraw(node.className, node.getAttribute('style') ?? '')) {
       const cs = getComputedStyle(node);
@@ -312,7 +344,7 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
       pending.push({
         box: rect,
         ink: rect,
-        html: (x, y) => `<span style="left:${exactEm(rect.left - x, size)};top:${exactEm(rect.top - y, size)};width:${exactEm(rect.right - rect.left, size)};height:${exactEm(rect.bottom - rect.top, size)};box-sizing:border-box;${draw}"></span>`,
+        html: (o) => `<span class="katex-flat-draw" style="left:${exactEm(rect.left - o.left, size)};top:${exactEm(rect.top - o.top, size)};width:${exactEm(rect.right - rect.left, size)};height:${exactEm(rect.bottom - rect.top, size)};box-sizing:border-box;${draw}"></span>`,
       });
     }
   }
@@ -327,13 +359,14 @@ function readSegment(base: HTMLElement, baseline: number): Read | null {
         }
         const ink = inkOf(p.font, p.text.data);
         if (!ink) return null;
-        const { rect, css, fontSize } = p;
-        const line = rect.top + ink.ascent;
+        const { rect, css, fontSize, line, top } = p;
         const text = escapeText(p.text.data);
         parts.push({
           box: rect,
           ink: { left: rect.left + ink.left, right: rect.left + ink.right, top: line - ink.up, bottom: line + ink.down },
-          html: (x, y) => `<span style="left:${exactEm(rect.left - x, fontSize)};top:${exactEm(rect.top - y, fontSize)};${css}">${text}</span>`,
+          html: (o) =>
+            `<span style="left:${exactEm(rect.left - o.left, fontSize)};top:${exactEm((top ?? rect.top) - o.top, fontSize)}` +
+            `${top === null ? '' : `;height:${exactEm(line - top, fontSize)}`};${css}">${text}</span>`,
         });
       }
       return parts;
@@ -363,7 +396,8 @@ function printsAsShown(katex: HTMLElement): boolean {
 interface Job {
   unit: Element;
   segments: HTMLElement[];
-  probes: HTMLElement[];
+  /** Of each segment, its baseline probe and those of its text runs. */
+  probes: HTMLElement[][];
   /** The next segment to read, then to write. */
   next: number;
   /** Of each segment read, KaTeX's layout, or null when it stays as it is. */
@@ -376,11 +410,11 @@ function startJob(unit: Element): Job {
     .filter((katex) => !katex.parentElement?.closest('.katex') && printsAsShown(katex))
     .flatMap((katex) => [...katex.querySelectorAll<HTMLElement>(':scope > .katex-html > .katex-base:not(.katex-flat)')]);
   // Every probe goes in at once, so the unit is laid out once for all of them.
-  return { unit, segments, probes: segments.map(baselineProbe), next: 0, reads: [], writes: null };
+  return { unit, segments, probes: segments.map(probeSegment), next: 0, reads: [], writes: null };
 }
 
 function dropJob(job: Job): void {
-  for (const probe of job.probes) probe.remove();
+  for (const probe of job.probes.flat()) probe.remove();
 }
 
 /**
@@ -392,7 +426,7 @@ function workOn(job: Job, deadline: number): 'more' | 'done' | 'fonts' {
   if (!job.writes) {
     while (job.next < job.segments.length) {
       const base = job.segments[job.next];
-      job.reads.push(readSegment(base, job.probes[job.next].getBoundingClientRect().bottom));
+      job.reads.push(readSegment(base, job.probes[job.next][0].getBoundingClientRect().bottom));
       job.next++;
       if (performance.now() > deadline) break;
     }
