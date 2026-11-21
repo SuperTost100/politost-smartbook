@@ -8,7 +8,7 @@ import { renderNumberedFormulaHtml, type FormulaRenderVariant } from '../lib/for
 import { refLabel } from '../lib/chapterNav';
 import { glueMathPunctuation } from '../lib/mathGlue';
 import { useScrollableMath } from '../hooks/useScrollableMath';
-import { withoutMathml } from '../print/printMath';
+import { printFormulaHtml, usePrintMathml, type PrintMathml } from '../print/formulaMode';
 import { useMathTrusted } from '../context/MathTrustContext';
 import { FormulaRef as FormulaRefChip } from './ds/FormulaRef';
 import { Formula } from './ds/Formula';
@@ -41,6 +41,8 @@ interface RenderContext {
   boxStyle: BoxStyle;
   /** The book's MathTrustContext, for the numbered formulas. */
   mathTrusted: boolean;
+  /** Print only: the formulas as MathML in fast print (formulaMode.ts), null for KaTeX. */
+  mathml: PrintMathml | null;
   /** Inside a box with a title: the title as boxTitleKey gives it, so a formula label repeating it is hidden. */
   boxTitle?: string;
 }
@@ -56,7 +58,7 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
               <span
                 key={i}
                 className="content-flow-inline"
-                dangerouslySetInnerHTML={{ __html: glueMathPunctuation(isPrint ? withoutMathml(seg.html) : seg.html) }}
+                dangerouslySetInnerHTML={{ __html: glueMathPunctuation(isPrint ? printFormulaHtml(seg.html, ctx.mathml) : seg.html) }}
               />
             );
           case 'strong':
@@ -107,21 +109,25 @@ function InlineFlow({ segments, ctx }: { segments: InlineSegment[]; ctx: RenderC
 
 /**
  * Each numbered formula's print HTML, kept while the book is loaded, so a part renders again without
- * KaTeX: with and without the label (left out inside a box whose title is that label), and with
- * and without `mathTrusted`, so trusted HTML is never served where it was not asked for.
+ * KaTeX: with and without the label (left out inside a box whose title is that label), with and
+ * without `mathTrusted`, so trusted HTML is never served where it was not asked for, and as KaTeX
+ * or as MathML (fast print).
  */
+const labelCaches = () => ({ labelled: new WeakMap<FormulaRef, string>(), unlabelled: new WeakMap<FormulaRef, string>() });
 const numberedHtml = {
-  trusted: { labelled: new WeakMap<FormulaRef, string>(), unlabelled: new WeakMap<FormulaRef, string>() },
-  sanitized: { labelled: new WeakMap<FormulaRef, string>(), unlabelled: new WeakMap<FormulaRef, string>() },
+  katex: { trusted: labelCaches(), sanitized: labelCaches() },
+  mathml: { trusted: labelCaches(), sanitized: labelCaches() },
 };
 
-function printedFormulaHtml(f: FormulaRef, variant: ContentFlowVariant, mathTrusted: boolean, label = true): string {
-  const byLabel = mathTrusted ? numberedHtml.trusted : numberedHtml.sanitized;
+function printedFormulaHtml(f: FormulaRef, ctx: RenderContext, label = true): string {
+  const byTrust = ctx.mathml ? numberedHtml.mathml : numberedHtml.katex;
+  const byLabel = ctx.mathTrusted ? byTrust.trusted : byTrust.sanitized;
   const cache = label ? byLabel.labelled : byLabel.unlabelled;
   let html = cache.get(f);
   if (html === undefined) {
     const formula = label ? f : { ...f, label: '' };
-    cache.set(f, (html = withoutMathml(renderNumberedFormulaHtml(formula, variant, { mathTrusted }))));
+    const katex = renderNumberedFormulaHtml(formula, ctx.variant, { mathTrusted: ctx.mathTrusted });
+    cache.set(f, (html = printFormulaHtml(katex, ctx.mathml)));
   }
   return html;
 }
@@ -269,7 +275,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
         </p>
       );
     case 'math':
-      return <div className="content-math" dangerouslySetInnerHTML={{ __html: isPrint ? withoutMathml(block.html) : block.html }} />;
+      return <div className="content-math" dangerouslySetInnerHTML={{ __html: isPrint ? printFormulaHtml(block.html, ctx.mathml) : block.html }} />;
     case 'list': {
       const items = block.items.map((item, j) => (
         <li key={j}>
@@ -312,7 +318,7 @@ function renderBlock(block: ContentBlock, ctx: RenderContext) {
           className="numbered-formula"
           data-formula-id={f.id}
           data-formula-chapter={f.chapter}
-          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx.variant, ctx.mathTrusted, showLabel) }}
+          dangerouslySetInnerHTML={{ __html: printedFormulaHtml(f, ctx, showLabel) }}
         />
       );
     }
@@ -347,11 +353,13 @@ export const ContentFlow = memo(function ContentFlow({
   boxStyle = 'flat',
 }: ContentFlowProps) {
   const mathTrusted = useMathTrusted();
+  const printMathml = usePrintMathml();
+  const mathml = variant === 'print' ? printMathml : null;
   const blocks = useMemo(() => cachedContentBlocks(content, mathTrusted), [content, mathTrusted]);
   // One object per set of props, so the boxes' own contexts (BoxView) stay the same between renders.
   const ctx = useMemo<RenderContext>(
-    () => ({ formulaIndex, resolveAsset, variant, boxStyle, mathTrusted }),
-    [formulaIndex, resolveAsset, variant, boxStyle, mathTrusted],
+    () => ({ formulaIndex, resolveAsset, variant, boxStyle, mathTrusted, mathml }),
+    [formulaIndex, resolveAsset, variant, boxStyle, mathTrusted, mathml],
   );
   const rootRef = useRef<HTMLDivElement>(null);
   useScrollableMath(rootRef, variant !== 'print');

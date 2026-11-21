@@ -1,0 +1,93 @@
+/* Fast print (docs/Print.md, "Formule"): formulas as MathML from Temml, drawn by the browser in
+   STIX Two Math (SIL OFL 1.1, fonts/OFL.txt), cut down by scripts/build-print-math-font.py.
+   KaTeX sets formulas at 1.21em of KaTeX_Main (x-height 0.442em); 1.13em of STIX Two Math (x-height
+   0.473em) gives the same x-height, so lines and pages keep the size they have with KaTeX. */
+@import './temml.css';
+
+@font-face {
+  font-family: 'STIX Two Math Print';
+  src: url('./fonts/STIXTwoMath-print.woff2') format('woff2');
+  font-display: block;
+}
+
+.print-sheet math {
+  color: var(--print-ink);
+}
+
+/* An inline formula. The browser sizes it to the ink of its scripts and accents, where KaTeX uses
+   TeX's box heights, so a subscript or a superscript would push its line away from the next one.
+   The negative margin lets a formula reach 0.25em into the leading before it grows the line, as
+   KaTeX's struts do. */
+.print-sheet .mml > math {
+  font-size: 1.13em;
+  margin-block: -0.25em;
+}
+
+.print-sheet .mml-display {
+  display: block;
+  margin: 1em 0;
+  text-align: center;
+}
+
+/* fitWideFormulas sets the scales on the wrapper, as on .katex-display and .katex. */
+.print-sheet .mml-display > math {
+  font-size: calc(1.13em * var(--display-fit, 1));
+}
+
+@media print {
+  .print-sheet .mml-display > math {
+    font-size: calc(1.13em * var(--display-fit-print, 1));
+  }
+
+  .print-sheet .mml[data-print-fit] > math {
+    font-size: calc(1.13em * var(--inline-fit-print, 1));
+  }
+}
+
+/* Temml marks \mathcal and \mathscr letters with these classes, which katex.css maps to KaTeX's fonts. */
+.print-sheet math .mathcal,
+.print-sheet math .mathscr {
+  font-family: inherit;
+}
+
+/* Too wide to fit readably on screen: it scrolls inside its own box, as a KaTeX formula does
+   (document.css, ds.css). */
+@media screen {
+  .print-sheet .mml-display[data-wide] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.3em;
+    scrollbar-width: thin;
+  }
+
+  .print-sheet .mml[data-wide] {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    vertical-align: bottom;
+    padding-block: 0.3em;
+    margin-block: -0.3em;
+    scrollbar-width: thin;
+  }
+
+  .math-glue:has(> .mml[data-wide]) {
+    white-space: normal;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .print-sheet .mml-display[data-wide],
+    .print-sheet .mml[data-wide] {
+      animation-name: sb-scroll-fade;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(self inline);
+      mask-image: linear-gradient(to right, transparent, #000 var(--scroll-fade-start), #000 calc(100% - var(--scroll-fade-end)), transparent);
+    }
+  }
+}
+
+/* The samples of "Vedi la differenza": one formula on a piece of paper, in each mode. */
+.fast-print-sample math {
+  font-size: 1.13em;
+}
