@@ -91,3 +91,16 @@ test('a sheet that changes width while fitting is fitted again at the new width'
   // Section a was fitted at 800, the sheet became 600 wide, and both sections were fitted at 600.
   assert.deepEqual(fits, ['a@800', 'a@600', 'b@600']);
 });
+
+test('fitting again keeps the print scale of a flattened formula and recomputes the others', async () => {
+  const root = window.document.createElement('article');
+  const display = (flat: boolean) =>
+    `<div class="katex-display" style="--display-fit-print: 0.8"><span class="katex"><span class="katex-html"><span class="katex-base${flat ? ' katex-flat' : ''}">x</span></span></span></div>`;
+  root.innerHTML = `<div class="print-part"><section class="paragraph-section">${display(true)}${display(false)}</section></div>`;
+  window.document.body.append(root);
+  await fitWideFormulas(root);
+  const [flat, katex] = root.querySelectorAll<HTMLElement>('.katex-display');
+  // Measured on KaTeX's tree, which no longer exists: kept. A formula of no width needs no scale.
+  assert.equal(flat.style.getPropertyValue('--display-fit-print'), '0.8');
+  assert.equal(katex.style.getPropertyValue('--display-fit-print'), '');
+});
