@@ -215,6 +215,7 @@ test.describe('Fast print', () => {
     await expect(formulas(page).getByRole('button', { name: 'Migliore' })).toHaveAttribute('aria-pressed', 'true');
     // On a slow device the book's formulas leave a quiet line that offers fast print again.
     await expect(page.locator('.fast-print-notice--quiet')).toContainText('Passa alla stampa veloce');
+    await expect(page.locator('.fast-print-notice--quiet')).toContainText('le formule migliori rallentano la stampa');
 
     await formulas(page).getByRole('button', { name: 'Veloce' }).click();
     await expectFast(page);

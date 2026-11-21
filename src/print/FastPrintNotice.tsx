@@ -48,7 +48,7 @@ export function FastPrintNotice({ ref, mode, onChoose, mathml }: FastPrintNotice
           <Clock size={18} strokeWidth={1.75} />
         </span>
         <p className="fast-print-notice-title">Formule migliori</p>
-        <p className="fast-print-notice-text">Su questo dispositivo la stampa di un libro intero richiede più di un minuto.</p>
+        <p className="fast-print-notice-text">Su questo dispositivo le formule migliori rallentano la stampa: con la stampa veloce il documento è pronto in circa un terzo del tempo.</p>
         <div className="fast-print-notice-actions">
           <button type="button" className="sb-btn sb-btn-sm" onClick={() => onChoose('fast')}>
             Passa alla stampa veloce
