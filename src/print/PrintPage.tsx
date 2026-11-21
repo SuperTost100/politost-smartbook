@@ -426,6 +426,8 @@ export function PrintPage({ kind }: PrintPageProps) {
     };
   }, [data, view]);
 
+  const mathMode = printMathMode(searchParams);
+
   const handlePrint = useCallback(async () => {
     setPrinting(true);
     try {
@@ -434,11 +436,11 @@ export function PrintPage({ kind }: PrintPageProps) {
       if (!sheet) return;
       await waitForImages(sheet);
       await document.fonts?.ready;
-      // The browser prints a flat formula in about a third of the time it takes to flatten it and
-      // print it as KaTeX drew it, so the formulas left are flattened first (docs/Print.md).
-      if (sheet.getAttribute('data-math') === 'flattening') {
+      // Flattening the formulas left takes far less time than it saves the browser when it prints,
+      // so they are flattened first (docs/Print.md).
+      if (mathMode === 'flat' && sheet instanceof HTMLElement && sheet.dataset.math !== 'flat') {
         setFinishing(true);
-        await finishFlattening(sheet as HTMLElement);
+        await finishFlattening(sheet);
         setFinishing(false);
       }
       window.print();
@@ -446,7 +448,7 @@ export function PrintPage({ kind }: PrintPageProps) {
       setFinishing(false);
       setPrinting(false);
     }
-  }, []);
+  }, [mathMode]);
 
   // The document is ready to print once every part is mounted and its images and fonts have loaded.
   const parts = doc?.parts ?? [];
@@ -458,7 +460,6 @@ export function PrintPage({ kind }: PrintPageProps) {
   // Ctrl+P while the document is still being prepared waits for it. Left to the browser, it would
   // print the parts mounted so far.
   const printQueued = useRef(false);
-  const mathMode = printMathMode(searchParams);
   useEffect(() => {
     if (!complete) return;
     let cancelled = false;

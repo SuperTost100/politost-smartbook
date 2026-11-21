@@ -427,6 +427,7 @@ interface SheetFlat {
   /** Each call starts a run and stops the one before. */
   run: number;
   current: Promise<void>;
+  running: boolean;
   /** Someone is waiting to print: longer slices. */
   hurry: boolean;
 }
@@ -456,6 +457,7 @@ function sheetState(sheet: HTMLElement): SheetFlat {
       observer: new MutationObserver((records) => forgetChanged(created, records)),
       run: 0,
       current: Promise.resolve(),
+      running: false,
       hurry: false,
     };
     // Only content counts: the fit's attributes change sizes, and a flat formula scales with them.
@@ -480,18 +482,28 @@ const HURRY_SLICE_MS = 50;
 export function flattenFormulas(sheet: HTMLElement, cancelled: () => boolean = () => false): Promise<void> {
   const state = sheetState(sheet);
   const run = ++state.run;
+  state.running = true;
   state.current = flattenRun(sheet, state, run, cancelled).finally(() => {
-    if (state.run === run) state.hurry = false;
+    if (state.run !== run) return;
+    state.running = false;
+    state.hurry = false;
   });
   return state.current;
 }
 
-/** Resolves once the current run has finished, which it now does in longer slices. */
-export function finishFlattening(sheet: HTMLElement): Promise<void> {
-  const state = sheets.get(sheet);
-  if (!state) return Promise.resolve();
+/**
+ * Flattens what is left now, in longer slices, starting a run if none is going (the preview may be
+ * ready before its first run starts), and resolves when the last run has finished.
+ */
+export async function finishFlattening(sheet: HTMLElement): Promise<void> {
+  const state = sheetState(sheet);
   state.hurry = true;
-  return state.current;
+  if (!state.running && sheet.dataset.math !== 'flat') void flattenFormulas(sheet);
+  // A run that starts meanwhile, after a paint or a resize, takes over from this one.
+  for (let current = state.current; ; current = state.current) {
+    await current;
+    if (current === state.current) return;
+  }
 }
 
 async function flattenRun(sheet: HTMLElement, state: SheetFlat, run: number, cancelled: () => boolean): Promise<void> {
