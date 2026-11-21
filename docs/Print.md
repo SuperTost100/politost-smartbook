@@ -115,6 +115,48 @@ KaTeX draws a formula with about ten elements per glyph, and the browser lays al
 
 KaTeX ends every sub- or superscript with an empty cell 2 px wide and pulls what follows back over it with a -2 px margin. The cell reached past the formula, so an inline formula that ended a line made the page wider than the paper, and Chromium printed the whole of Fisica 1 at 99.8%. In the print sheet the cell has no width and no negative margin, which changes nothing inside the formula.
 
+## Formule
+
+The options panel ends with **Formule**: **Migliore** prints the book's KaTeX, and **Veloce** (fast print) prints each formula as MathML from [Temml](https://temml.org), which the browser lays out and prints many times faster. The mode applies to every print: chapters, the whole book, exercises, exam questions and the formula sheet, which has no panel but follows the same mode. The reader keeps KaTeX.
+
+| Fisica 1, whole book, from opening the preview to the saved PDF | Migliore | Veloce |
+|---|---|---|
+| Development machine | 35 to 39 s | 8 s |
+| Same, with the CPU 6 times slower | 222 to 234 s | 44 to 49 s |
+| Pages | 371 | 377 |
+
+### Which mode a device gets
+
+`src/lib/printFormulaMode.ts` decides, and keeps its inputs in `localStorage` (`politost-print-formulas`) for every book on the device:
+
+1. A mode the student chose by hand, in the panel or from the line above the sheet. It wins over everything below, for good.
+2. Two cores or 2 GB of memory or less (`navigator.hardwareConcurrency`, `navigator.deviceMemory`): Veloce.
+3. The device measurement above `SLOW_LAYOUT_MS`: Veloce. Otherwise Migliore.
+
+The measurement (`src/print/deviceSpeed.ts`) times the browser parsing and laying out a fixed paragraph of KaTeX, about 2,000 elements, in a contained box off screen, and keeps the best of three runs. It runs once per device, when the print page is first idle, and the sheet waits for it (tens of ms) so a slow device never lays out the KaTeX it would replace. `MEASUREMENT_VERSION` measures every device again when the benchmark changes.
+
+The threshold is the measurement above which printing Fisica 1 as a whole book in Migliore takes more than about a minute. It was calibrated with CPU throttling in Chromium (`Emulation.setCPUThrottlingRate`), opening the whole book and saving it with `page.pdf()`:
+
+| CPU slowdown | Measurement | Migliore | Veloce |
+|---|---|---|---|
+| 1× | 21.0 and 21.5 ms | 34.7 and 39.1 s | 7.8 and 8.0 s |
+| 2× | 46.8 and 50.8 ms | 68.0 and 71.5 s | 14.8 and 15.3 s |
+| 4× | 98.7 and 85.5 ms | 152.0 and 154.8 s | 30.5 and 31.3 s |
+| 6× | 146.5 and 170.9 ms | 234.1 and 221.7 s | 48.8 and 44.2 s |
+
+Each point ran twice, on 2026-11-21, with other browser benchmarks running on the same machine: the measurement varied by up to 15% between runs and the print times by up to 13%. Migliore takes about 1.6 s per ms of measurement, so a minute is about 38 to 41 ms, and `SLOW_LAYOUT_MS` is 40. The hardware rule is not calibrated, because CPU throttling does not change the number of cores or the memory a page sees.
+
+A device given Veloce by the measurement shows a line above the sheet, "Stampa veloce attiva, scelta per questo dispositivo", with **Usa le formule migliori** and **Vedi la differenza**, which shows the same formula in both modes. After the student goes back to Migliore on such a device, a quieter line offers fast print again. A fast device shows no line.
+
+### How fast print draws
+
+- **Rendering.** `katexToMathml` (`src/lib/printMathml.ts`) takes the TeX of each formula from KaTeX's `<annotation>`, which already has the decimal-comma rewrite, and renders it with Temml (`src/lib/temmlRender.ts`, results cached per page). A display formula becomes `<span class="mml-display"><math display="block">`, an inline one `<span class="mml"><math>`, with soft line breaks after relations and binary operators as in KaTeX. A formula Temml cannot render stays KaTeX. In the four catalog books (41,846 formulas, counting each numbered formula in its chapter and in the formula sheet) none falls back.
+- **Lazy chunk.** `src/print/fastPrint/` holds Temml, its STIX2 stylesheet scoped to the sheet, and the font: about 61 KB of gzipped JavaScript, 2 KB of CSS and the 290 KB font. It loads only when Veloce is in use.
+- **Font.** STIX Two Math (SIL OFL 1.1), built by `scripts/build-print-math-font.py` as a 290 KB woff2 from the 838 KB otf. The script gives the right arrow's head the start connector it lacks, so Chromium stretches `\xrightarrow` and `\overrightarrow`; lowers the label over a stretched arrow from 0.8em to Latin Modern Math's 0.111em; and keeps the characters, size variants, assembly parts and OpenType features TeX math uses. Formulas are set at 1.13em, which gives the x-height of KaTeX's 1.21em, so lines and pages keep their size.
+- **Line spacing.** The browser sizes an inline formula to the ink of its scripts and accents, where KaTeX uses TeX's box heights, so a subscript pushed its line away from the next one. An inline formula has `margin-block: -0.25em`, which lets it reach that far into the leading before the line grows.
+- **Fitting.** `fitWideFormulas` fits `.mml-display` and `.mml` as it fits KaTeX, measuring the children of `<math>`.
+- **Switching.** A new mode reaches the parts one at a time (`usePartMathml`), with the sheet dimmed and **Stampa o salva PDF** waiting, then the formulas are fitted again.
+
 ## Browser support
 
 | Browser | Body, page breaks, colours | Running heads and page numbers |
@@ -129,5 +171,7 @@ npm run test:print
 ```
 
 `src/lib/flatFormulas.test.ts` covers the lengths of flat formulas, which parts stay outside the clipping box and which KaTeX classes draw. `e2e/print.spec.ts` covers the previews, flat formulas (after readiness, at KaTeX's positions, printing at once, `?math=katex`, an option), print media, the options and the URL, the remembered options, the toolbar at 320px, the phone options sheet, a whole-book PDF export, and a book of wide formulas whose print documents must not be wider than the printed column. `src/lib/printOptions.test.ts` covers the URL parsing, the exercise picks and the remembered options. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
+
+`e2e/fast-print.spec.ts` covers fast print: the default on a slow device, the line and its samples, a choice that survives a reload, every kind of print, links and their targets, stretched arrows, even line spacing and wide formulas. `src/lib/printFormulaMode.test.ts` covers the decision and its storage, `src/lib/printMathml.test.ts` the conversion. Every e2e spec starts from a stored measurement of a fast device (`playwright.config.ts`), so the machine that runs them cannot switch them to fast print. `e2e/print.spec.ts` covers the previews, print media, the options and the URL, the remembered options, the toolbar at 320px, the phone options sheet, a whole-book PDF export, and a book of wide formulas whose print documents must not be wider than the printed column. `src/lib/printOptions.test.ts` covers the URL parsing, the exercise picks and the remembered options. The cloud-book case runs only with `VITE_PLATFORM_ENABLED=true`.
 
 Print CSS lives in `src/print/styles/` (tokens, shell, document).
