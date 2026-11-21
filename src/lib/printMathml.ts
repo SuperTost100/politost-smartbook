@@ -55,18 +55,40 @@ function convert(katexSpan: string, render: TexToMathml): { math: string; displa
   return math === null ? null : { math, display };
 }
 
+/** Index where the last child element of `<math>` starts in `math`, or -1 when it has none. */
+function lastChildStart(math: string): number {
+  const tag = /<(\/?)[a-zA-Z][^>]*?(\/?)>/g;
+  tag.lastIndex = math.indexOf('>') + 1;
+  let depth = 0;
+  let start = -1;
+  for (let m = tag.exec(math); m; m = tag.exec(math)) {
+    if (m[1]) depth--;
+    else {
+      if (depth === 0) start = m.index;
+      if (!m[2]) depth++;
+    }
+    if (depth < 0) break;
+  }
+  return start;
+}
+
 /**
  * `math` with `punctuation` at the end of its last segment, as `<mtext class="math-punct">`. Temml's
  * `<math>` is a wrapping flex box (temml.css), and once a formula wraps the box takes the whole
  * line: punctuation glued after it, as glueMathPunctuation does for KaTeX, would reach past the
  * text column. Inside the last segment it follows the formula's last line, stays on it, and counts
- * in the width fitFormulas.ts fits. A formula of one segment that is not an `<mrow>` gets one.
+ * in the width fitFormulas.ts fits. A last segment that is not a plain `<mrow>` gets one around it.
  */
 function withPunctuation(math: string, punctuation: string): string {
   const punct = `<mtext class="math-punct">${punctuation}</mtext>`;
-  if (math.endsWith('</mrow></math>')) return `${math.slice(0, -'</mrow></math>'.length)}${punct}</mrow></math>`;
-  const open = math.indexOf('>') + 1;
-  return `${math.slice(0, open)}<mrow>${math.slice(open, -'</math>'.length)}${punct}</mrow></math>`;
+  const end = math.length - '</math>'.length;
+  const child = lastChildStart(math);
+  // No element inside: the whole content is the segment.
+  const last = child < 0 ? math.indexOf('>') + 1 : child;
+  // A plain row is a line-break segment: the punctuation joins it. A row with attributes draws
+  // something (\boxed's border, a colour), so it goes in a new row with the punctuation after it.
+  if (math.startsWith('<mrow>', last)) return `${math.slice(0, end - '</mrow>'.length)}${punct}</mrow></math>`;
+  return `${math.slice(0, last)}<mrow>${math.slice(last, end)}${punct}</mrow></math>`;
 }
 
 /**

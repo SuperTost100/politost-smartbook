@@ -54,6 +54,17 @@ test('katexToMathml puts the punctuation after an inline formula at the end of i
     katexToMathml(`${inline('a=b')}; poi`, () => segments),
     `<span class="mml"><math><mrow><mi>a</mi><mo>=</mo></mrow><mrow><mi>b</mi>${punct(';')}</mrow></math></span> poi`,
   );
+  // A row that draws something (\\boxed) keeps the punctuation outside it.
+  const boxed = '<math><mrow style="border:1px solid"><mi>x</mi></mrow></math>';
+  assert.equal(
+    katexToMathml(`${inline('\\\\boxed{x}')}.`, () => boxed),
+    `<span class="mml"><math><mrow><mrow style="border:1px solid"><mi>x</mi></mrow>${punct('.')}</mrow></math></span>`,
+  );
+  const nested = '<math><mrow><mi>a</mi></mrow><msup><mi>b</mi><mrow><mn>2</mn></mrow></msup></math>';
+  assert.equal(
+    katexToMathml(`${inline('ab^2')}.`, () => nested),
+    `<span class="mml"><math><mrow><mi>a</mi></mrow><mrow><msup><mi>b</mi><mrow><mn>2</mn></mrow></msup>${punct('.')}</mrow></math></span>`,
+  );
   // The glue for KaTeX, run after it as ContentFlow does, leaves MathML alone.
   const html = katexToMathml(`${inline('x')}.`, render);
   assert.equal(glueMathPunctuation(html), html);
