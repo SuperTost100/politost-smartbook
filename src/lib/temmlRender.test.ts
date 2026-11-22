@@ -7,21 +7,32 @@ const display = (tex: string) => renderTemml(tex, true) ?? '';
 const THIN = '<mspace width="0.1667em"></mspace>';
 
 test('a comma between digits left as written stays a separator, and a decimal comma one number', () => {
-  assert.equal(texForTemml('t\\in[0,1]', false).tex, 't\\in[0,{}1]');
-  assert.equal(texForTemml('x=1{,}5', false).tex, 'x=1{,}5');
+  assert.equal(texForTemml('t\\in[0,1]'), 't\\in[0,{}1]');
+  assert.equal(texForTemml('x=1{,}5'), 'x=1{,}5');
   assert.match(inline('[0,1]'), /<mn>0<\/mn><mo separator="true">,<\/mo><mrow><\/mrow><mn>1<\/mn>/);
   assert.match(inline('1{,}25'), /<mn>1,25<\/mn>/);
 });
 
+test('verbatim text keeps its commas as written, and text shows no braces', () => {
+  assert.equal(texForTemml('\\verb|1,2| + 3,4 + \\verb*!5,6!'), '\\verb|1,2| + 3,{}4 + \\verb*!5,6!');
+  assert.match(inline('\\verb|1,2|'), /<mtext mathvariant="monospace">1,2<\/mtext>/);
+  assert.match(inline('\\text{1,2}'), /<mtext>1,2<\/mtext>/);
+});
+
 test('an inline formula that starts with \\displaystyle keeps its line breaks', () => {
-  assert.deepEqual(texForTemml('\\displaystyle a=b', false), { tex: 'a=b', displaystyle: true });
-  assert.deepEqual(texForTemml('\\displaystyle a=b', true), { tex: '\\displaystyle a=b', displaystyle: false });
-  assert.deepEqual(texForTemml('\\displaystyles', false).displaystyle, false);
   const math = inline('\\displaystyle \\int_0^1 f = \\frac{1}{2} + c');
   assert.match(math, /^<math displaystyle="true">/);
   assert.doesNotMatch(math, /<mstyle/);
   // One row per line-break segment: after `=` and after `+`.
   assert.equal(math.match(/<math[^>]*><mrow>|<\/mrow><mrow>/g)?.length, 3);
+});
+
+test('an inline \\displaystyle sum or limit keeps its limits above and below', () => {
+  assert.match(inline('\\displaystyle \\sum_{k=1}^{n} k = a'), /^<math displaystyle="true"><mrow><mrow><munderover><mo[^>]*>∑/);
+  const limit = inline('\\displaystyle \\lim_{x\\to 0} f = 1');
+  assert.match(limit, /<munder><mi>lim<\/mi>/);
+  // The name and its argument stay on one line: the first break is after `=`.
+  assert.match(limit, /^<math displaystyle="true"><mrow><munder>.*<mi>f<\/mi><mo>=<\/mo><\/mrow><mrow><mn>1<\/mn><\/mrow><\/math>$/);
 });
 
 test('an operator name gets its thin space after a script, a fraction, a root or a bracket', () => {

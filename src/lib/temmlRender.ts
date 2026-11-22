@@ -7,8 +7,9 @@ import temml from 'temml';
  * breaks after relations and binary operators, where KaTeX lets a formula break too; Chromium and
  * Firefox honour them.
  *
- * The TeX goes through texForTemml first and the MathML through mathSpacing after, so the spacing
- * matches KaTeX's where Temml or the browser's operator spacing differ from TeX (docs/Print.md,
+ * The TeX goes through texForTemml first, and the MathML through breakDisplaystyle and mathSpacing
+ * after, so the line breaks and the spacing
+ * match KaTeX's where Temml or the browser's operator spacing differ from TeX (docs/Print.md,
  * "Formule").
  *
  * Each result is kept while the page is open, so switching mode or re-rendering a part costs no
@@ -21,9 +22,8 @@ export function renderTemml(tex: string, display: boolean): string | null {
   let math = cache.get(key);
   if (math !== undefined) return math;
   try {
-    const source = texForTemml(tex, display);
-    math = temml.renderToString(source.tex, { displayMode: display, wrap: display ? 'none' : 'tex', throwOnError: true, trust: false });
-    if (source.displaystyle) math = math.replace(/^<math/, '<math displaystyle="true"');
+    math = temml.renderToString(texForTemml(tex), { displayMode: display, wrap: display ? 'none' : 'tex', throwOnError: true, trust: false });
+    if (!display) math = breakDisplaystyle(math);
     math = mathSpacing(math);
   } catch {
     math = null;
@@ -32,22 +32,20 @@ export function renderTemml(tex: string, display: boolean): string | null {
   return math;
 }
 
-const LEADING_DISPLAYSTYLE = /^\s*\\displaystyle(?![a-zA-Z])\s*/;
+/** `\verb` with its delimiter, or `\verb*`: its text is shown as written. */
+const VERB = /(\\verb\*?([^a-zA-Z*\s])[\s\S]*?\2)/;
 
 /**
- * The TeX Temml gets:
- * - A comma between two digits that content-core left as written (decimalCommas: a pair, a list,
- *   an index) gets an empty group after it. Temml reads `0,1` as one number and draws "0,1", where
- *   KaTeX draws "0, 1"; a decimal comma reaches here as `{,}` and stays one number.
- * - An inline formula that starts with `\displaystyle` loses it, and the caller sets
- *   `displaystyle="true"` on `<math>` instead. Temml puts everything after `\displaystyle` in one
- *   `<mstyle>`, which has no line breaks, so the formula could not wrap as it does in KaTeX.
+ * The TeX Temml gets: a comma between two digits that content-core left as written (decimalCommas:
+ * a pair, a list, an index) gets an empty group after it. Temml reads `0,1` as one number and draws
+ * "0,1", where KaTeX draws "0, 1"; a decimal comma reaches here as `{,}` and stays one number.
+ * `\verb` text stays as written, since it would show the braces.
  */
-export function texForTemml(tex: string, display: boolean): { tex: string; displaystyle: boolean } {
-  let out = tex.replace(/(\d),(?=\d)/g, '$1,{}');
-  const displaystyle = !display && LEADING_DISPLAYSTYLE.test(out);
-  if (displaystyle) out = out.replace(LEADING_DISPLAYSTYLE, '');
-  return { tex: out, displaystyle };
+export function texForTemml(tex: string): string {
+  return tex
+    .split(VERB)
+    .map((part, i) => (i % 3 === 0 ? part.replace(/(\d),(?=\d)/g, '$1,{}') : i % 3 === 1 ? part : ''))
+    .join('');
 }
 
 interface Element {
@@ -202,4 +200,60 @@ export function mathSpacing(math: string): string {
   const root = parse(math);
   for (const el of elements(root)) respace(el, false, false);
   return root.kids.map(serialize).join('');
+}
+
+const INVISIBLE = /^[\u2061-\u2064]$/;
+const DISPLAYSTYLE = ' scriptlevel="0" displaystyle="true"';
+const hasAttr = (el: Element, name: string, value?: string) =>
+  new RegExp(`\\s${name}${value === undefined ? '=' : `="${value}"`}`).test(el.attrs);
+
+/**
+ * An inline formula that starts with `\displaystyle`, whose whole content Temml puts in one
+ * `<mstyle>`, split into the line-break segments Temml makes for any other inline formula, so it
+ * can wrap as KaTeX's does: Esempio 4.8 of Analisi Matematica 2 printed at 96%. The `<mstyle>`
+ * becomes `displaystyle="true"` on `<math>`, and its children are cut as setLineBreaks in Temml
+ * 0.14 cuts them with `wrap: 'tex'`: after an operator that is not a prefix and not a big
+ * operator, together with the spaces that follow it, unless one of those is a no-break space. The
+ * TeX keeps its `\displaystyle`, so limits and `\mathchoice` come out as in display style. A
+ * formula with a hard line break stays as it is.
+ */
+export function breakDisplaystyle(math: string): string {
+  if (!math.includes(DISPLAYSTYLE)) return math;
+  const [root] = elements(parse(math));
+  const [style] = elements(root);
+  if (root.kids.length !== 1 || style.name !== 'mstyle' || style.attrs !== DISPLAYSTYLE) return math;
+  const nodes = elements(style);
+  if (nodes.some((node) => node.name === 'mspace' && hasAttr(node, 'linebreak', 'newline'))) return math;
+  const rows: Element[][] = [];
+  let block: Element[] = [];
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    block.push(node);
+    // Unlike Temml, no break after the invisible function application of a `\lim` set flat in
+    // display style, which would part the name from its argument.
+    const breaks =
+      node.name === 'mo' &&
+      node.kids.length === 1 &&
+      typeof node.kids[0] === 'string' &&
+      !INVISIBLE.test(node.kids[0]) &&
+      !hasAttr(node, 'form', 'prefix') &&
+      !hasAttr(node, 'movablelimits');
+    if (!breaks) continue;
+    const next = nodes[i + 1];
+    let free = true;
+    if (!(next?.name === 'mtext' && hasAttr(next, 'linebreak', 'nobreak'))) {
+      while (nodes[i + 1]?.name === 'mspace') {
+        const glue = nodes[++i];
+        block.push(glue);
+        if (hasAttr(glue, 'linebreak', 'nobreak')) free = false;
+      }
+    }
+    if (free) {
+      rows.push(block);
+      block = [];
+    }
+  }
+  if (block.length > 0) rows.push(block);
+  const attrs = `${root.attrs} displaystyle="true"`;
+  return `<math${attrs}>${rows.map((row) => `<mrow>${row.map(serialize).join('')}</mrow>`).join('')}</math>`;
 }
