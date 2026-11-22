@@ -51,6 +51,32 @@
   font-size: calc(1em / 1.13);
 }
 
+/* Spacing that TeX, and so KaTeX, gives and Temml's MathML in Chromium does not. */
+:is(.print-sheet, .fast-print-sample) {
+  /* A matrix or `cases` between delimiters: Temml leaves no padding outside the first and the last
+     column, so the bars of a determinant touched its entries. */
+  mo[fence='true'] + mtable {
+    padding-inline-start: 0.15em;
+  }
+
+  mtable:has(+ mo[fence='true']) {
+    padding-inline-end: 0.15em;
+  }
+
+  /* TeX's null delimiter space on each side of a fraction: without it `\left|\frac{a}{b}\right|`
+     touched its bars and "½mv²" ran together. */
+  mfrac {
+    padding-inline: 0.12em;
+  }
+
+  /* Temml draws \vec as an over-script, which the browser sets as far above its base as a limit.
+     The arrow without a class is \vec over more than one letter. */
+  mover > mo.tml-vec,
+  mover > mo[stretchy='false']:not([class]):last-child {
+    margin-block-end: -0.2em;
+  }
+}
+
 /* Temml marks \mathcal and \mathscr letters with these classes, which katex.css maps to KaTeX's fonts. */
 .print-sheet math .mathcal,
 .print-sheet math .mathscr {
