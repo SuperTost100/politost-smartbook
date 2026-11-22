@@ -119,6 +119,35 @@ const PUNCTUATION_BOOK: TestBook = {
   ],
 };
 
+/**
+ * Formulas where Temml's MathML in Chromium spaced differently from KaTeX (docs/Print.md, "Formule"):
+ * Fisica 1 (1.10), (14.15) and the solution of E11.2, and Esempio 4.8 of Analisi Matematica 2.
+ */
+const SPACING_BOOK: TestBook = {
+  id: 'spaziature',
+  title: 'Spaziature',
+  chapters: [
+    {
+      id: 'spazi',
+      number: 1,
+      title: 'Spazi',
+      markdown: [
+        '---', 'chapter: 1', 'title: Spazi', '---', '',
+        '## p1 | Spazi', '',
+        String.raw`$$\vec{A} \times \vec{B} = \begin{vmatrix} \hat{u}_x & \hat{u}_y & \hat{u}_z \\ A_x & A_y & A_z \\ B_x & B_y & B_z \end{vmatrix}$$`, '',
+        String.raw`$$\Delta S = n c_V \ln\left(\frac{T_B}{T_A}\right)$$`, '',
+        String.raw`Bernoulli dà $v=\sqrt{2gh}$, dove $h$ è la profondità del foro.`, '',
+        String.raw`$$\iint_\Omega x\,dx\,dy$$`, '',
+        String.raw`La forza $\vec{v}$ agisce.`, '',
+        String.raw`3. Si integra: $\displaystyle \iint_\Omega x\,dx\,dy=\int_{-\pi/2}^{\pi/2}\left(\int_0^{2\cos\theta}r\cos\theta\cdot r\,dr\right)d\theta=\int_{-\pi/2}^{\pi/2}\cos\theta\,\frac{8\cos^3\theta}{3}\,d\theta=\frac83\int_{-\pi/2}^{\pi/2}\cos^4\theta\,d\theta.$`,
+        '',
+        String.raw`Accenti su due lettere: $\tilde{AB}$, $\hat{AB}$ e $\vec{AB}$.`,
+        '',
+      ].join('\n'),
+    },
+  ],
+};
+
 /** Replaces window.print with a log of what the sheet held when it was called. */
 async function logPrints(page: Page) {
   await page.addInitScript(() => {
@@ -368,6 +397,55 @@ test.describe('Fast print', () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(PRINT_COLUMN);
     });
   }
+
+  test('formulas keep the spacing KaTeX gives them', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await storePrefs(page, { chosen: 'fast' });
+    await openTestBook(page, SPACING_BOOK);
+    await page.goto(`/libro/${SPACING_BOOK.id}/stampa/capitolo/spazi`, PRINT_GOTO_OPTIONS);
+    await expectFast(page);
+    await page.evaluate(() => document.fonts.ready);
+    await page.emulateMedia({ media: 'print' });
+    await page.setViewportSize({ width: PRINT_COLUMN, height: 900 });
+    // The new width fits the formulas again.
+    await expect(page.locator('.print-sheet')).toHaveAttribute('aria-busy', 'false');
+    // Gaps in ems of the formula's font size.
+    const gaps = await page.locator('.print-sheet').evaluate((sheet) => {
+      const em = (el: Element) => parseFloat(getComputedStyle(el).fontSize);
+      const box = (el: Element) => el.getBoundingClientRect();
+      /** Where a box's content ends: the rightmost of its children. */
+      const drawnRight = (el: Element) => Math.max(...[...el.children].map((c) => box(c).right));
+      const maths = [...sheet.querySelectorAll('.paragraph-section math')];
+      const [det, entropy, root, , integral, vector, long, tilde, hat, arrowAB] = maths;
+      const lowered = (math: Element) => getComputedStyle(math.querySelector('mover > mo')!).marginBlockEnd;
+      const bar = det.querySelector('mo[fence="true"] + mtable')!.previousElementSibling!;
+      const firstEntry = det.querySelector('mtd > *')!;
+      const ln = [...entropy.querySelectorAll('mi')].find((m) => m.textContent === 'ln')!;
+      const sqrt = root.querySelector('msqrt')!;
+      const punct = root.querySelector('.math-punct')!;
+      const iint = integral.querySelector('msub')!;
+      const arrow = vector.querySelector('mover > mo')!;
+      return {
+        barToEntry: (box(firstEntry).left - box(bar).right) / em(det),
+        subscriptToLn: (box(ln).left - box(entropy.querySelector('msub')!).right) / em(entropy),
+        rootToComma: (box(punct).left - drawnRight(sqrt)) / em(root),
+        integralToIntegrand: (box(iint.nextElementSibling!).left - drawnRight(iint)) / em(integral),
+        arrowToLetter: (box(arrow.previousElementSibling!).top - box(arrow).bottom) / em(vector),
+        longFitted: long.parentElement!.hasAttribute('data-print-fit'),
+        accentsLowered: [lowered(tilde), lowered(hat), lowered(arrowAB)].map((margin) => parseFloat(margin) < 0),
+      };
+    });
+    // KaTeX's gaps: 0.15em, a thin space (0.17em), none, a thin space and about 0.03em.
+    expect(gaps.barToEntry).toBeGreaterThanOrEqual(0.12);
+    expect(gaps.subscriptToLn).toBeGreaterThanOrEqual(0.14);
+    expect(gaps.rootToComma).toBeLessThan(0.1);
+    expect(gaps.integralToIntegrand).toBeLessThan(0.25);
+    expect(gaps.arrowToLetter).toBeLessThan(0.1);
+    // Esempio 4.8 can break after its relations, so it prints at full size.
+    expect(gaps.longFitted).toBe(false);
+    // Only the arrow of \vec is lowered: other accents sit where the font puts them.
+    expect(gaps.accentsLowered).toEqual([false, false, true]);
+  });
 
   test('a formula Temml cannot render stays KaTeX and keeps its formulas flat', async ({ page }) => {
     await storePrefs(page, { chosen: 'fast' });

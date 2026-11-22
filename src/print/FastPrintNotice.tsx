@@ -2,6 +2,7 @@ import { useId, useMemo, useState, type Ref } from 'react';
 import katex from 'katex';
 import { Clock, Zap } from 'lucide-react';
 import type { FormulaMode } from '../lib/printFormulaMode';
+import { trimMathBoxes } from './mathmlBoxes';
 
 /**
  * The formula of "Vedi la differenza": a root, a fraction, an integral with limits and vector arrows,
@@ -18,6 +19,11 @@ interface FastPrintNoticeProps {
   mathml: ((tex: string) => string | null) | null;
 }
 
+/** The sample's root and integral trimmed as on the sheet (mathmlBoxes.ts), once the font has loaded. */
+function trimOnceFontsLoad(el: HTMLElement | null) {
+  if (el) void document.fonts.ready.then(() => el.isConnected && trimMathBoxes([el]));
+}
+
 /** The same formula in each mode, on a piece of white paper, as it prints. */
 function Samples({ mathml }: { mathml: (tex: string) => string | null }) {
   const best = useMemo(() => katex.renderToString(SAMPLE_TEX, { displayMode: true, output: 'html', throwOnError: false }), []);
@@ -29,7 +35,7 @@ function Samples({ mathml }: { mathml: (tex: string) => string | null }) {
         <figcaption>Migliore</figcaption>
       </figure>
       <figure className="fast-print-sample-figure">
-        <div className="fast-print-sample" data-mode="fast" dangerouslySetInnerHTML={{ __html: fast ?? '' }} />
+        <div className="fast-print-sample" data-mode="fast" ref={trimOnceFontsLoad} dangerouslySetInnerHTML={{ __html: fast ?? '' }} />
         <figcaption>Veloce</figcaption>
       </figure>
     </div>

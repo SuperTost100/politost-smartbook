@@ -1,4 +1,5 @@
 import { formulaName, markScrolling } from '../lib/scrollableMath';
+import { trimMathBoxes } from './mathmlBoxes';
 
 /** The printed text column: A4 less the 18 mm side margins of `@page` (PrintDocument), in CSS px. */
 const PRINT_COLUMN = (174 * 96) / 25.4;
@@ -238,6 +239,8 @@ function fitUnit(root: Element, sheet: Element, toPrint: number): void {
   }
   for (const el of inlines) if (!flat.has(el)) el.style.removeProperty(INLINE_PRINT_FIT);
   for (const card of ownCards) if (!isFlat(card)) card.classList.remove(WIDE_CARD);
+  // Fast print's roots and integrals are wider than they draw until trimmed, so trim them first.
+  trimMathBoxes([...displays, ...inlines].filter((el) => el.matches('.mml, .mml-display')));
 
   // A first width in place picks the formulas that may not fit; only those are copied and measured.
   const cards = cardRows(ownCards, toPrint);
