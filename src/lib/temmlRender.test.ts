@@ -79,3 +79,8 @@ test('a \\left…\\right group gets a thin space next to a letter, and none next
 test('a \\left…\\right group with a script is still a group', () => {
   assert.match(display('\\lim_{n\\to\\infty}\\left(1+\\frac1n\\right)^n'), new RegExp(`<mo>⁡</mo>${THIN}<msup><mrow>`));
 });
+
+test('only the arrow of \\vec is marked to be lowered, not other accents', () => {
+  for (const tex of ['\\vec{v}', '\\vec{AB}']) assert.match(inline(tex), /<mo stretchy="false"[^>]* class="print-vec[ "][^>]*>→<\/mo>/, tex);
+  for (const tex of ['\\tilde{AB}', '\\hat{AB}', '\\overrightarrow{AB}', '\\dot{x}']) assert.doesNotMatch(inline(tex), /print-vec/, tex);
+});

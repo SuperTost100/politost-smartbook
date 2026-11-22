@@ -141,6 +141,8 @@ const SPACING_BOOK: TestBook = {
         String.raw`La forza $\vec{v}$ agisce.`, '',
         String.raw`3. Si integra: $\displaystyle \iint_\Omega x\,dx\,dy=\int_{-\pi/2}^{\pi/2}\left(\int_0^{2\cos\theta}r\cos\theta\cdot r\,dr\right)d\theta=\int_{-\pi/2}^{\pi/2}\cos\theta\,\frac{8\cos^3\theta}{3}\,d\theta=\frac83\int_{-\pi/2}^{\pi/2}\cos^4\theta\,d\theta.$`,
         '',
+        String.raw`Accenti su due lettere: $\tilde{AB}$, $\hat{AB}$ e $\vec{AB}$.`,
+        '',
       ].join('\n'),
     },
   ],
@@ -414,7 +416,8 @@ test.describe('Fast print', () => {
       /** Where a box's content ends: the rightmost of its children. */
       const drawnRight = (el: Element) => Math.max(...[...el.children].map((c) => box(c).right));
       const maths = [...sheet.querySelectorAll('.paragraph-section math')];
-      const [det, entropy, root, , integral, vector, long] = maths;
+      const [det, entropy, root, , integral, vector, long, tilde, hat, arrowAB] = maths;
+      const lowered = (math: Element) => getComputedStyle(math.querySelector('mover > mo')!).marginBlockEnd;
       const bar = det.querySelector('mo[fence="true"] + mtable')!.previousElementSibling!;
       const firstEntry = det.querySelector('mtd > *')!;
       const ln = [...entropy.querySelectorAll('mi')].find((m) => m.textContent === 'ln')!;
@@ -429,6 +432,7 @@ test.describe('Fast print', () => {
         integralToIntegrand: (box(iint.nextElementSibling!).left - drawnRight(iint)) / em(integral),
         arrowToLetter: (box(arrow.previousElementSibling!).top - box(arrow).bottom) / em(vector),
         longFitted: long.parentElement!.hasAttribute('data-print-fit'),
+        accentsLowered: [lowered(tilde), lowered(hat), lowered(arrowAB)].map((margin) => parseFloat(margin) < 0),
       };
     });
     // KaTeX's gaps: 0.15em, a thin space (0.17em), none, a thin space and about 0.03em.
@@ -439,6 +443,8 @@ test.describe('Fast print', () => {
     expect(gaps.arrowToLetter).toBeLessThan(0.1);
     // Esempio 4.8 can break after its relations, so it prints at full size.
     expect(gaps.longFitted).toBe(false);
+    // Only the arrow of \vec is lowered: other accents sit where the font puts them.
+    expect(gaps.accentsLowered).toEqual([false, false, true]);
   });
 
   test('a formula Temml cannot render stays KaTeX and keeps its formulas flat', async ({ page }) => {

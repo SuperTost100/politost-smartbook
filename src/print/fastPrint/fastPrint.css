@@ -70,9 +70,8 @@
   }
 
   /* Temml draws \vec as an over-script, which the browser sets as far above its base as a limit.
-     The arrow without a class is \vec over more than one letter. */
-  mover > mo.tml-vec,
-  mover > mo[stretchy='false']:not([class]):last-child {
+     mathSpacing (temmlRender.ts) marks its arrow. */
+  mover > mo.print-vec {
     margin-block-end: -0.2em;
   }
 }

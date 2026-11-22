@@ -137,6 +137,11 @@ function respace(el: Element, script: boolean, base: boolean, before?: Element, 
     const inScript = script || (SCRIPTED.has(el.name) && i > 0) || (el.name === 'mroot' && i === 1);
     respace(kid, inScript, SCRIPTED.has(el.name) && i === 0, kids[i - 1], kids[i + 1]);
   });
+  // The arrow of \vec, which fastPrint.css lowers: Temml marks it only over a single letter.
+  const accent = kids[kids.length - 1];
+  if (el.name === 'mover' && accent?.name === 'mo' && text(accent) === '→' && hasAttr(accent, 'stretchy', 'false')) {
+    accent.attrs = hasAttr(accent, 'class') ? accent.attrs.replace(' class="', ' class="print-vec ') : `${accent.attrs} class="print-vec"`;
+  }
   if (el.name === 'mo' && !hasSpacing(el)) {
     // TeX puts no space around relations, binary operators or punctuation in scripts and limits
     // (n→∞, k=1), and the browser keeps the full space there.
